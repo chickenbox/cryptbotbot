@@ -2,7 +2,6 @@
     "compilerOptions": {
         "target": "ES6",
         "module": "amd",
-        "jsx": "react",
         "accessorOptimization": true,
         "reorderFiles": true,        
         "outFile": "../build/all.js",
@@ -12,10 +11,6 @@
     },  
     "includes": [
         "src/**/*.ts",
-        "src/**/*.tsx",
-        "../bower_components/**/*.d.ts"
-    ],
-    "exclude": [
-        "src/mycrypnode"
+        "src/**/*.tsx"
     ]
 }
