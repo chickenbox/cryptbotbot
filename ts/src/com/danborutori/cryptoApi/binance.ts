@@ -6,9 +6,6 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     export type Side = "BUY" | "SELL"
 
 
-    const apiKey = "API KEY"
-    const apiSecure = "API SECURE"
-
     interface ExchangeInfoResponse {
 
         timezone: string
@@ -92,6 +89,9 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     export class Binance {
         static shared = new Binance()
 
+        public apiKey?: string
+        public apiSecure?: string
+
         fullUrl( path: string ){
             return `https://api.binance.com/api/v3${path}`
         }
@@ -149,7 +149,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         }
 
         sign(queryString: URLSearchParams){
-            const hash = CryptoJS.HmacSHA256(queryString.toString(), apiSecure);
+            const hash = CryptoJS.HmacSHA256(queryString.toString(), this.apiSecure);
             return queryString+"&signature="+hash
         }
 
@@ -162,7 +162,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             const response = await fetch( this.fullUrl("/account")+"?"+this.sign(params), {
                 method: "GET",
                 headers: {
-                    "X-MBX-APIKEY": apiKey
+                    "X-MBX-APIKEY": this.apiKey
                 }
             } )
 
@@ -177,7 +177,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             const response = await fetch( this.fullUrl("/order"), {
                 method: "POST",
                 headers: {
-                    "X-MBX-APIKEY": apiKey
+                    "X-MBX-APIKEY": this.apiKey
                 },
                 body: this.sign(params)
             } )
