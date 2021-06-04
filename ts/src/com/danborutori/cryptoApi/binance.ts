@@ -89,12 +89,14 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     export class Binance {
         static shared = new Binance()
 
-        public apiKey?: string
-        public apiSecure?: string
-
         fullUrl( path: string ){
             return `https://api.binance.com/api/v3${path}`
         }
+
+        constructor(
+            private apiKey?: string,
+            private apiSecure?: string
+        ){}
 
         async getExchangeInfo() {
 

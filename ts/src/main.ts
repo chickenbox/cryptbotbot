@@ -1,10 +1,7 @@
-declare function require(s): any
-declare const process: {
-    argv: string[]
-}
+setTimeout( function(){
 
-const fetch = require('node-fetch');
-const CryptoJS = require('crypto-js');
-
-com.danborutori.cryptoApi.Binance.shared.apiKey = process.argv[0]
-com.danborutori.cryptoApi.Binance.shared.apiSecure = process.argv[1]
+        new bot.Bot({
+            apiKey: process.argv[2],
+            apiSecure: process.argv[3]
+        }).run()
+    }, 1)
