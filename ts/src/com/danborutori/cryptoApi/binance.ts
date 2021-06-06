@@ -38,10 +38,9 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             quoteOrderQtyMarketAllowed: boolean
             isSpotTradingAllowed: boolean
             isMarginTradingAllowed: boolean
-            filters: [
+            filters: any[]
                 //These are defined in the Filters section.
                 //All filters are optional
-            ]
             permissions: string[]
         }[]
     }
@@ -84,6 +83,30 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         orderListId: number
         clientOrderId: string
         transactTime: number
+    }
+
+    interface Order {
+        symbol: string
+        orderId: number
+        orderListId: number //Unless OCO, the value will always be -1
+        clientOrderId: string
+        price: string
+        origQty: string
+        executedQty: string
+        cummulativeQuoteQty: string
+        status: "NEW" | "PARTIALLY_FILLED" | "FILLED" | "CANCELED" | "PENDING_CANCEL" | "REJECTED" | "EXPIRED"
+        timeInForce: "GTC" | "IOC" | "FOK"
+        type: OrderType
+        side: Side
+    }
+
+    interface CurrentOpenOrder extends Order {
+        stopPrice: string
+        icebergQty: string
+        time: number
+        updateTime: number
+        isWorking: boolean
+        origQuoteOrderQty: string
     }
 
     export class Binance {
@@ -184,6 +207,40 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 body: this.sign(params)
             } )
 
+            return response.json()
+        }
+
+        async cancelAllOpenOrder( symbol: string ): Promise<Order[]> {
+            const params = new URLSearchParams({
+                symbol: symbol,
+                timestamp: await this.getServerTime()
+            })
+
+            const response = await fetch( this.fullUrl("/openOrders"), {
+                method: "DELETE",
+                headers: {
+                    "X-MBX-APIKEY": this.apiKey
+                },
+                body: this.sign(params)
+            } )
+         
+            return response.json()
+        }
+
+        async getCurrentOpenOrders( symbol?: string ): Promise<CurrentOpenOrder[]>{
+            const params = new URLSearchParams({
+                timestamp: await this.getServerTime()
+            })
+
+            symbol!==undefined && params.append("symbol", symbol)
+
+            const response = await fetch( this.fullUrl("/openOrders")+"?"+this.sign(params), {
+                method: "GET",
+                headers: {
+                    "X-MBX-APIKEY": this.apiKey
+                }
+            } )
+         
             return response.json()
         }
     }
