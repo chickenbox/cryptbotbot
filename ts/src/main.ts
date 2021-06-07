@@ -1,7 +1,7 @@
 setTimeout( function(){
     new bot.Bot({
         homingAsset: "USDT",
-        interval: "30m",
+        interval: "1h",
         minHLRation: 1.1,
         apiKey: process.argv[2],
         apiSecure: process.argv[3]
