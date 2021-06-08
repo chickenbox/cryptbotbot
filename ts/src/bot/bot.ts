@@ -169,7 +169,7 @@ namespace bot {
             }))).filter(a=>a)
 
             const balances = await this.trader.getBalances()
-            for( let decision of decisions ){
+            await Promise.all(decisions.map( async decision=>{
                 switch(decision.action){
                 case "sell":
                     const quality = balances[decision.baseAsset] || 0
@@ -177,13 +177,13 @@ namespace bot {
                         await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
                     break
                 }
-            }
+            }))
 
             const toBuyCnt = decisions.reduce((a,b)=>a+(b.action=="buy"?1:0),0)
             const availableHomingAsset = (await this.trader.getBalances())[this.homingAsset] || 0
             const averageHomingAsset = availableHomingAsset/toBuyCnt
 
-            for( let decision of decisions ){
+            await Promise.all(decisions.map( async decision=>{
                 switch(decision.action){
                 case "buy":
                     const quality = averageHomingAsset/decision.price
@@ -191,7 +191,7 @@ namespace bot {
                         await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quality )
                     break
                 }
-            }
+            }))
 
             this.trader.printLog(log, this.homingAsset, currentPrices)
             log("=================================")
