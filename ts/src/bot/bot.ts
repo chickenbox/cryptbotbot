@@ -66,6 +66,7 @@ namespace bot {
         private minHLRation: number
         private smoothAmount: number
         private maxAllocation: number
+        private holdingBalance: number
         private trader = new trader.MockTrader()
         private recentPrices: {[key:string]: number} = function(){
             const s = localStorage.getItem(recentPricesLocalStorageKey)
@@ -124,6 +125,7 @@ namespace bot {
                 smoothAmount: number
                 maxAllocation: number
                 logLength: number
+                holdingBalance: number
                 apiKey: string
                 apiSecure: string
             }
@@ -134,6 +136,7 @@ namespace bot {
             this.minHLRation = config.minHLRation
             this.smoothAmount = config.smoothAmount
             this.maxAllocation = config.maxAllocation
+            this.holdingBalance = config.holdingBalance
             this.logger = new Logger(config.logLength)
         }
 
@@ -255,7 +258,7 @@ namespace bot {
             }))
 
             const toBuyCnt = decisions.reduce((a,b)=>a+(b.action=="buy"?1:0),0)
-            const availableHomingAsset = (await this.trader.getBalances())[this.homingAsset] || 0
+            const availableHomingAsset = Math.max(0,((await this.trader.getBalances())[this.homingAsset] || 0)-this.holdingBalance)
             const averageHomingAsset = availableHomingAsset*Math.min(this.maxAllocation, 1/toBuyCnt)
 
             await Promise.all(decisions.map( async decision=>{

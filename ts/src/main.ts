@@ -6,6 +6,7 @@ setTimeout( function(){
         smoothAmount: 5,
         maxAllocation: 1/3,
         logLength: 50000,
+        holdingBalance: 0,
         apiKey: process.argv[2],
         apiSecure: process.argv[3]
     })
