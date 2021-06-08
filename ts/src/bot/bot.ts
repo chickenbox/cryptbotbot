@@ -1,10 +1,52 @@
 namespace bot {
 
-    function log( message: any ){
-        if( typeof(message) == "string" ) {
-            console.log( message )
-        }else{
-            console.log( JSON.stringify( message, null, 2 ) )
+    class Logger {
+
+        constructor(
+            readonly logLength: number
+        ){
+
+        }
+
+        writeLog( message: any, tag: string ){
+
+            let logs: {
+                time: string
+                tag: string
+                message: any
+            }[] = []
+            const s = localStorage.getItem(logLocalStorageKey)
+            if( s )
+                logs = JSON.parse(s)
+
+            logs.push({
+                time: new Date().toString(),
+                tag: tag,
+                message: message
+            })
+
+            if( logs.length>this.logLength ){
+                logs = logs.slice(logs.length-this.logLength)
+            }
+
+            localStorage.setItem(logLocalStorageKey, JSON.stringify(logs,null,2))
+        }
+
+        log( message: any ){
+            if( typeof(message) == "string" ) {
+                console.log( message )
+
+                this.writeLog(message, "v")
+            }else{
+                console.log( JSON.stringify( message, null, 2 ) )
+
+                this.writeLog(message, "v")
+            }
+        }
+
+        error( e: Error ){
+            console.error(e)
+            this.writeLog( e,"e")
         }
     }
 
@@ -15,6 +57,7 @@ namespace bot {
     }
 
     const recentPricesLocalStorageKey = "Bot.recentPrices"
+    const logLocalStorageKey = "Bot.log"
 
     export class Bot {
         private binance: com.danborutori.cryptoApi.Binance
@@ -30,6 +73,7 @@ namespace bot {
 
             return {}
         }()
+        private logger: Logger
 
         private get timeInterval() {
             switch( this.interval ){
@@ -68,11 +112,12 @@ namespace bot {
 
         constructor(
             config: {
-                homingAsset: string,
-                interval: com.danborutori.cryptoApi.Interval,
+                homingAsset: string
+                interval: com.danborutori.cryptoApi.Interval
                 minHLRation: number
                 smoothAmount: number
-                apiKey: string,
+                logLength: number
+                apiKey: string
                 apiSecure: string
             }
         ){
@@ -81,19 +126,20 @@ namespace bot {
             this.interval = config.interval
             this.minHLRation = config.minHLRation
             this.smoothAmount = config.smoothAmount
+            this.logger = new Logger(config.logLength)
         }
 
         run(){
             try{
                 this.performTrade()
             }catch(e){
-                console.error(e)
+                this.logger.error(e)
             }
             setInterval(()=>{
                 try{
                     this.performTrade()
                 }catch(e){
-                    console.error(e)
+                    this.logger.error(e)
                 }
             }, this.timeInterval)
         }
@@ -154,16 +200,16 @@ namespace bot {
                     } as Decision
                 }
             }catch(e){
-                console.error(e)
+                this.logger.error(e)
             }
 
             return undefined
         }
 
         private async performTrade(){
-            log("=================================")
-            log(`Execution Log ${new Date()}`)
-            log("=================================")
+            this.logger.log("=================================")
+            this.logger.log(`Execution Log ${new Date()}`)
+            this.logger.log("=================================")
 
             const exchangeInfo = await this.binance.getExchangeInfo()
             
@@ -186,7 +232,9 @@ namespace bot {
                     if( quality>0 )
                         try{
                             await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
-                        }catch(e){console.error(e)}
+                        }catch(e){
+                            this.logger.error(e)
+                        }
                     break
                 }
             }))
@@ -202,7 +250,9 @@ namespace bot {
                     if( quality>0 )
                         try{
                             await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quality )
-                        }catch(e){console.error(e)}
+                        }catch(e){
+                            this.logger.error(e)
+                        }
                     break
                 }
             }))
@@ -210,7 +260,7 @@ namespace bot {
             this.saveRecentPrices()
 
             await this.logTrader()
-            log("=================================")
+            this.logger.log("=================================")
         }
 
         private saveRecentPrices(){
@@ -220,20 +270,20 @@ namespace bot {
         }
 
         async logTrader(){
-            log("*****")
-            log( "Log" )
-            log("*****")
+            this.logger.log("*****")
+            this.logger.log( "Log" )
+            this.logger.log("*****")
             for( let baseAsset in this.trader.history ){
-                log("======")
-                log(baseAsset)
+                this.logger.log("======")
+                this.logger.log(baseAsset)
                 const rs = this.trader.history[baseAsset]
                 for( let r of rs ){
-                    log( `${r.side} price: ${r.price} quantity: ${r.quantity} at ${r.time.toString()}` )
+                    this.logger.log( `${r.side} price: ${r.price} quantity: ${r.quantity} at ${r.time.toString()}` )
                 }
-                log("======")
+                this.logger.log("======")
             }
             const balances = await this.trader.getBalances()
-            log(`balance: ${JSON.stringify(balances, null, 2)}`)
+            this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
 
             let homingTotal = balances[this.homingAsset]
             for( let b in balances ){
@@ -243,8 +293,8 @@ namespace bot {
                 }
             }
 
-            log(`Total in ${this.homingAsset}: ${homingTotal}`)
-            log("*****")
+            this.logger.log(`Total in ${this.homingAsset}: ${homingTotal}`)
+            this.logger.log("*****")
         }
    }
 
