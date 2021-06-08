@@ -75,13 +75,13 @@ namespace bot {
             try{
                 this.performTrade()
             }catch(e){
-                log(e)
+                console.error(e)
             }
             setInterval(()=>{
                 try{
                     this.performTrade()
                 }catch(e){
-                    log(e)
+                    console.error(e)
                 }
             }, this.timeInterval)
         }
@@ -142,7 +142,7 @@ namespace bot {
                     } as Decision
                 }
             }catch(e){
-                // silent error
+                console.error(e)
             }
 
             return undefined
@@ -174,7 +174,9 @@ namespace bot {
                 case "sell":
                     const quality = balances[decision.baseAsset] || 0
                     if( quality>0 )
-                        await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
+                        try{
+                            await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
+                        }catch(e){console.error(e)}
                     break
                 }
             }))
@@ -188,7 +190,9 @@ namespace bot {
                 case "buy":
                     const quality = averageHomingAsset/decision.price
                     if( quality>0 )
-                        await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quality )
+                        try{
+                            await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quality )
+                        }catch(e){console.error(e)}
                     break
                 }
             }))
