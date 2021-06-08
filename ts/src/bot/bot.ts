@@ -19,7 +19,7 @@ namespace bot {
         private homingAsset: string
         private interval: com.danborutori.cryptoApi.Interval
         private minHLRation: number
-        private trader = new MockTrader()
+        private trader = new trader.MockTrader()
 
         private get timeInterval() {
             switch( this.interval ){
@@ -86,6 +86,68 @@ namespace bot {
             }, this.timeInterval)
         }
 
+        private async makeDecision( symbol: {baseAsset: string, symbol: string }, currentPrices: {[key: string]: number} ){
+            if( symbol.baseAsset==this.homingAsset ) return undefined
+
+            try{
+                const data = await this.binance.getKlineCandlestickData(
+                    symbol.symbol,
+                    this.interval)
+
+                const high = data.reduce((a,b)=>Math.max(a,b.high), Number.NEGATIVE_INFINITY)
+                const low = data.reduce((a,b)=>Math.min(a,b.low), Number.POSITIVE_INFINITY)
+
+                if( high/low <= this.minHLRation )
+                    return undefined
+
+                const trendWatcher = new helper.TrendWatcher(
+                    symbol.baseAsset,
+                    data.map(d=>{
+                        return {
+                            price: d.close,
+                            time: d.closeTime,
+                            open: d.openTime,
+                            close: d.closeTime
+                        }
+                    }),
+                    10,
+                    1
+                )
+
+                if( trendWatcher.data.length>2 ){
+
+                    const lastIdx = trendWatcher.data.length-1
+                    const secLastIdx = trendWatcher.data.length-2
+                    
+                    let valley = false
+                    let dropping = false
+                    let peak = false
+
+                    if( trendWatcher.dDataDt[secLastIdx]<0 && trendWatcher.dDataDt[lastIdx]>=0 ){
+                        valley = true
+                    }
+                    if( trendWatcher.dDataDt[secLastIdx]>0 && trendWatcher.dDataDt[lastIdx]<=0 ){
+                        peak = true
+                    }
+                    if( trendWatcher.dDataDt[lastIdx]<0 ){
+                        dropping = true
+                    }
+
+                    currentPrices[symbol.baseAsset] = data[data.length-1].close
+
+                    return {
+                        baseAsset: symbol.baseAsset,
+                        price: trendWatcher.data[lastIdx].price,
+                        action: valley ? "buy" : dropping || peak ? "sell" : "none"
+                    } as Decision
+                }
+            }catch(e){
+                // silent error
+            }
+
+            return undefined
+        }
+
         private async performTrade(){
             log("=================================")
             log(`Execution Log ${new Date()}`)
@@ -101,79 +163,32 @@ namespace bot {
 
             const currentPrices: {[key:string]: number} = {}
 
-            const decisions = (await Promise.all(symbols.map( async symbol => {
+            const decisions = (await Promise.all(symbols.map( symbol => {
 
-                if( symbol.baseAsset==this.homingAsset ) return undefined
-
-                try{
-                    const data = await this.binance.getKlineCandlestickData(
-                        symbol.symbol,
-                        this.interval)
-
-                    const high = data.reduce((a,b)=>Math.max(a,b.high), Number.NEGATIVE_INFINITY)
-                    const low = data.reduce((a,b)=>Math.min(a,b.low), Number.POSITIVE_INFINITY)
-
-                    if( high/low <= this.minHLRation )
-                        return undefined
-
-                    const trendWatcher = new helper.TrendWatcher(
-                        symbol.baseAsset,
-                        data.map(d=>{
-                            return {
-                                price: d.close,
-                                time: d.closeTime,
-                                open: d.openTime,
-                                close: d.closeTime
-                            }
-                        }),
-                        10,
-                        1
-                    )
-
-                    if( trendWatcher.data.length>2 ){
-
-                        const lastIdx = trendWatcher.data.length-1
-                        const secLastIdx = trendWatcher.data.length-2
-                        
-                        let valley = false
-                        let dropping = false
-                        let peak = false
-
-                        if( trendWatcher.dDataDt[secLastIdx]<0 && trendWatcher.dDataDt[lastIdx]>=0 ){
-                            valley = true
-                        }
-                        if( trendWatcher.dDataDt[secLastIdx]>0 && trendWatcher.dDataDt[lastIdx]<=0 ){
-                            peak = true
-                        }
-                        if( trendWatcher.dDataDt[lastIdx]<0 ){
-                            dropping = true
-                        }
-
-                        currentPrices[symbol.baseAsset] = data[data.length-1].close
-
-                        return {
-                            baseAsset: symbol.baseAsset,
-                            price: trendWatcher.data[lastIdx].price,
-                            action: valley ? "buy" : dropping || peak ? "sell" : "none"
-                        } as Decision
-                    }
-                }catch(e){
-                    // silent error
-                }
-
-                return undefined
+                return this.makeDecision(symbol, currentPrices)
             }))).filter(a=>a)
 
-            let toBuyCnt = decisions.reduce((a,b)=>a+(b.action=="buy"?1:0),0)
+            const balances = await this.trader.getBalances()
+            for( let decision of decisions ){
+                switch(decision.action){
+                case "sell":
+                    const quality = balances[decision.baseAsset] || 0
+                    if( quality>0 )
+                        await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
+                    break
+                }
+            }
+
+            const toBuyCnt = decisions.reduce((a,b)=>a+(b.action=="buy"?1:0),0)
+            const availableHomingAsset = (await this.trader.getBalances())[this.homingAsset] || 0
+            const averageHomingAsset = availableHomingAsset/toBuyCnt
 
             for( let decision of decisions ){
                 switch(decision.action){
                 case "buy":
-                    this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, 1/toBuyCnt )
-                    toBuyCnt--
-                    break
-                case "sell":
-                    this.trader.sell(decision.baseAsset, this.homingAsset, decision.price )
+                    const quality = averageHomingAsset/decision.price
+                    if( quality>0 )
+                        await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quality )
                     break
                 }
             }
@@ -181,7 +196,6 @@ namespace bot {
             this.trader.printLog(log, this.homingAsset, currentPrices)
             log("=================================")
         }
-
-    }
+   }
 
 }
