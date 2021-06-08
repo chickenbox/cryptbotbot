@@ -26,7 +26,7 @@ namespace bot { export namespace trader {
         }
 
         async sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
-            await this._buy( quoteAsset, baseAsset, quantity/closePrice, 1)
+            await this._buy( quoteAsset, baseAsset, quantity/closePrice, quantity/closePrice)
             super.sell(baseAsset,quoteAsset,closePrice,quantity)
         }
     }
