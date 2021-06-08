@@ -74,6 +74,7 @@ namespace bot {
             return {}
         }()
         private logger: Logger
+        intent: "normal" | "home" = "normal"
 
         get log(){
             return localStorage.getItem(logLocalStorageKey)
@@ -197,10 +198,17 @@ namespace bot {
 
                     this.recentPrices[symbol.baseAsset] = data[data.length-1].close
 
+                    let action: string
+
+                    if( this.intent=="home" )
+                        action = "sell"
+                    else
+                        action = valley ? "buy" : dropping || peak ? "sell" : "none"
+
                     return {
                         baseAsset: symbol.baseAsset,
                         price: trendWatcher.data[lastIdx].price,
-                        action: valley ? "buy" : dropping || peak ? "sell" : "none"
+                        action: action
                     } as Decision
                 }
             }catch(e){
