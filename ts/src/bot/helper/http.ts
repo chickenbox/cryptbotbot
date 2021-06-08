@@ -23,7 +23,7 @@ namespace bot { export namespace helper {
 
         private server: HttpServer
 
-        constructor( port: number ){
+        constructor( readonly bot: bot.Bot, port: number ){
             this.server = http.createServer((request, response)=>{
 
                 let data = ""
@@ -44,11 +44,36 @@ namespace bot { export namespace helper {
             const path = t[0]
             const queryString = t[1]
 
+            switch( path ){
+            case "/showLog":
+                this.showLog( response )
+                break
+            default:
+                this.showUsage( response )
+                break
+            }
+        }
+
+        private showLog( response: HttpResponse ){
             response.writeHead(200, { "Content-Type": "text/html" })
-            response.end(`Hello World<br/>
-            path: ${path}<br/>
-            queryString: ${queryString}<br/>
-            data: ${data}`)
+            response.end(`<html>
+            <body>
+            Log:<br/>
+            <textarea style="width: 100%; height: 100%;">
+            ${this.bot.log}
+            </textarea>
+            </body>
+            </html>`)            
+        }
+
+        private showUsage( response: HttpResponse ){
+            response.writeHead(200, { "Content-Type": "text/html" })
+            response.end(`<html>
+            <body>
+            Path:<br/>
+            /showLog to print log<br/>
+            </body>
+            </html>`)
         }
 
     }

@@ -75,6 +75,10 @@ namespace bot {
         }()
         private logger: Logger
 
+        get log(){
+            return localStorage.getItem(logLocalStorageKey)
+        }
+
         private get timeInterval() {
             switch( this.interval ){
             case "1m":

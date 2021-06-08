@@ -1,7 +1,5 @@
-setTimeout( function(){
-    const httpHelper = new bot.helper.HttpHelper(3333)
-    
-    new bot.Bot({
+setTimeout( function(){    
+    const b = new bot.Bot({
         homingAsset: "USDT",
         interval: "3m",
         minHLRation: 1.1,
@@ -9,6 +7,8 @@ setTimeout( function(){
         logLength: 50000,
         apiKey: process.argv[2],
         apiSecure: process.argv[3]
-    }).run()
+    })
+    const httpHelper = new bot.helper.HttpHelper(b,3333)
+    b.run()
 }, 1)
 
