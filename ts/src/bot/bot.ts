@@ -2,34 +2,41 @@ namespace bot {
 
     class Logger {
 
+        private logs: {
+            time: string
+            tag: string
+            message: any
+        }[] = []
+        private timeout: number
+
         constructor(
             readonly logLength: number
         ){
-
+            const s = localStorage.getItem(logLocalStorageKey)
+            if( s )
+                this.logs = JSON.parse(s)
         }
 
         writeLog( message: any, tag: string ){
 
-            let logs: {
-                time: string
-                tag: string
-                message: any
-            }[] = []
-            const s = localStorage.getItem(logLocalStorageKey)
-            if( s )
-                logs = JSON.parse(s)
-
-            logs.push({
+            this.logs.push({
                 time: new Date().toString(),
                 tag: tag,
                 message: message
             })
 
-            if( logs.length>this.logLength ){
-                logs = logs.slice(logs.length-this.logLength)
+            if( this.logs.length>this.logLength ){
+                this.logs = this.logs.slice(this.logs.length-this.logLength)
             }
 
-            localStorage.setItem(logLocalStorageKey, JSON.stringify(logs,null,2))
+            if(this.timeout){
+                clearTimeout( this.timeout)
+                this.timeout = undefined
+            }
+
+            this.timeout = setTimeout(()=>{
+                localStorage.setItem(logLocalStorageKey, JSON.stringify(this.logs,null,2))
+            }, 10)
         }
 
         log( message: any ){
