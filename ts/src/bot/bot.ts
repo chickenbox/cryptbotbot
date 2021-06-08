@@ -197,8 +197,36 @@ namespace bot {
                 }
             }))
 
-            this.trader.printLog(log, this.homingAsset, currentPrices)
+            await this.logTrader(currentPrices)
             log("=================================")
+        }
+
+        async logTrader( currentPrices: {[key: string]: number}){
+            log("*****")
+            log( "Log" )
+            log("*****")
+            for( let baseAsset in this.trader.history ){
+                log("======")
+                log(baseAsset)
+                const rs = this.trader.history[baseAsset]
+                for( let r of rs ){
+                    log( `${r.side} price: ${r.price} quantity: ${r.quantity} at ${r.time.toString()}` )
+                }
+                log("======")
+            }
+            const balances = await this.trader.getBalances()
+            log(`balance: ${JSON.stringify(balances, null, 2)}`)
+
+            let homingTotal = balances[this.homingAsset]
+            for( let b in balances ){
+                let currentPrice = currentPrices[b]
+                if( currentPrice!==undefined ){
+                    homingTotal += balances[b]*currentPrice
+                }
+            }
+
+            log(`Total in ${this.homingAsset}: ${homingTotal}`)
+            log("*****")
         }
    }
 
