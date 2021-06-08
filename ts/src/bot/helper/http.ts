@@ -55,15 +55,8 @@ namespace bot { export namespace helper {
         }
 
         private showLog( response: HttpResponse ){
-            response.writeHead(200, { "Content-Type": "text/html" })
-            response.end(`<html>
-            <body>
-            Log:<br/>
-            <textarea style="width: 100%; height: 100%;">
-            ${this.bot.log}
-            </textarea>
-            </body>
-            </html>`)            
+            response.writeHead(200, { "Content-Type": "application/json" })
+            response.end(this.bot.log)
         }
 
         private showUsage( response: HttpResponse ){
