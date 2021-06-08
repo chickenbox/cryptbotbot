@@ -1,8 +1,6 @@
 namespace bot { export namespace helper {
 
     const brain = require("brain.js")
-    const LocalStorage = require("node-localstorage").LocalStorage
-    const localStorage = new LocalStorage('./scratch')
 
     export class Brain {
         constructor(

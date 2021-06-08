@@ -14,6 +14,8 @@ namespace bot {
         action: "buy" | "sell" | "none"
     }
 
+    const recentPricesLocalStorageKey = "Bot.recentPrices"
+
     export class Bot {
         private binance: com.danborutori.cryptoApi.Binance
         private homingAsset: string
@@ -21,7 +23,13 @@ namespace bot {
         private minHLRation: number
         private smoothAmount: number
         private trader = new trader.MockTrader()
-        private recentPrices: {[key:string]: number} = {}
+        private recentPrices: {[key:string]: number} = function(){
+            const s = localStorage.getItem(recentPricesLocalStorageKey)
+            if( s )
+                return JSON.parse(s)
+
+            return {}
+        }()
 
         private get timeInterval() {
             switch( this.interval ){
@@ -199,8 +207,16 @@ namespace bot {
                 }
             }))
 
+            this.saveRecentPrices()
+
             await this.logTrader()
             log("=================================")
+        }
+
+        private saveRecentPrices(){
+
+            localStorage.setItem( recentPricesLocalStorageKey, JSON.stringify( this.recentPrices ) )
+
         }
 
         async logTrader(){

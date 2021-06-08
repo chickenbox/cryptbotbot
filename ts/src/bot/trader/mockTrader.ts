@@ -7,8 +7,18 @@ namespace bot { export namespace trader {
         quantity: number
     }
 
+    const balancesLocalStorageKey = "MockTrader.balances"
+
     export class MockTrader extends Trader {
-        private balances: {[key: string]: number} = {USDT: 100}
+        private balances: {[key: string]: number} = function(){
+
+            const s = localStorage.getItem(balancesLocalStorageKey)
+            if( s ){
+                return JSON.parse(s)
+            }
+
+            return {USDT: 100}
+        }()
 
         async getBalances(){
             return this.balances
@@ -17,6 +27,7 @@ namespace bot { export namespace trader {
         async buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)+quantity
             this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)-quantity*closePrice
+            this.saveBalances()
 
             super.buy(baseAsset,quoteAsset,closePrice,quantity)
         }
@@ -24,8 +35,13 @@ namespace bot { export namespace trader {
         async sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)-quantity
             this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)+quantity*closePrice
+            this.saveBalances()
 
             super.sell(baseAsset,quoteAsset,closePrice,quantity)
+        }
+
+        private saveBalances(){
+            localStorage.setItem(balancesLocalStorageKey, JSON.stringify(this.balances))
         }
     }
 
