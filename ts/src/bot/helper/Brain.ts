@@ -43,7 +43,7 @@ namespace bot { export namespace helper {
                     keepNetworkIntact = true
                 }
 
-                await net.trainAsync(trainingData)
+                net.train(trainingData)
     
                 const r = net.run( data.slice( -lookback ) )
                 const forecast = new Array<number>(predict);

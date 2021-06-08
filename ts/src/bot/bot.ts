@@ -65,6 +65,7 @@ namespace bot {
         private interval: com.danborutori.cryptoApi.Interval
         private minHLRation: number
         private smoothAmount: number
+        private maxAllocation: number
         private trader = new trader.MockTrader()
         private recentPrices: {[key:string]: number} = function(){
             const s = localStorage.getItem(recentPricesLocalStorageKey)
@@ -121,6 +122,7 @@ namespace bot {
                 interval: com.danborutori.cryptoApi.Interval
                 minHLRation: number
                 smoothAmount: number
+                maxAllocation: number
                 logLength: number
                 apiKey: string
                 apiSecure: string
@@ -131,15 +133,16 @@ namespace bot {
             this.interval = config.interval
             this.minHLRation = config.minHLRation
             this.smoothAmount = config.smoothAmount
+            this.maxAllocation = config.maxAllocation
             this.logger = new Logger(config.logLength)
         }
 
         run(){
-            try{
+            // try{
                 this.performTrade()
-            }catch(e){
-                this.logger.error(e)
-            }
+            // }catch(e){
+            //     this.logger.error(e)
+            // }
             setInterval(()=>{
                 try{
                     this.performTrade()
@@ -253,7 +256,7 @@ namespace bot {
 
             const toBuyCnt = decisions.reduce((a,b)=>a+(b.action=="buy"?1:0),0)
             const availableHomingAsset = (await this.trader.getBalances())[this.homingAsset] || 0
-            const averageHomingAsset = availableHomingAsset/toBuyCnt
+            const averageHomingAsset = availableHomingAsset*Math.min(this.maxAllocation, 1/toBuyCnt)
 
             await Promise.all(decisions.map( async decision=>{
                 switch(decision.action){

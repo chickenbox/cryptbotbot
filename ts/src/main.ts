@@ -4,6 +4,7 @@ setTimeout( function(){
         interval: "30m",
         minHLRation: 1.1,
         smoothAmount: 5,
+        maxAllocation: 1/3,
         logLength: 50000,
         apiKey: process.argv[2],
         apiSecure: process.argv[3]
