@@ -52,11 +52,11 @@ namespace bot { export namespace helper {
 
     }
 
-    function smoothData( baseAsset: string, data: DataEntry[], iteration: number ){
+    async function smoothData( baseAsset: string, data: DataEntry[], iteration: number ){
 
         let smoothedData = Array.from(data)
 
-        const extentedTail = new Brain( baseAsset ).predict(smoothedData.map(a=>a.price), 5, 5)
+        const extentedTail = await new Brain( baseAsset, iteration, iteration ).predict(smoothedData.map(a=>a.price), iteration, iteration)
         extentedTail.forEach( d=>{
             smoothedData.push({
                 price: d,
@@ -134,12 +134,6 @@ namespace bot { export namespace helper {
             return this.data.reduce((a,b)=>Math.min(a,b.price), Number.MAX_VALUE)
         }
 
-        get lastProjectedPrice(){
-            const high = this.high
-            const low = this.low
-            return this.normalized.smoothedData.last.price*(high-low)+low
-        }
-
         private _downSampling: number
         get downSampling(){
             return this._downSampling
@@ -151,7 +145,20 @@ namespace bot { export namespace helper {
             }
         }
 
-        constructor(
+        static async create(
+            baseAsset: string,
+            data: DataEntry[],
+            smoothItr: number = 0,
+            downSample: number
+        ){
+            const t = new TrendWatcher(baseAsset, data, smoothItr, downSample)
+
+            await t.resampling()
+
+            return t
+        }
+
+        private constructor(
             readonly baseAsset: string,
             data: DataEntry[],
             readonly smoothItr: number = 0,
@@ -159,16 +166,15 @@ namespace bot { export namespace helper {
         ){
             this._downSampling = downSample
             this._rawData = data
-            this.resampling()
         }
 
-        private resampling(){
+        private async resampling(){
             const data = downSample(this._rawData, this._downSampling)
             this.data = data
             const normalizedData = normalizeData(data)
             this.normalized = {
                 data: normalizedData,
-                smoothedData: smoothData( this.baseAsset, normalizedData, this.smoothItr )
+                smoothedData: await smoothData( this.baseAsset, normalizedData, this.smoothItr )
             }
 
             this.dDataDt = dDataDT(this.normalized.smoothedData.map(d=>d.price))

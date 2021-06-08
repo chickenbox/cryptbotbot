@@ -19,6 +19,7 @@ namespace bot {
         private homingAsset: string
         private interval: com.danborutori.cryptoApi.Interval
         private minHLRation: number
+        private smoothAmount: number
         private trader = new trader.MockTrader()
 
         private get timeInterval() {
@@ -61,6 +62,7 @@ namespace bot {
                 homingAsset: string,
                 interval: com.danborutori.cryptoApi.Interval,
                 minHLRation: number
+                smoothAmount: number
                 apiKey: string,
                 apiSecure: string
             }
@@ -69,6 +71,7 @@ namespace bot {
             this.homingAsset = config.homingAsset
             this.interval = config.interval
             this.minHLRation = config.minHLRation
+            this.smoothAmount = config.smoothAmount
         }
 
         run(){
@@ -100,7 +103,7 @@ namespace bot {
                 if( high/low <= this.minHLRation )
                     return undefined
 
-                const trendWatcher = new helper.TrendWatcher(
+                const trendWatcher = await helper.TrendWatcher.create(
                     symbol.baseAsset,
                     data.map(d=>{
                         return {
@@ -110,7 +113,7 @@ namespace bot {
                             close: d.closeTime
                         }
                     }),
-                    10,
+                    this.smoothAmount,
                     1
                 )
 

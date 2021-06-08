@@ -2,19 +2,20 @@ namespace bot { export namespace helper {
 
     const brain = require("brain.js")
     const LocalStorage = require("node-localstorage").LocalStorage
-    localStorage = new LocalStorage('./scratch')
+    const localStorage = new LocalStorage('./scratch')
 
     export class Brain {
-        constructor( readonly baseAsset: string ) {
+        constructor(
+            readonly baseAsset: string,
+            readonly sampleLimit,
+            readonly minimumSample,
+        ) {
 
         }
 
-        predict( data: number[], lookback: number, predict: number ){
-            const sampleLimit = 5
-            const minimumSample = 5
-    
-            if( data.length>sampleLimit+predict+lookback ) { // limit data size
-                data = data.slice(-sampleLimit-predict-lookback)
+        async predict( data: number[], lookback: number, predict: number ){
+            if( data.length>this.sampleLimit+predict+lookback ) { // limit data size
+                data = data.slice(-this.sampleLimit-predict-lookback)
             }
     
             const trainingDataLen = data.length-predict-lookback
@@ -24,7 +25,7 @@ namespace bot { export namespace helper {
             const range = max-min
             data = data.map( a=>(a-min)/range )
     
-            if( trainingDataLen>=minimumSample ){
+            if( trainingDataLen>=this.minimumSample ){
     
                 const trainingData: NeuralNetworkTrainData[] = new Array(trainingDataLen)
                 for( let i=0; i<trainingDataLen; i++ ){
@@ -44,7 +45,7 @@ namespace bot { export namespace helper {
                     keepNetworkIntact = true
                 }
 
-                net.train(trainingData)
+                await net.trainAsync(trainingData)
     
                 const r = net.run( data.slice( -lookback ) )
                 const forecast = new Array<number>(predict);
