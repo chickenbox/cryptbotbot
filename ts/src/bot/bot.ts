@@ -21,6 +21,7 @@ namespace bot {
         private minHLRation: number
         private smoothAmount: number
         private trader = new trader.MockTrader()
+        private recentPrices: {[key:string]: number} = {}
 
         private get timeInterval() {
             switch( this.interval ){
@@ -89,7 +90,7 @@ namespace bot {
             }, this.timeInterval)
         }
 
-        private async makeDecision( symbol: {baseAsset: string, symbol: string }, currentPrices: {[key: string]: number} ){
+        private async makeDecision( symbol: {baseAsset: string, symbol: string }){
             if( symbol.baseAsset==this.homingAsset ) return undefined
 
             try{
@@ -136,7 +137,7 @@ namespace bot {
                         dropping = true
                     }
 
-                    currentPrices[symbol.baseAsset] = data[data.length-1].close
+                    this.recentPrices[symbol.baseAsset] = data[data.length-1].close
 
                     return {
                         baseAsset: symbol.baseAsset,
@@ -164,11 +165,9 @@ namespace bot {
                         !(s.baseAsset.endsWith("DOWN") || s.baseAsset.endsWith("UP"))
             })
 
-            const currentPrices: {[key:string]: number} = {}
-
             const decisions = (await Promise.all(symbols.map( symbol => {
 
-                return this.makeDecision(symbol, currentPrices)
+                return this.makeDecision(symbol)
             }))).filter(a=>a)
 
             const balances = await this.trader.getBalances()
@@ -200,11 +199,11 @@ namespace bot {
                 }
             }))
 
-            await this.logTrader(currentPrices)
+            await this.logTrader()
             log("=================================")
         }
 
-        async logTrader( currentPrices: {[key: string]: number}){
+        async logTrader(){
             log("*****")
             log( "Log" )
             log("*****")
@@ -222,7 +221,7 @@ namespace bot {
 
             let homingTotal = balances[this.homingAsset]
             for( let b in balances ){
-                let currentPrice = currentPrices[b]
+                let currentPrice = this.recentPrices[b]
                 if( currentPrice!==undefined ){
                     homingTotal += balances[b]*currentPrice
                 }
