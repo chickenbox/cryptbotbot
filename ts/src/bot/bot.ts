@@ -83,7 +83,11 @@ namespace bot {
             return {}
         }()
         private logger: Logger
-        intent: "normal" | "home" = "normal"
+        
+        readonly allow = {
+            buy: true,
+            sell: true
+        }
 
         get log(){
             return localStorage.getItem(logLocalStorageKey)
@@ -211,12 +215,16 @@ namespace bot {
 
                     this.recentPrices[symbol.baseAsset] = data[data.length-1].close
 
-                    let action: string
+                    let action = "none"
 
-                    if( this.intent=="home" )
-                        action = "sell"
-                    else
-                        action = valley ? "buy" : dropping || peak ? "sell" : "none"
+                    if( valley ){
+                        if( this.allow.buy)
+                            action = "buy"
+                    }else{
+                        if( dropping || peak )
+                            if( this.allow.sell)
+                                action = "sell"
+                    }
 
                     return {
                         baseAsset: symbol.baseAsset,
