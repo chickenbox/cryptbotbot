@@ -48,11 +48,11 @@ namespace bot { export namespace helper {
             case "/showLog":
                 this.showLog( response )
                 break
-            case "/home":
-                this.homing( response )
+            case "/goHome":
+                this.goHome( response )
                 break
-            case "/outGoing":
-                this.outGoing( response )
+            case "/goOut":
+                this.goOut( response )
                 break
             default:
                 this.showUsage( response )
@@ -65,28 +65,43 @@ namespace bot { export namespace helper {
             response.end(this.bot.log)
         }
 
-        private homing( response: HttpResponse ){
-            // TODO:
+        private goHome( response: HttpResponse ){
+            this.bot.allow.buy = false
+            this.bot.allow.sell = true
+
+            response.writeHead(200, { "Content-Type": "application/json" })
+            response.end("{\"success\":true}}")
         }
 
-        private outGoing( response: HttpResponse ){
-            // TODO:
+        private goOut( response: HttpResponse ){
+            this.bot.allow.buy = true
+            this.bot.allow.sell = true
+
+            response.writeHead(200, { "Content-Type": "application/json" })
+            response.end("{\"success\":true}}")
         }
 
         private showUsage( response: HttpResponse ){
             response.writeHead(200, { "Content-Type": "text/html" })
             response.end(`<html>
             <body>
+            Status:<br/>
+            <table>
+            <tr>
+            <td>allow</td><td>${JSON.stringify(this.bot.allow, null, 2)}</td>
+            </tr>
+            </table><br/>
+            <br/>
             Path:<br/>
             <table>
             <tr>
-            <td>/showLog</td><td>to print log</td>
+            <td><a href="/showLog">/showLog</a></td><td>to print log</td>
             </tr>
             <tr>
-            <td>/home</td><td>force all access to homing asset</td>
+            <td><a href="/goHome">/goHome</a></td><td>force all access to homing asset</td>
             </tr>
             <tr>
-            <td>/outGoing</td><td>free all homing asset</td>
+            <td><a href="/goOut">/goOut</a></td><td>Normal Trace</td>
             </tr>
             </table>
             </body>
