@@ -82,6 +82,7 @@ namespace bot {
         private smoothAmount: number
         private maxAllocation: number
         private holdingBalance: number
+        private minimumOrderQuantity: number // in homingAsset
         private trader = new trader.MockTrader()
         private recentPrices: {[key:string]: number} = function(){
             const s = localStorage.getItem(recentPricesLocalStorageKey)
@@ -157,6 +158,7 @@ namespace bot {
                 maxAllocation: number
                 logLength: number
                 holdingBalance: number
+                minimumOrderQuantity: number
                 apiKey: string
                 apiSecure: string
             }
@@ -168,6 +170,7 @@ namespace bot {
             this.smoothAmount = config.smoothAmount
             this.maxAllocation = config.maxAllocation
             this.holdingBalance = config.holdingBalance
+            this.minimumOrderQuantity = config.minimumOrderQuantity
             this.logger = new Logger(config.logLength)
         }
 
@@ -311,12 +314,13 @@ namespace bot {
                     let quantity = averageHomingAsset/decision.price
 
                     const newAmount = (balances[decision.baseAsset]+quantity)*decision.price
+                    const minQuantity = this.minimumOrderQuantity/decision.price
 
                     if( newAmount>maxAllocation ){
                         quantity -= (newAmount-maxAllocation)/decision.price
                     }
 
-                    if( quantity>0 )
+                    if( quantity>minQuantity )
                         try{
                             await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
                             await sleep(0.1)
