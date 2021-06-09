@@ -128,6 +128,18 @@ namespace bot {
             }
         }
 
+        private getHomingTotal( balances: {[key:string]:number} ){
+            let homingTotal = balances[this.homingAsset]
+            for( let b in balances ){
+                let currentPrice = this.recentPrices[b]
+                if( currentPrice!==undefined ){
+                    homingTotal += balances[b]*currentPrice
+                }        
+            }
+            return homingTotal
+        }
+
+
         constructor(
             config: {
                 homingAsset: string
@@ -278,9 +290,10 @@ namespace bot {
                 }
             }))
 
+            const homingTotal = this.getHomingTotal(balances)
             const toBuyCnt = decisions.reduce((a,b)=>a+(b.action=="buy"?1:0),0)
             const availableHomingAsset = Math.max(0,((await this.trader.getBalances())[this.homingAsset] || 0)-this.holdingBalance)
-            const averageHomingAsset = availableHomingAsset*Math.min(this.maxAllocation, 1/toBuyCnt)
+            const averageHomingAsset = Math.min(availableHomingAsset/toBuyCnt, (homingTotal-this.holdingBalance)*this.maxAllocation)
 
             await Promise.all(decisions.map( async decision=>{
                 switch(decision.action){
@@ -324,13 +337,7 @@ namespace bot {
             const balances = await this.trader.getBalances()
             this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
 
-            let homingTotal = balances[this.homingAsset]
-            for( let b in balances ){
-                let currentPrice = this.recentPrices[b]
-                if( currentPrice!==undefined ){
-                    homingTotal += balances[b]*currentPrice
-                }
-            }
+            const homingTotal = this.getHomingTotal(balances)
 
             this.logger.log(`Total in ${this.homingAsset}: ${homingTotal}`)
             this.logger.log("*****")
