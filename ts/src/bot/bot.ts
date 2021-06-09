@@ -293,15 +293,23 @@ namespace bot {
             const homingTotal = this.getHomingTotal(balances)
             const toBuyCnt = decisions.reduce((a,b)=>a+(b.action=="buy"?1:0),0)
             const availableHomingAsset = Math.max(0,((await this.trader.getBalances())[this.homingAsset] || 0)-this.holdingBalance)
-            const averageHomingAsset = Math.min(availableHomingAsset/toBuyCnt, (homingTotal-this.holdingBalance)*this.maxAllocation)
+            const maxAllocation = (homingTotal-this.holdingBalance)*this.maxAllocation
+            const averageHomingAsset = Math.min(availableHomingAsset/toBuyCnt, maxAllocation)
 
             await Promise.all(decisions.map( async decision=>{
                 switch(decision.action){
                 case "buy":
-                    const quality = averageHomingAsset/decision.price
-                    if( quality>0 )
+                    let quantity = averageHomingAsset/decision.price
+
+                    const newAmount = (balances[decision.baseAsset]+quantity)*decision.price
+
+                    if( newAmount>maxAllocation ){
+                        quantity -= (newAmount-maxAllocation)/decision.price
+                    }
+
+                    if( quantity>0 )
                         try{
-                            await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quality )
+                            await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
                         }catch(e){
                             this.logger.error(e)
                         }
