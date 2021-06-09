@@ -1,5 +1,13 @@
 namespace bot {
 
+    function sleep( second: number ){
+        return new Promise<void>( (resolve, reject)=>{
+            setTimeout(function(){
+                resolve()
+            }, second*1000)
+        })
+    }
+
     class Logger {
 
         private logs: {
@@ -276,19 +284,20 @@ namespace bot {
             }))).filter(a=>a)
 
             const balances = await this.trader.getBalances()
-            await Promise.all(decisions.map( async decision=>{
+            for( let decision of decisions){
                 switch(decision.action){
                 case "sell":
                     const quality = balances[decision.baseAsset] || 0
                     if( quality>0 )
                         try{
                             await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
+                            await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
                         }
                     break
                 }
-            }))
+            }
 
             const homingTotal = this.getHomingTotal(balances)
             const toBuyCnt = decisions.reduce((a,b)=>a+(b.action=="buy"?1:0),0)
@@ -296,7 +305,7 @@ namespace bot {
             const maxAllocation = (homingTotal-this.holdingBalance)*this.maxAllocation
             const averageHomingAsset = Math.min(availableHomingAsset/toBuyCnt, maxAllocation)
 
-            await Promise.all(decisions.map( async decision=>{
+            for( let decision of decisions ){
                 switch(decision.action){
                 case "buy":
                     let quantity = averageHomingAsset/decision.price
@@ -310,12 +319,13 @@ namespace bot {
                     if( quantity>0 )
                         try{
                             await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                            await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
                         }
                     break
                 }
-            }))
+            }
 
             this.saveRecentPrices()
 

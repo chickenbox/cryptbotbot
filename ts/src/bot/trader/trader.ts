@@ -1,5 +1,7 @@
 namespace bot { export namespace trader {
 
+    const recordLimit = 100
+
     export abstract class Trader {
         readonly history: {[symbol:string]:{
             price: number
@@ -19,6 +21,8 @@ namespace bot { export namespace trader {
                 side: "buy",
                 time: new Date()
             })
+            if(h.length>recordLimit)
+                this.history[symbol] = h.slice(h.length-recordLimit)
         }
 
         async sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
@@ -30,6 +34,8 @@ namespace bot { export namespace trader {
                 side: "sell",
                 time: new Date()
             })
+            if(h.length>recordLimit)
+                this.history[symbol] = h.slice(h.length-recordLimit)
         }
     }
 
