@@ -152,11 +152,11 @@ namespace bot {
         }
 
         run(){
-            // try{
+            try{
                 this.performTrade()
-            // }catch(e){
-            //     this.logger.error(e)
-            // }
+            }catch(e){
+                this.logger.error(e)
+            }
             setInterval(()=>{
                 try{
                     this.performTrade()
