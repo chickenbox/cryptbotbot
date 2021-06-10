@@ -104,7 +104,7 @@ namespace bot {
             return localStorage.getItem(logLocalStorageKey)
         }
 
-        private get timeInterval() {
+        get timeInterval() {
             switch( this.interval ){
             case "1m":
                 return 1000*60
