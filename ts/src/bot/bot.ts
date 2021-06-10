@@ -84,7 +84,7 @@ namespace bot {
         private holdingBalance: number
         private minimumOrderQuantity: number // in homingAsset
         private trader = new trader.MockTrader()
-        private tradeHistory = new trader.History()
+        readonly tradeHistory = new trader.History()
         private recentPrices: {[key:string]: number} = function(){
             const s = localStorage.getItem(recentPricesLocalStorageKey)
             if( s )
@@ -92,6 +92,7 @@ namespace bot {
 
             return {}
         }()
+        readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
         private logger: Logger
         
         readonly allow = {
@@ -217,6 +218,8 @@ namespace bot {
                     this.smoothAmount,
                     1
                 )
+
+                this.trendWatchers[symbol.baseAsset] = trendWatcher
 
                 if( trendWatcher.data.length>2 ){
 

@@ -104,6 +104,7 @@ namespace bot { export namespace helper {
             <td><a href="/goOut">/goOut</a></td><td>Normal Trace</td>
             </tr>
             </table>
+            ${new graph.Drawer(this.bot).html}
             </body>
             </html>`)
         }

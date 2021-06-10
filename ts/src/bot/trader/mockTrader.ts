@@ -1,12 +1,5 @@
 namespace bot { export namespace trader {
 
-    interface Record {
-        time: Date
-        action: "buy" | "sell"
-        price: number
-        quantity: number
-    }
-
     const balancesLocalStorageKey = "MockTrader.balances"
 
     export class MockTrader extends Trader {
