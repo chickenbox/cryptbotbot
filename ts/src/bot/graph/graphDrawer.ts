@@ -134,7 +134,7 @@ namespace bot { export namespace graph {
                     </td>
                     </tr>
                     `
-                }).join()
+                }).join("")
             }
             </table>
             `
