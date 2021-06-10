@@ -91,7 +91,7 @@ namespace bot { export namespace graph {
             for( let baseAsset in this.bot.trendWatchers ){
                 const trendWatcher = this.bot.trendWatchers[baseAsset]
 
-                const history = this.bot.tradeHistory.history[baseAsset]
+                const history = this.bot.tradeHistory.history[`${baseAsset}${this.bot.homingAsset}`]
 
                 assets.push({
                     asset: baseAsset,

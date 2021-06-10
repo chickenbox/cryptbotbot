@@ -76,7 +76,7 @@ namespace bot {
 
     export class Bot {
         private binance: com.danborutori.cryptoApi.Binance
-        private homingAsset: string
+        readonly homingAsset: string
         private interval: com.danborutori.cryptoApi.Interval
         private minHLRation: number
         private smoothAmount: number
@@ -197,7 +197,14 @@ namespace bot {
             try{
                 const data = await this.binance.getKlineCandlestickData(
                     symbol.symbol,
-                    this.interval)
+                    this.interval,
+                    {
+                        startTime: Date.now()-1000*60*60*24*2,
+                        endTime: Date.now()
+                    })
+
+                if( data.length<10 )
+                    return undefined
 
                 const high = data.reduce((a,b)=>Math.max(a,b.high), Number.NEGATIVE_INFINITY)
                 const low = data.reduce((a,b)=>Math.min(a,b.low), Number.POSITIVE_INFINITY)
