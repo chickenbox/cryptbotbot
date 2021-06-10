@@ -84,6 +84,7 @@ namespace bot {
         private holdingBalance: number
         private minimumOrderQuantity: number // in homingAsset
         private trader = new trader.MockTrader()
+        private tradeHistory = new trader.History()
         private recentPrices: {[key:string]: number} = function(){
             const s = localStorage.getItem(recentPricesLocalStorageKey)
             if( s )
@@ -294,6 +295,7 @@ namespace bot {
                     if( quality>0 )
                         try{
                             await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
+                            this.tradeHistory.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
                             await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
@@ -323,6 +325,7 @@ namespace bot {
                     if( quantity>minQuantity )
                         try{
                             await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                            this.tradeHistory.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
                             await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
@@ -347,10 +350,10 @@ namespace bot {
             this.logger.log("*****")
             this.logger.log( "Log" )
             this.logger.log("*****")
-            for( let baseAsset in this.trader.history ){
+            for( let baseAsset in this.tradeHistory.history ){
                 this.logger.log("======")
                 this.logger.log(baseAsset)
-                const rs = this.trader.history[baseAsset]
+                const rs = this.tradeHistory.history[baseAsset]
                 for( let r of rs ){
                     this.logger.log( `${r.side} price: ${r.price} quantity: ${r.quantity} at ${r.time.toString()}` )
                 }

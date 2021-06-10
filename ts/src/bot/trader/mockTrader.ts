@@ -28,16 +28,12 @@ namespace bot { export namespace trader {
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)+quantity
             this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)-quantity*closePrice
             this.saveBalances()
-
-            super.buy(baseAsset,quoteAsset,closePrice,quantity)
         }
 
         async sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)-quantity
             this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)+quantity*closePrice
             this.saveBalances()
-
-            super.sell(baseAsset,quoteAsset,closePrice,quantity)
         }
 
         private saveBalances(){

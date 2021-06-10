@@ -17,12 +17,10 @@ namespace bot { export namespace trader {
 
         async buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ) {
             await this.binance.newOrder( `${baseAsset}${quoteAsset}`, "BUY", undefined, quantity*closePrice )
-            super.buy(baseAsset,quoteAsset,closePrice,quantity)
         }
 
         async sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ) {
             await this.binance.newOrder( `${baseAsset}${quoteAsset}`, "SELL", quantity )
-            super.sell(baseAsset,quoteAsset,closePrice,quantity)
         }
     }
 
