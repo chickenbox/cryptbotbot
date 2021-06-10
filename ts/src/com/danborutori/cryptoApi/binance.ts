@@ -77,7 +77,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         permissions: string[]
     }
 
-    export interface NewOrderResponse {
+    export interface NewOrderAckResponse {
         symbol: string
         orderId: number
         orderListId: number
@@ -194,10 +194,18 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async newOrder(symbol: string, side: Side, quantity: number, type: OrderType = "MARKET"): Promise<NewOrderResponse>{
+        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderAckResponse>{
             const params = new URLSearchParams({
+                newOrderRespType: "ACK",
                 timestamp: await this.getServerTime()
             })
+
+            if( quantity!==undefined ){
+                params.append("quantity", quantity.toString())
+            }
+            if( quoteQuantity!==undefined ){
+                params.append("quoteQuantity", quantity.toString())
+            }
 
             const response = await fetch( this.fullUrl("/order"), {
                 method: "POST",
