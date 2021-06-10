@@ -1,5 +1,7 @@
 namespace bot { export namespace graph {
 
+    const graphInterval = 1000*60*60*24*2
+
     function drawGraph(
         canvas: HTMLCanvasElement,
         data: {
@@ -9,13 +11,46 @@ namespace bot { export namespace graph {
         }[],
         tradeRecords: {
             color: string,
-            price: number,
             time: number
         }[] ){
         const ctx = canvas.getContext("2d")!
 
-        ctx.fillStyle = "#0000ff"
-        ctx.fillRect(0,0,200,100)
+        const w = canvas.width
+        const h = canvas.height
+
+        ctx.fillStyle = "#eeeeee"
+        ctx.fillRect(0,0,w,h)
+
+        const end = Date.now()
+        const start = end-graphInterval
+        const timeRange = end-start
+
+        let max: number = data[0].normalizedPrice
+        let min: number = data[0].normalizedPrice
+
+        for( let d of data ){
+            if( d.time >= start || d.time <= end ){
+                max = Math.max(d.normalizedPrice, max)
+                min = Math.min(d.normalizedPrice, min)
+            }
+        }
+        const range = max-min
+
+        ctx.strokeStyle = "black"
+        ctx.beginPath()
+        ctx.moveTo( (data[0].time-start)*w/timeRange, (data[0].normalizedPrice-min)*h/range )
+        for( let d of data.slice(1) ){
+            ctx.lineTo( (data[0].time-start)*w/timeRange, (data[0].normalizedPrice-min)*h/range )
+        }
+        ctx.stroke()
+
+        ctx.strokeStyle = "green"
+        ctx.beginPath()
+        ctx.moveTo( (data[0].time-start)*w/timeRange, (data[0].smoothedPrice-min)*h/range )
+        for( let d of data.slice(1) ){
+            ctx.lineTo( (data[0].time-start)*w/timeRange, (data[0].normalizedPrice-min)*h/range )
+        }
+        ctx.stroke()
     }
 
     export class Drawer {
