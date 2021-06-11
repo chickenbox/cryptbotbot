@@ -77,8 +77,10 @@ namespace bot {
     export class Bot {
         private binance: com.danborutori.cryptoApi.Binance
         readonly homingAsset: string
-        private interval: com.danborutori.cryptoApi.Interval
+        private dataInterval: com.danborutori.cryptoApi.Interval
+        private tradeInterval: number
         private minHLRation: number
+        private forcastStep: number
         private smoothAmount: number
         private maxAllocation: number
         private holdingBalance: number
@@ -104,8 +106,8 @@ namespace bot {
             return localStorage.getItem(logLocalStorageKey)
         }
 
-        get timeInterval() {
-            switch( this.interval ){
+        get dataIntervalTime() {
+            switch( this.dataInterval ){
             case "1m":
                 return 1000*60
             case "3m":
@@ -154,8 +156,10 @@ namespace bot {
         constructor(
             config: {
                 homingAsset: string
-                interval: com.danborutori.cryptoApi.Interval
+                dataInterval: com.danborutori.cryptoApi.Interval
+                tradeInterval: number
                 minHLRation: number
+                forcastStep: number
                 smoothAmount: number
                 maxAllocation: number
                 logLength: number
@@ -167,8 +171,10 @@ namespace bot {
         ){
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure)
             this.homingAsset = config.homingAsset
-            this.interval = config.interval
+            this.dataInterval = config.dataInterval
+            this.tradeInterval = config.tradeInterval
             this.minHLRation = config.minHLRation
+            this.forcastStep = config.forcastStep
             this.smoothAmount = config.smoothAmount
             this.maxAllocation = config.maxAllocation
             this.holdingBalance = config.holdingBalance
@@ -188,7 +194,7 @@ namespace bot {
                 }catch(e){
                     this.logger.error(e)
                 }
-            }, this.timeInterval)
+            }, this.tradeInterval)
         }
 
         private async makeDecision( symbol: {baseAsset: string, symbol: string }){
@@ -197,7 +203,7 @@ namespace bot {
             try{
                 const data = await this.binance.getKlineCandlestickData(
                     symbol.symbol,
-                    this.interval,
+                    this.dataInterval,
                     {
                         startTime: Date.now()-1000*60*60*24*2,
                         endTime: Date.now()
@@ -223,6 +229,7 @@ namespace bot {
                         }
                     }),
                     this.smoothAmount,
+                    this.forcastStep,
                     1
                 )
 

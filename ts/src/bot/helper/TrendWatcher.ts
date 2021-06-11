@@ -52,11 +52,11 @@ namespace bot { export namespace helper {
 
     }
 
-    async function smoothData( baseAsset: string, data: DataEntry[], iteration: number ){
+    async function smoothData( baseAsset: string, data: DataEntry[], iteration: number, forcastStep: number ){
 
         let smoothedData = Array.from(data)
 
-        const extentedTail = await new Brain( baseAsset, iteration, iteration ).predict(smoothedData.map(a=>a.price), iteration, iteration)
+        const extentedTail = await new Brain( baseAsset, forcastStep, forcastStep ).predict(smoothedData.map(a=>a.price), forcastStep, forcastStep)
         extentedTail.forEach( d=>{
             smoothedData.push({
                 price: d,
@@ -149,9 +149,10 @@ namespace bot { export namespace helper {
             baseAsset: string,
             data: DataEntry[],
             smoothItr: number = 0,
+            forcastStep: number,
             downSample: number
         ){
-            const t = new TrendWatcher(baseAsset, data, smoothItr, downSample)
+            const t = new TrendWatcher(baseAsset, data, smoothItr, forcastStep, downSample)
 
             await t.resampling()
 
@@ -162,6 +163,7 @@ namespace bot { export namespace helper {
             readonly baseAsset: string,
             data: DataEntry[],
             readonly smoothItr: number = 0,
+            readonly forcastStep: number,
             downSample: number
         ){
             this._downSampling = downSample
@@ -174,7 +176,7 @@ namespace bot { export namespace helper {
             const normalizedData = normalizeData(data)
             this.normalized = {
                 data: normalizedData,
-                smoothedData: await smoothData( this.baseAsset, normalizedData, this.smoothItr )
+                smoothedData: await smoothData( this.baseAsset, normalizedData, this.smoothItr, this.forcastStep )
             }
 
             this.dDataDt = dDataDT(this.normalized.smoothedData.map(d=>d.price))
