@@ -243,7 +243,9 @@ namespace bot {
                     let downTurning = false
                     let dropping = false
 
-                    if( trendWatcher.dDataDDt[secLastIdx]<=0 && trendWatcher.dDataDDt[lastIdx]>0 ){
+                    if( trendWatcher.dDataDDt[secLastIdx]<=0 && trendWatcher.dDataDDt[lastIdx]>0 &&
+                        trendWatcher.dDataDt[lastIdx]<=0
+                    ){
                         downTurning = true
                     }
                     if( trendWatcher.dDataDDt[lastIdx]<0 ){
