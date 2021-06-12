@@ -240,15 +240,15 @@ namespace bot {
                     const lastIdx = trendWatcher.data.length-1
                     const secLastIdx = trendWatcher.data.length-2
                     
-                    let valley = false
+                    let downTurning = false
                     let dropping = false
-                    let peak = false
+                    let upTurning = false
 
-                    if( trendWatcher.dDataDt[secLastIdx]<0 && trendWatcher.dDataDt[lastIdx]>=0 ){
-                        valley = true
+                    if( trendWatcher.dDataDDt[secLastIdx]<=0 && trendWatcher.dDataDDt[lastIdx]>=0 ){
+                        downTurning = true
                     }
-                    if( trendWatcher.dDataDt[secLastIdx]>0 && trendWatcher.dDataDt[lastIdx]<=0 ){
-                        peak = true
+                    if( trendWatcher.dDataDDt[secLastIdx]>=0 && trendWatcher.dDataDDt[lastIdx]<=0 ){
+                        upTurning = true
                     }
                     if( trendWatcher.dDataDt[lastIdx]<0 ){
                         dropping = true
@@ -258,11 +258,11 @@ namespace bot {
 
                     let action = "none"
 
-                    if( valley ){
+                    if( downTurning ){
                         if( this.allow.buy)
                             action = "buy"
                     }else{
-                        if( dropping || peak )
+                        if( dropping || upTurning )
                             if( this.allow.sell)
                                 action = "sell"
                     }
