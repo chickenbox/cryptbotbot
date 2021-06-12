@@ -203,8 +203,15 @@ namespace bot {
                         endTime: Date.now()
                     })
 
-                if( data.length<10 )
-                    return undefined
+                // sell if not recent data
+                if( data.length<10 ||
+                    Date.now()-data[data.length-1].closeTime.getTime()>this.timeInterval
+                )
+                    return {
+                        baseAsset: symbol.baseAsset,
+                        price: this.recentPrices[symbol.baseAsset],
+                        action: "sell"
+                    } as Decision
 
                 const high = data.reduce((a,b)=>Math.max(a,b.high), Number.NEGATIVE_INFINITY)
                 const low = data.reduce((a,b)=>Math.min(a,b.low), Number.POSITIVE_INFINITY)
@@ -234,20 +241,12 @@ namespace bot {
                     const secLastIdx = trendWatcher.data.length-2
                     
                     let valley = false
-                    let localMinimum = false
                     let dropping = false
                     let peak = false
 
                     if( trendWatcher.dDataDt[secLastIdx]<0 && trendWatcher.dDataDt[lastIdx]>=0 ){
                         valley = true
                     }
-                    const localRegion = this.smoothAmount*2
-                    localMinimum = true
-                    for( let i=1; i<localRegion; i++ ){
-                        if( lastIdx-i>=0 && trendWatcher.data[lastIdx]>trendWatcher.data[lastIdx-i] ){
-                            localMinimum = false
-                        }
-                    }                    
                     if( trendWatcher.dDataDt[secLastIdx]>0 && trendWatcher.dDataDt[lastIdx]<=0 ){
                         peak = true
                     }
@@ -259,7 +258,7 @@ namespace bot {
 
                     let action = "none"
 
-                    if( valley && localMinimum ){
+                    if( valley ){
                         if( this.allow.buy)
                             action = "buy"
                     }else{
