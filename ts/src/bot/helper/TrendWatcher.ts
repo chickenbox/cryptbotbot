@@ -52,50 +52,23 @@ namespace bot { export namespace helper {
 
     }
 
-    async function smoothData( baseAsset: string, data: DataEntry[], iteration: number ){
+    function smoothData( baseAsset: string, data: DataEntry[], iteration: number ){
 
-        let smoothedData = Array.from(data)
+        const smoothedData = data.map(function(d, idx){
+            const start = Math.max(0,idx-iteration+1)
+            let price = 0
+            for( let i=start; i<=idx; i++ ){
+                price += data[i].price
+            }
 
-        const extentedTail = await new Brain( baseAsset, iteration, iteration ).predict(smoothedData.map(a=>a.price), iteration, iteration)
-        extentedTail.forEach( d=>{
-            smoothedData.push({
-                price: d,
-                time: new Date(),
-                open: new Date(),
-                close: new Date()
-            })    
+            return {
+                price: price/(idx-start+1),
+                time: d.time,
+                open: d.open,
+                close: d.close
+            }
         })
 
-        for( let j=0; j<iteration; j++ ){
-            smoothedData = smoothedData.map( (d, i)=>{
-                let r = d.price
-                let cnt = 1
-                if(i>0){
-                    r += smoothedData[i-1].price
-                    cnt++
-                }else if(i+1<smoothedData.length){
-                    const d = smoothedData[i+1].price-smoothedData[i].price
-                    r += smoothedData[i].price-d
-                    cnt++
-                }
-                if( i+1<smoothedData.length){
-                    r += smoothedData[i+1].price
-                    cnt++
-                }else if(i-1>=0){
-                    const d = smoothedData[i-1].price-smoothedData[i].price
-                    r += smoothedData[i].price-d
-                    cnt++
-                }
-                return {
-                    price: r/cnt,
-                    time: d.time,
-                    open: d.open,
-                    close: d.close
-                }
-            })
-        }
-
-        smoothedData.length -= extentedTail.length
         return smoothedData
     }
 
@@ -153,7 +126,7 @@ namespace bot { export namespace helper {
         ){
             const t = new TrendWatcher(baseAsset, data, smoothItr, downSample)
 
-            await t.resampling()
+            t.resampling()
 
             return t
         }
@@ -168,13 +141,13 @@ namespace bot { export namespace helper {
             this._rawData = data
         }
 
-        private async resampling(){
+        private resampling(){
             const data = downSample(this._rawData, this._downSampling)
             this.data = data
             const normalizedData = normalizeData(data)
             this.normalized = {
                 data: normalizedData,
-                smoothedData: await smoothData( this.baseAsset, normalizedData, this.smoothItr )
+                smoothedData: smoothData( this.baseAsset, normalizedData, this.smoothItr )
             }
 
             this.dDataDt = dDataDT(this.normalized.smoothedData.map(d=>d.price))
