@@ -242,15 +242,11 @@ namespace bot {
                     
                     let downTurning = false
                     let dropping = false
-                    let upTurning = false
 
-                    if( trendWatcher.dDataDDt[secLastIdx]<=0 && trendWatcher.dDataDDt[lastIdx]>=0 ){
+                    if( trendWatcher.dDataDDt[secLastIdx]<=0 && trendWatcher.dDataDDt[lastIdx]>0 ){
                         downTurning = true
                     }
-                    if( trendWatcher.dDataDDt[secLastIdx]>=0 && trendWatcher.dDataDDt[lastIdx]<=0 ){
-                        upTurning = true
-                    }
-                    if( trendWatcher.dDataDt[lastIdx]<0 ){
+                    if( trendWatcher.dDataDDt[lastIdx]<0 ){
                         dropping = true
                     }
 
@@ -262,7 +258,7 @@ namespace bot {
                         if( this.allow.buy)
                             action = "buy"
                     }else{
-                        if( dropping || upTurning )
+                        if( dropping )
                             if( this.allow.sell)
                                 action = "sell"
                     }
