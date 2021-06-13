@@ -240,8 +240,13 @@ namespace bot {
                     const lastIdx = trendWatcher.data.length-1
                     const secLastIdx = trendWatcher.data.length-2
                     
+                    let valley = false
                     let downTurning = false
                     let dropping = false
+
+                    if( trendWatcher.dDataDt[lastIdx]<=0 && trendWatcher.dDataDt[lastIdx]+trendWatcher.dDataDDt[lastIdx]>0 ){
+                        valley = true
+                    }
 
                     if( trendWatcher.dDataDDt[secLastIdx]<=0 && trendWatcher.dDataDDt[lastIdx]>0 &&
                         trendWatcher.dDataDt[lastIdx]<=0
@@ -256,7 +261,12 @@ namespace bot {
 
                     let action = "none"
 
-                    if( downTurning ){
+                    if( downTurning ||
+                        (
+                            valley &&
+                            trendWatcher.normalized.smoothedData[lastIdx]>=trendWatcher.normalized.data[lastIdx]
+                        )
+                    ){
                         if( this.allow.buy)
                             action = "buy"
                     }else{
