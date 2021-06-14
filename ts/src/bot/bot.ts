@@ -241,11 +241,11 @@ namespace bot {
 
                     let action = "none"
 
-                    if( trendWatcher.dDataDDt[lastIdx]>Math.abs(trendWatcher.dDataDt[lastIdx])*0.0001 ){
+                    if( trendWatcher.dDataDDt[lastIdx]>Math.abs(trendWatcher.dDataDt[lastIdx])*0.00000001 ){
                         if( this.allow.buy)
                             action = "buy"
                     }else{
-                        if( trendWatcher.dDataDDt[lastIdx]<-Math.abs(trendWatcher.dDataDt[lastIdx])*0.0001 )
+                        if( trendWatcher.dDataDDt[lastIdx]<-Math.abs(trendWatcher.dDataDt[lastIdx])*0.00000001 )
                             if( this.allow.sell)
                                 action = "sell"
                     }
