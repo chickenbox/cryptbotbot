@@ -69,6 +69,7 @@ namespace bot {
         baseAsset: string
         price: number
         action: "buy" | "sell" | "none"
+        score: number
     }
 
     const recentPricesLocalStorageKey = "Bot.recentPrices"
@@ -206,18 +207,26 @@ namespace bot {
                 // sell if not recent data
                 if( data.length<10 ||
                     Date.now()-data[data.length-1].closeTime.getTime()>this.timeInterval+5000
-                )
+                ){
                     return {
                         baseAsset: symbol.baseAsset,
                         price: this.recentPrices[symbol.baseAsset],
-                        action: "sell"
+                        action: "sell",
+                        score: 0
                     } as Decision
+                }
+                
 
                 const high = data.reduce((a,b)=>Math.max(a,b.high), Number.NEGATIVE_INFINITY)
                 const low = data.reduce((a,b)=>Math.min(a,b.low), Number.POSITIVE_INFINITY)
 
                 if( high/low <= this.minHLRation )
-                    return undefined
+                    return {
+                        baseAsset: symbol.baseAsset,
+                        price: this.recentPrices[symbol.baseAsset],
+                        action: "sell",
+                        score: 0
+                    } as Decision
 
                 const trendWatcher = await helper.TrendWatcher.create(
                     symbol.baseAsset,
@@ -237,15 +246,16 @@ namespace bot {
 
                 if( trendWatcher.data.length>2 ){
                     const lastIdx = trendWatcher.data.length-1
+                    const secLastIdx = trendWatcher.data.length-2
                     this.recentPrices[symbol.baseAsset] = data[data.length-1].close
 
                     let action = "none"
 
-                    if( trendWatcher.dDataDDt[lastIdx]>Math.abs(trendWatcher.dDataDt[lastIdx])*0.00000001 ){
+                    if( trendWatcher.dDataDDt[lastIdx]>Math.abs(trendWatcher.dDataDt[secLastIdx])*0.00001 ){
                         if( this.allow.buy)
                             action = "buy"
                     }else{
-                        if( trendWatcher.dDataDDt[lastIdx]<-Math.abs(trendWatcher.dDataDt[lastIdx])*0.00000001 )
+                        if( trendWatcher.dDataDDt[lastIdx]<-Math.abs(trendWatcher.dDataDt[secLastIdx])*0.00001 )
                             if( this.allow.sell)
                                 action = "sell"
                     }
@@ -253,7 +263,8 @@ namespace bot {
                     return {
                         baseAsset: symbol.baseAsset,
                         price: trendWatcher.data[lastIdx].price,
-                        action: action
+                        action: action,
+                        score: trendWatcher.dDataDDt[lastIdx]
                     } as Decision
                 }
             }catch(e){
@@ -299,33 +310,36 @@ namespace bot {
             }
 
             const homingTotal = this.getHomingTotal(balances)
-            const toBuyCnt = decisions.reduce((a,b)=>a+(b.action=="buy"?1:0),0)
+            let buyDecisions = decisions.filter(function(a){ return a.action=="buy"}).sort(function(a,b){
+                return b.score-a.score
+            })
             const availableHomingAsset = Math.max(0,((await this.trader.getBalances())[this.homingAsset] || 0)-this.holdingBalance)
             const maxAllocation = (homingTotal-this.holdingBalance)*this.maxAllocation
-            const averageHomingAsset = Math.min(availableHomingAsset/toBuyCnt, maxAllocation)
+            const maxOrder = Math.floor(maxAllocation/this.minimumOrderQuantity)
+            if( buyDecisions.length>maxOrder ){
+                buyDecisions.length = maxOrder
+            }
+            const averageHomingAsset = Math.min(availableHomingAsset/buyDecisions.length, maxAllocation)
 
-            for( let decision of decisions ){
-                switch(decision.action){
-                case "buy":
-                    let quantity = averageHomingAsset/decision.price
+            for( let decision of buyDecisions ){
+                let quantity = averageHomingAsset/decision.price
 
-                    const newAmount = (balances[decision.baseAsset]+quantity)*decision.price
-                    const minQuantity = this.minimumOrderQuantity/decision.price
+                const newAmount = ((balances[decision.baseAsset] || 0)+quantity)*decision.price
+                const minQuantity = this.minimumOrderQuantity/decision.price
 
-                    if( newAmount>maxAllocation ){
-                        quantity -= (newAmount-maxAllocation)/decision.price
-                    }
-
-                    if( quantity>minQuantity )
-                        try{
-                            await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
-                            this.tradeHistory.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
-                            await sleep(0.1)
-                        }catch(e){
-                            this.logger.error(e)
-                        }
-                    break
+                if( newAmount>maxAllocation ){
+                    quantity -= (newAmount-maxAllocation)/decision.price
                 }
+
+                if( quantity>minQuantity )
+                    try{
+                        await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                        this.tradeHistory.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                        await sleep(0.1)
+                    }catch(e){
+                        this.logger.error(e)
+                    }
+                break
             }
 
             this.saveRecentPrices()
