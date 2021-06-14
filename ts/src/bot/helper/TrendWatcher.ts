@@ -62,7 +62,7 @@ namespace bot { export namespace helper {
             for( let i=start; i<=idx; i++ ){
                 price += data[i].price*weight
                 totalWeight += weight
-                weight += 1
+                weight *= 2
             }
 
             return {
