@@ -238,36 +238,18 @@ namespace bot {
                 if( trendWatcher.data.length>2 ){
 
                     const lastIdx = trendWatcher.data.length-1
-                    const secLastIdx = trendWatcher.data.length-2
-                    
-                    let valley = false
-                    let downTurning = false
-                    let deccelerating = trendWatcher.dDataDDt[lastIdx]<0
-
-                    if( trendWatcher.dDataDt[lastIdx]<=0 && trendWatcher.dDataDt[lastIdx]+trendWatcher.dDataDDt[lastIdx]>0 ){
-                        valley = true
-                    }
-
-                    if( trendWatcher.dDataDDt[secLastIdx]<=0 && trendWatcher.dDataDDt[lastIdx]>0 &&
-                        trendWatcher.dDataDt[lastIdx]<=0
-                    ){
-                        downTurning = true
-                    }
-
                     this.recentPrices[symbol.baseAsset] = data[data.length-1].close
 
                     let action = "none"
 
-                    if( downTurning ||
-                        (
-                            valley &&
-                            trendWatcher.normalized.data[lastIdx]<trendWatcher.normalized.smoothedData[lastIdx]
-                        )
+                    if( trendWatcher.dDataDDt[lastIdx]>0 &&
+                        trendWatcher.normalized.data[lastIdx]<trendWatcher.normalized.smoothedData[lastIdx]
                     ){
                         if( this.allow.buy)
                             action = "buy"
                     }else{
-                        if( deccelerating )
+                        const epsilon = 0.00000001
+                        if( trendWatcher.dDataDDt[lastIdx]<-epsilon )
                             if( this.allow.sell)
                                 action = "sell"
                     }
