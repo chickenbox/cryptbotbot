@@ -57,12 +57,16 @@ namespace bot { export namespace helper {
         const smoothedData = data.map(function(d, idx){
             const start = Math.max(0,idx-iteration+1)
             let price = 0
+            let weight = 1
+            let totalWeight = 0
             for( let i=start; i<=idx; i++ ){
-                price += data[i].price
+                price += data[i].price*weight
+                totalWeight += weight
+                weight += 1
             }
 
             return {
-                price: price/(idx-start+1),
+                price: price/totalWeight,
                 time: d.time,
                 open: d.open,
                 close: d.close

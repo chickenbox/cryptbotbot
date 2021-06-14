@@ -236,20 +236,16 @@ namespace bot {
                 this.trendWatchers[symbol.baseAsset] = trendWatcher
 
                 if( trendWatcher.data.length>2 ){
-
                     const lastIdx = trendWatcher.data.length-1
                     this.recentPrices[symbol.baseAsset] = data[data.length-1].close
 
                     let action = "none"
 
-                    if( trendWatcher.dDataDDt[lastIdx]>0 &&
-                        trendWatcher.normalized.data[lastIdx]<trendWatcher.normalized.smoothedData[lastIdx]
-                    ){
+                    if( trendWatcher.dDataDDt[lastIdx]>Math.abs(trendWatcher.dDataDt[lastIdx])*0.03 ){
                         if( this.allow.buy)
                             action = "buy"
                     }else{
-                        const epsilon = 0.00000001
-                        if( trendWatcher.dDataDDt[lastIdx]<-epsilon )
+                        if( trendWatcher.dDataDDt[lastIdx]<-Math.abs(trendWatcher.dDataDt[lastIdx])*0.03 )
                             if( this.allow.sell)
                                 action = "sell"
                     }
