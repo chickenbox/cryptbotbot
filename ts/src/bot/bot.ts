@@ -205,7 +205,7 @@ namespace bot {
 
                 // sell if not recent data
                 if( data.length<10 ||
-                    Date.now()-data[data.length-1].closeTime.getTime()>this.timeInterval
+                    Date.now()-data[data.length-1].closeTime.getTime()>this.timeInterval+5000
                 )
                     return {
                         baseAsset: symbol.baseAsset,
@@ -242,7 +242,7 @@ namespace bot {
                     
                     let valley = false
                     let downTurning = false
-                    let dropping = false
+                    let deccelerating = trendWatcher.dDataDDt[lastIdx]<0
 
                     if( trendWatcher.dDataDt[lastIdx]<=0 && trendWatcher.dDataDt[lastIdx]+trendWatcher.dDataDDt[lastIdx]>0 ){
                         valley = true
@@ -253,9 +253,6 @@ namespace bot {
                     ){
                         downTurning = true
                     }
-                    if( trendWatcher.dDataDDt[lastIdx]<0 ){
-                        dropping = true
-                    }
 
                     this.recentPrices[symbol.baseAsset] = data[data.length-1].close
 
@@ -264,13 +261,13 @@ namespace bot {
                     if( downTurning ||
                         (
                             valley &&
-                            trendWatcher.normalized.smoothedData[lastIdx]>=trendWatcher.normalized.data[lastIdx]
+                            trendWatcher.normalized.data[lastIdx]<trendWatcher.normalized.smoothedData[lastIdx]
                         )
                     ){
                         if( this.allow.buy)
                             action = "buy"
                     }else{
-                        if( dropping )
+                        if( deccelerating )
                             if( this.allow.sell)
                                 action = "sell"
                     }
