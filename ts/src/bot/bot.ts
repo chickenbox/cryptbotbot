@@ -84,6 +84,7 @@ namespace bot {
         private maxAllocation: number
         private holdingBalance: number
         private minimumOrderQuantity: number // in homingAsset
+        private whiteList: Set<string>
         private trader = new trader.MockTrader()
         readonly tradeHistory = new trader.History()
         private recentPrices: {[key:string]: number} = function(){
@@ -162,6 +163,7 @@ namespace bot {
                 logLength: number
                 holdingBalance: number
                 minimumOrderQuantity: number
+                whiteList: string[]
                 apiKey: string
                 apiSecure: string
             }
@@ -174,6 +176,7 @@ namespace bot {
             this.maxAllocation = config.maxAllocation
             this.holdingBalance = config.holdingBalance
             this.minimumOrderQuantity = config.minimumOrderQuantity
+            this.whiteList = new Set(config.whiteList)
             this.logger = new Logger(config.logLength)
         }
 
@@ -284,7 +287,7 @@ namespace bot {
             let symbols = exchangeInfo.symbols
             symbols = symbols.filter(s=>{
                 return s.quoteAsset == this.homingAsset &&
-                        !(s.baseAsset.endsWith("DOWN") || s.baseAsset.endsWith("UP"))
+                        this.whiteList.has(s.baseAsset)
             })
 
             const decisions = (await Promise.all(symbols.map( symbol => {
