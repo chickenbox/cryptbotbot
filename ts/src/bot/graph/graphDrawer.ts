@@ -40,6 +40,16 @@ namespace bot { export namespace graph {
         }
         const range = max-min
 
+        for( let r of tradeRecords ){
+            ctx.strokeStyle = r.color
+            ctx.lineWidth = 1
+            const x = (r.time-start)*w/timeRange
+            ctx.beginPath()
+            ctx.moveTo(x,0)
+            ctx.lineTo(x,h)
+            ctx.stroke()
+        }
+
         ctx.strokeStyle = "black"
         ctx.lineWidth = 1
         ctx.beginPath()
@@ -57,16 +67,6 @@ namespace bot { export namespace graph {
             ctx.lineTo( (d.time-start)*w/timeRange, h-(d.smoothedPrice-min)*h/range )
         }
         ctx.stroke()
-
-        for( let r of tradeRecords ){
-            ctx.strokeStyle = r.color
-            ctx.lineWidth = 1
-            const x = (r.time-start)*w/timeRange
-            ctx.beginPath()
-            ctx.moveTo(x,0)
-            ctx.lineTo(x,h)
-            ctx.stroke()
-        }
     }
 
     export class Drawer {
@@ -103,8 +103,17 @@ namespace bot { export namespace graph {
                         }
                     }),
                     tradeRecords: history ? history.map(h=>{
+                        let color = "purple"
+                        switch( h.side ){
+                        case "buy":
+                            color = "blue"
+                            break
+                        case "sell":
+                            color = "yellow"
+                            break                            
+                        }
                         return {
-                            color: h.side=="buy"?"blue":"yellow",
+                            color: color,
                             time: h.time.getTime()
                         }
                     }) : []

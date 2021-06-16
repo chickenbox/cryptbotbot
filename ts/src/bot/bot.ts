@@ -342,7 +342,9 @@ namespace bot {
                     }catch(e){
                         this.logger.error(e)
                     }
-                break
+                else{
+                    this.tradeHistory.wannaBuy(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                }
             }
 
             this.saveRecentPrices()

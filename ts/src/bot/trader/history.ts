@@ -6,7 +6,7 @@ namespace bot { export namespace trader {
         readonly history: {[symbol:string]:{
             price: number
             quantity: number
-            side: "buy" | "sell"
+            side: "buy" | "sell" | "want to buy"
             time: Date
         }[]} = {}
 
@@ -30,6 +30,19 @@ namespace bot { export namespace trader {
                 price: closePrice,
                 quantity: quantity,
                 side: "sell",
+                time: new Date()
+            })
+            if(h.length>recordLimit)
+                this.history[symbol] = h.slice(h.length-recordLimit)
+        }
+
+        wannaBuy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
+            const symbol = `${baseAsset}${quoteAsset}`
+            const h = this.history[symbol] || (this.history[symbol] = []) 
+            h.push({
+                price: closePrice,
+                quantity: quantity,
+                side: "want to buy",
                 time: new Date()
             })
             if(h.length>recordLimit)
