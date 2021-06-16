@@ -255,7 +255,7 @@ namespace bot {
                     this.recentPrices[symbol.baseAsset] = data[data.length-1].close
 
                     let action = "none"
-                    const blendLimit = 0.001
+                    const blendLimit = 0.01
 
                     if( trendWatcher.dDataDDt[lastIdx]>Math.abs(trendWatcher.dDataDt[secLastIdx])*blendLimit ){
                         if( this.allow.buy)

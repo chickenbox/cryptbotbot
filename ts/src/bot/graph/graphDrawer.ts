@@ -95,10 +95,10 @@ namespace bot { export namespace graph {
 
                 assets.push({
                     asset: baseAsset,
-                    data: trendWatcher.normalized.data.map((d,i)=>{
+                    data: trendWatcher.data.map((d,i)=>{
                         return {
                             normalizedPrice: d.price,
-                            smoothedPrice: trendWatcher.normalized.smoothedData[i].price,
+                            smoothedPrice: trendWatcher.smoothedData[i].price,
                             time: d.time.getTime()
                         }
                     }),

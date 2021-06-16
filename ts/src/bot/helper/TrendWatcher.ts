@@ -32,26 +32,7 @@ namespace bot { export namespace helper {
 
         return downSampled
     }
-
-    function normalizeData( data: DataEntry[] ){
-        if( data.length>0 ){
-            const min = data.reduce( (a,b)=>Math.min(a, b.price), data[0].price )
-            const max = data.reduce( (a,b)=>Math.max(a, b.price), data[0].price )
-
-            return data.map( d=>{
-                return {
-                    price: (d.price-min)/(max-min),
-                    time: d.time,
-                    open: d.open,
-                    close: d.close
-                }
-            })
-        }else{
-            return data
-        }
-
-    }
-
+    
     function smoothData( baseAsset: string, data: DataEntry[], iteration: number ){
 
         const smoothedData = data.map(function(d, idx){
@@ -96,10 +77,7 @@ namespace bot { export namespace helper {
 
         private _rawData: DataEntry[]
         data: DataEntry[]
-        normalized: {
-            data: DataEntry[]
-            smoothedData: DataEntry[]
-        }
+        smoothedData: DataEntry[]
         dDataDt: number[]
         dDataDDt: number[]
 
@@ -148,13 +126,9 @@ namespace bot { export namespace helper {
         private resampling(){
             const data = downSample(this._rawData, this._downSampling)
             this.data = data
-            const normalizedData = normalizeData(data)
-            this.normalized = {
-                data: normalizedData,
-                smoothedData: smoothData( this.baseAsset, normalizedData, this.smoothItr )
-            }
+            this.smoothedData = smoothData( this.baseAsset, data, this.smoothItr )
 
-            this.dDataDt = dDataDT(this.normalized.smoothedData.map(d=>d.price))
+            this.dDataDt = dDataDT(this.smoothedData.map(d=>d.price))
             this.dDataDDt = dDataDT(this.dDataDt)
         }
 
