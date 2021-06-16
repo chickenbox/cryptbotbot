@@ -208,9 +208,7 @@ namespace bot {
                     })
 
                 // sell if not recent data
-                if( data.length<10 ||
-                    Date.now()-data[data.length-1].closeTime.getTime()>this.timeInterval+5000
-                ){
+                if( data.length<10 ){
                     return {
                         baseAsset: symbol.baseAsset,
                         price: this.recentPrices[symbol.baseAsset],
@@ -218,7 +216,11 @@ namespace bot {
                         score: 0
                     } as Decision
                 }
-                
+
+                // missing candle
+                if( Date.now()-data[data.length-1].closeTime.getTime()>this.timeInterval+5000 ){
+                    return undefined
+                }
 
                 const high = data.reduce((a,b)=>Math.max(a,b.high), Number.NEGATIVE_INFINITY)
                 const low = data.reduce((a,b)=>Math.min(a,b.low), Number.POSITIVE_INFINITY)
@@ -253,12 +255,13 @@ namespace bot {
                     this.recentPrices[symbol.baseAsset] = data[data.length-1].close
 
                     let action = "none"
+                    const blendLimit = 0.001
 
-                    if( trendWatcher.dDataDDt[lastIdx]>Math.abs(trendWatcher.dDataDt[secLastIdx])*0.00001 ){
+                    if( trendWatcher.dDataDDt[lastIdx]>Math.abs(trendWatcher.dDataDt[secLastIdx])*blendLimit ){
                         if( this.allow.buy)
                             action = "buy"
                     }else{
-                        if( trendWatcher.dDataDDt[lastIdx]<-Math.abs(trendWatcher.dDataDt[secLastIdx])*0.00001 )
+                        if( trendWatcher.dDataDDt[lastIdx]<-Math.abs(trendWatcher.dDataDt[secLastIdx])*blendLimit )
                             if( this.allow.sell)
                                 action = "sell"
                     }
@@ -318,7 +321,7 @@ namespace bot {
             })
             const availableHomingAsset = Math.max(0,((await this.trader.getBalances())[this.homingAsset] || 0)-this.holdingBalance)
             const maxAllocation = (homingTotal-this.holdingBalance)*this.maxAllocation
-            const maxOrder = Math.floor(maxAllocation/this.minimumOrderQuantity)
+            const maxOrder = Math.max(0,Math.floor(maxAllocation/this.minimumOrderQuantity))
             if( buyDecisions.length>maxOrder ){
                 buyDecisions.length = maxOrder
             }
