@@ -65,10 +65,13 @@ namespace bot {
         }
     }
 
+
+    type Action = "buy" | "sell" | "none"
+
     interface Decision {
         baseAsset: string
         price: number
-        action: "buy" | "sell" | "none"
+        action: Action
         score: number
     }
 
@@ -182,7 +185,9 @@ namespace bot {
 
         run(){
             try{
-                this.performTrade()
+                this.performTrade().then( ()=>
+                    new test.TestMarker().test(this, new Date( Date.now()-1000*60*60*24*2 ))
+                )
             }catch(e){
                 this.logger.error(e)
             }
@@ -193,6 +198,22 @@ namespace bot {
                     this.logger.error(e)
                 }
             }, this.timeInterval)
+        }
+
+        getAction( baseAsset: string, trendWatcher: helper.TrendWatcher, index: number ): Action{
+            const data = trendWatcher.data
+
+            let action: Action = "none"
+            
+            if( trendWatcher.dDataDt[index]<=0 && trendWatcher.dDataDt[index]+trendWatcher.dDataDDt[index]>=0 ){
+                if( this.allow.buy)
+                    action = "buy"
+            }else{
+                if( trendWatcher.dDataDt[index]+trendWatcher.dDataDDt[index]<=0 )
+                    if( this.allow.sell)
+                        action = "sell"
+            }
+            return action
         }
 
         private async makeDecision( symbol: {baseAsset: string, symbol: string }){
@@ -250,19 +271,10 @@ namespace bot {
                 this.trendWatchers[symbol.baseAsset] = trendWatcher
 
                 if( trendWatcher.data.length>2 ){
-                    const lastIdx = trendWatcher.data.length-1
                     this.recentPrices[symbol.baseAsset] = data[data.length-1].close
+                    const lastIdx = trendWatcher.data.length-1
 
-                    let action = "none"
-                    
-                    if( trendWatcher.dDataDt[lastIdx]<=0 && trendWatcher.dDataDt[lastIdx]+trendWatcher.dDataDDt[lastIdx]>=0 ){
-                        if( this.allow.buy)
-                            action = "buy"
-                    }else{
-                        if( trendWatcher.dDataDt[lastIdx]+trendWatcher.dDataDDt[lastIdx]<=0 )
-                            if( this.allow.sell)
-                                action = "sell"
-                    }
+                    let action = this.getAction(symbol.baseAsset, trendWatcher, lastIdx)
 
                     return {
                         baseAsset: symbol.baseAsset,

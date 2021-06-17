@@ -3,7 +3,7 @@ setTimeout( function(){
         homingAsset: "USDT",
         interval: "30m",
         minHLRation: 1.1,
-        smoothAmount: 20,
+        smoothAmount: 10,
         maxAllocation: 1/3,
         logLength: 10000,
         holdingBalance: 1000,
