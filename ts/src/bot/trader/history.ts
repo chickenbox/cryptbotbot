@@ -10,40 +10,40 @@ namespace bot { export namespace trader {
             time: Date
         }[]} = {}
 
-        buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
+        buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, time?: Date ){
             const symbol = `${baseAsset}${quoteAsset}`
             const h = this.history[symbol] || (this.history[symbol] = []) 
             h.push({
                 price: closePrice,
                 quantity: quantity,
                 side: "buy",
-                time: new Date()
+                time: time || new Date()
             })
             if(h.length>recordLimit)
                 this.history[symbol] = h.slice(h.length-recordLimit)
         }
 
-        sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
+        sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, time?: Date ){
             const symbol = `${baseAsset}${quoteAsset}`
             const h = this.history[symbol] || (this.history[symbol] = []) 
             h.push({
                 price: closePrice,
                 quantity: quantity,
                 side: "sell",
-                time: new Date()
+                time: time || new Date()
             })
             if(h.length>recordLimit)
                 this.history[symbol] = h.slice(h.length-recordLimit)
         }
 
-        wannaBuy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
+        wannaBuy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, time?: Date ){
             const symbol = `${baseAsset}${quoteAsset}`
             const h = this.history[symbol] || (this.history[symbol] = []) 
             h.push({
                 price: closePrice,
                 quantity: quantity,
                 side: "want to buy",
-                time: new Date()
+                time: time || new Date()
             })
             if(h.length>recordLimit)
                 this.history[symbol] = h.slice(h.length-recordLimit)
