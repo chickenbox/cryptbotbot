@@ -8,64 +8,6 @@ namespace bot {
         })
     }
 
-    class Logger {
-
-        private logs: {
-            time: string
-            tag: string
-            message: any
-        }[] = []
-        private timeout: number
-
-        constructor(
-            readonly logLength: number
-        ){
-            const s = localStorage.getItem(logLocalStorageKey)
-            if( s )
-                this.logs = JSON.parse(s)
-        }
-
-        writeLog( message: any, tag: string ){
-
-            this.logs.push({
-                time: new Date().toString(),
-                tag: tag,
-                message: message
-            })
-
-            if( this.logs.length>this.logLength ){
-                this.logs = this.logs.slice(this.logs.length-this.logLength)
-            }
-
-            if(this.timeout){
-                clearTimeout( this.timeout)
-                this.timeout = undefined
-            }
-
-            this.timeout = setTimeout(()=>{
-                localStorage.setItem(logLocalStorageKey, JSON.stringify(this.logs,null,2))
-            }, 10)
-        }
-
-        log( message: any ){
-            if( typeof(message) == "string" ) {
-                console.log( message )
-
-                this.writeLog(message, "v")
-            }else{
-                console.log( JSON.stringify( message, null, 2 ) )
-
-                this.writeLog(message, "v")
-            }
-        }
-
-        error( e: Error ){
-            console.error(e)
-            this.writeLog( e,"e")
-        }
-    }
-
-
     type Action = "buy" | "sell" | "none"
 
     interface Decision {
@@ -76,7 +18,6 @@ namespace bot {
     }
 
     const recentPricesLocalStorageKey = "Bot.recentPrices"
-    const logLocalStorageKey = "Bot.log"
 
     export class Bot {
         private binance: com.danborutori.cryptoApi.Binance
@@ -98,7 +39,7 @@ namespace bot {
             return {}
         }()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
-        private logger: Logger
+        private logger: helper.Logger
         
         readonly allow = {
             buy: true,
@@ -106,7 +47,7 @@ namespace bot {
         }
 
         get log(){
-            return localStorage.getItem(logLocalStorageKey)
+            return this.logger.logString
         }
 
         get timeInterval() {
@@ -180,7 +121,7 @@ namespace bot {
             this.holdingBalance = config.holdingBalance
             this.minimumOrderQuantity = config.minimumOrderQuantity
             this.whiteList = new Set(config.whiteList)
-            this.logger = new Logger(config.logLength)
+            this.logger = new  helper.Logger(config.logLength)
         }
 
         run(){
