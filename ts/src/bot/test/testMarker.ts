@@ -12,16 +12,22 @@ namespace bot { export namespace test {
         private _test( bot: bot.Bot, baseAsset: string, trendWatcher: helper.TrendWatcher, start: Date ){
 
             const startIndex = trendWatcher.data.findIndex(d=>d.close>start)
+            let brought = false
 
             for( let i = startIndex; i<trendWatcher.data.length; i++ ){
                 const action = bot.getAction( baseAsset, trendWatcher, i )
+                const date = trendWatcher.data[i].close
 
                 switch( action ){
                 case "buy":
-                    bot.tradeHistory.buy(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0)
+                    bot.tradeHistory.buy(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, date)
+                    brought = true
                     break
                 case "sell":
-                    bot.tradeHistory.sell(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0)
+                    if( brought ){
+                        bot.tradeHistory.sell(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, date)
+                        brought = false
+                    }
                     break
                 }
             }
