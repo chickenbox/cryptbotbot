@@ -47,6 +47,20 @@ namespace bot {
             sell: true
         }
 
+        get lastCandleTime(){
+
+            let r = 0
+
+            for( let t in this.trendWatchers ){
+                const d = this.trendWatchers[t].data
+                if( d.length>0 ){
+                    r = Math.max( d[d.length-1].close.getTime() )
+                }
+            }
+
+            return r
+        }
+
         get log(){
             return this.logger.logString
         }
@@ -141,13 +155,19 @@ namespace bot {
             }catch(e){
                 this.logger.error(e)
             }
-            setInterval(async ()=>{
+
+            // align data time slot
+            const nextTime = this.lastCandleTime+this.timeInterval
+            const fiveMinWait = 1000*60*5
+            const timeout = Math.max( fiveMinWait, nextTime-Date.now()+fiveMinWait )
+
+            setTimeout(async ()=>{
                 try{
-                    await this.performTrade()
+                    await this.run()
                 }catch(e){
                     this.logger.error(e)
                 }
-            }, this.timeInterval)
+            }, timeout)
         }
 
         getAction( baseAsset: string, trendWatcher: helper.TrendWatcher, index: number ): Action{
