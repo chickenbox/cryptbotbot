@@ -28,6 +28,7 @@ namespace bot {
         private maxAllocation: number
         private holdingBalance: number
         private minimumOrderQuantity: number // in homingAsset
+        private mockRun: boolean
         private whiteList: Set<string>
         private trader = new trader.MockTrader()
         readonly tradeHistory = new trader.History()
@@ -108,6 +109,7 @@ namespace bot {
                 holdingBalance: number
                 minimumOrderQuantity: number
                 whiteList: string[]
+                mockRun: boolean
                 apiKey: string
                 apiSecure: string
             }
@@ -121,20 +123,27 @@ namespace bot {
             this.holdingBalance = config.holdingBalance
             this.minimumOrderQuantity = config.minimumOrderQuantity
             this.whiteList = new Set(config.whiteList)
+            this.mockRun = config.mockRun
             this.logger = new  helper.Logger(config.logLength)
         }
 
-        run(){
+        async run(){
             try{
-                this.performTrade().then( ()=>
+                try{
+                    await this.performTrade()
+                }catch(e){
+                    this.logger.error(e)
+                }
+    
+                if( this.mockRun ){
                     new test.TestMarker().test(this, new Date( Date.now()-1000*60*60*24*2 ))
-                )
+                }
             }catch(e){
                 this.logger.error(e)
             }
-            setInterval(()=>{
+            setInterval(async ()=>{
                 try{
-                    this.performTrade()
+                    await this.performTrade()
                 }catch(e){
                     this.logger.error(e)
                 }
