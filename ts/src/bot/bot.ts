@@ -17,8 +17,6 @@ namespace bot {
         score: number
     }
 
-    const recentPricesLocalStorageKey = "Bot.recentPrices"
-
     export class Bot {
         private binance: com.danborutori.cryptoApi.Binance
         readonly homingAsset: string
@@ -33,13 +31,6 @@ namespace bot {
         private priceTracker: helper.PriceTracker
         private trader = new trader.MockTrader()
         readonly tradeHistory = new trader.History()
-        private recentPrices: {[key:string]: number} = function(){
-            const s = localStorage.getItem(recentPricesLocalStorageKey)
-            if( s )
-                return JSON.parse(s)
-
-            return {}
-        }()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
         private logger: helper.Logger
         
@@ -55,7 +46,7 @@ namespace bot {
             for( let t in this.trendWatchers ){
                 const d = this.trendWatchers[t].data
                 if( d.length>0 ){
-                    r = Math.max( d[d.length-1].close.getTime() )
+                    r = Math.max( d[d.length-1].time )
                 }
             }
 
@@ -101,10 +92,16 @@ namespace bot {
             }
         }
 
+
+        getRecentPrice( symbol: string ){
+            const p = this.priceTracker.prices[symbol]
+            return p && p.length>0 && p[p.length-1].price
+        }
+
         private getHomingTotal( balances: {[key:string]:number} ){
             let homingTotal = balances[this.homingAsset]
             for( let b in balances ){
-                let currentPrice = this.recentPrices[b]
+                let currentPrice = this.getRecentPrice(`${b}${this.homingAsset}`)
                 if( currentPrice!==undefined ){
                     homingTotal += balances[b]*currentPrice
                 }        
@@ -198,7 +195,7 @@ namespace bot {
                 if( data.length<10 ){
                     return {
                         baseAsset: symbol.baseAsset,
-                        price: this.recentPrices[symbol.baseAsset],
+                        price: this.getRecentPrice(symbol.symbol),
                         action: "sell",
                         score: 0
                     } as Decision
@@ -215,7 +212,7 @@ namespace bot {
                 if( high/low <= this.minHLRation )
                     return {
                         baseAsset: symbol.baseAsset,
-                        price: this.recentPrices[symbol.baseAsset],
+                        price: this.getRecentPrice(symbol.symbol),
                         action: "sell",
                         score: 0
                     } as Decision
@@ -235,7 +232,6 @@ namespace bot {
                 this.trendWatchers[symbol.baseAsset] = trendWatcher
 
                 if( trendWatcher.data.length>2 ){
-                    this.recentPrices[symbol.baseAsset] = data[data.length-1].time
                     const lastIdx = trendWatcher.data.length-1
 
                     let action = this.getAction(symbol.baseAsset, trendWatcher, lastIdx)
@@ -327,16 +323,8 @@ namespace bot {
                 }
             }
 
-            this.saveRecentPrices()
-
             await this.logTrader()
             this.logger.log("=================================")
-        }
-
-        private saveRecentPrices(){
-
-            localStorage.setItem( recentPricesLocalStorageKey, JSON.stringify( this.recentPrices ) )
-
         }
 
         async logTrader(){
