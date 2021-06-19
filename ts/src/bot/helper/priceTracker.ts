@@ -1,7 +1,7 @@
 namespace bot { export namespace helper {
 
     const pricesLocalStorageKey = "PriceTracker.prices"
-    const recordLimit = 10000
+    const recordLimit = 500
 
     export class PriceTracker {
 
@@ -17,22 +17,38 @@ namespace bot { export namespace helper {
             readonly binance: com.danborutori.cryptoApi.Binance
         ){}
 
-        async update(){
+        async update( interval: com.danborutori.cryptoApi.Interval ){
 
             const time = Date.now()
             const prices = await this.binance.getSymbolPriceTicker()
 
-            for( let price of prices ){
-                const records = this.prices[price.symbol] || (this.prices[price.symbol] = [])
-                records.push({
-                    time: time,
-                    price: parseFloat(price.price)
-                })
+            await Promise.all(prices.map(async price=>{
+                try{
+                    let records = this.prices[price.symbol]
 
-                if(records.length>recordLimit){
-                    records.splice(records.length-recordLimit)
+                    if( !records ){
+                        const data = await this.binance.getKlineCandlestickData(price.symbol, interval)
+                        records = data.map(function(d){
+                            return {
+                                price: d.close,
+                                time: d.closeTime.getTime()
+                            }
+                        })
+                        this.prices[price.symbol] = records
+                    }
+
+                    records.push({
+                        time: time,
+                        price: parseFloat(price.price)
+                    })
+
+                    if(records.length>recordLimit){
+                        records.splice(records.length-recordLimit)
+                    }
+                }catch(e){
+                    console.error(e)
                 }
-            }
+            }))
 
             localStorage.setItem( pricesLocalStorageKey, JSON.stringify(this.prices, null, 2) )
         }
