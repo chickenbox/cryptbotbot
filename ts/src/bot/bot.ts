@@ -30,6 +30,7 @@ namespace bot {
         private minimumOrderQuantity: number // in homingAsset
         private mockRun: boolean
         private whiteList: Set<string>
+        private priceTracker: helper.PriceTracker
         private trader = new trader.MockTrader()
         readonly tradeHistory = new trader.History()
         private recentPrices: {[key:string]: number} = function(){
@@ -129,6 +130,7 @@ namespace bot {
             }
         ){
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure)
+            this.priceTracker = new helper.PriceTracker(this.binance)
             this.homingAsset = config.homingAsset
             this.interval = config.interval
             this.minHLRation = config.minHLRation
@@ -265,7 +267,10 @@ namespace bot {
             this.logger.log(`Execution Log ${new Date()}`)
             this.logger.log("=================================")
 
-            const exchangeInfo = await this.binance.getExchangeInfo()
+            const [exchangeInfo, _] = await Promise.all( [
+                await this.binance.getExchangeInfo(),
+                await this.priceTracker.update()
+            ])
             
             let symbols = exchangeInfo.symbols
             symbols = symbols.filter(s=>{

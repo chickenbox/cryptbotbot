@@ -167,6 +167,18 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             })   
         }
 
+        async getSymbolPriceTicker(): Promise<{symbol: string; price: string}[]>
+        async getSymbolPriceTicker(symbol: string): Promise<{symbol: string; price: string}>
+        async getSymbolPriceTicker( symbol?: string ){
+            const params = new URLSearchParams()
+            if( symbol )
+                params.append("symbol", symbol)
+
+            const response = await fetch(this.fullUrl("/ticker/price") +"?"+ params)
+            const json = await response.json()
+            return json
+        }
+
         async getServerTime(){
             const response = await fetch(this.fullUrl("/time"))
             const json = await response.json()
