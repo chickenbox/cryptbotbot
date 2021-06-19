@@ -48,7 +48,7 @@ namespace bot { export namespace helper {
 
                 const recordLen = (endTime-startTime)/interval
 
-                const result: {time: Number, price: Number}[] = new Array(recordLen)
+                const result: {time: number, price: number}[] = new Array(recordLen)
                 for( let i=0; i<result.length; i++ ){
 
                     const rt = startTime+i*interval

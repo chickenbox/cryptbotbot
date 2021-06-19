@@ -192,15 +192,9 @@ namespace bot {
             if( symbol.baseAsset==this.homingAsset ) return undefined
 
             try{
-                const data = await this.binance.getKlineCandlestickData(
-                    symbol.symbol,
-                    this.interval,
-                    {
-                        startTime: Date.now()-1000*60*60*24*2,
-                        endTime: Date.now()
-                    })
+                const data = this.priceTracker.getConstantIntervalPrice( symbol.symbol, this.timeInterval )
 
-                // sell if not recent data
+                // sell if no recent data
                 if( data.length<10 ){
                     return {
                         baseAsset: symbol.baseAsset,
@@ -211,12 +205,12 @@ namespace bot {
                 }
 
                 // missing candle
-                if( Date.now()-data[data.length-1].closeTime.getTime()>this.timeInterval+5000 ){
+                if( (Date.now()-data[data.length-1].time)>this.timeInterval+5000 ){
                     return undefined
                 }
 
-                const high = data.reduce((a,b)=>Math.max(a,b.high), Number.NEGATIVE_INFINITY)
-                const low = data.reduce((a,b)=>Math.min(a,b.low), Number.POSITIVE_INFINITY)
+                const high = data.reduce((a,b)=>Math.max(a,b.price), Number.NEGATIVE_INFINITY)
+                const low = data.reduce((a,b)=>Math.min(a,b.price), Number.POSITIVE_INFINITY)
 
                 if( high/low <= this.minHLRation )
                     return {
@@ -230,10 +224,8 @@ namespace bot {
                     symbol.baseAsset,
                     data.map(d=>{
                         return {
-                            price: d.close,
-                            time: d.closeTime,
-                            open: d.openTime,
-                            close: d.closeTime
+                            price: d.price,
+                            time: d.time
                         }
                     }),
                     this.smoothAmount,
@@ -243,7 +235,7 @@ namespace bot {
                 this.trendWatchers[symbol.baseAsset] = trendWatcher
 
                 if( trendWatcher.data.length>2 ){
-                    this.recentPrices[symbol.baseAsset] = data[data.length-1].close
+                    this.recentPrices[symbol.baseAsset] = data[data.length-1].time
                     const lastIdx = trendWatcher.data.length-1
 
                     let action = this.getAction(symbol.baseAsset, trendWatcher, lastIdx)

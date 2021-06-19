@@ -11,12 +11,12 @@ namespace bot { export namespace test {
 
         private _test( bot: bot.Bot, baseAsset: string, trendWatcher: helper.TrendWatcher, start: Date ){
 
-            const startIndex = trendWatcher.data.findIndex(d=>d.close>start)
+            const startIndex = trendWatcher.data.findIndex(d=>d.time>start.getTime())
             let brought = false
 
             for( let i = startIndex; i<trendWatcher.data.length; i++ ){
                 const action = bot.getAction( baseAsset, trendWatcher, i )
-                const date = trendWatcher.data[i].close
+                const date = new Date(trendWatcher.data[i].time)
 
                 switch( action ){
                 case "buy":

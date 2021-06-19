@@ -1,9 +1,7 @@
 namespace bot { export namespace helper {
     interface DataEntry {
         readonly price: number
-        readonly time: Date
-        readonly open: Date
-        readonly close: Date
+        readonly time: number
     }
 
     function downSample( data: DataEntry[], amount: number ){ 
@@ -17,16 +15,14 @@ namespace bot { export namespace helper {
             for( let j=i; j<end; j++ ){
                 const d = data[j]
                 price += d.price
-                time += d.time.getTime()
+                time += d.time
             }
             price /= end-i
             time /= end-i
 
             downSampled.push({
                 price: price,
-                time: new Date(time),
-                open: data[i].open,
-                close: data[end-1].close
+                time: time
             })
         }
 
@@ -48,9 +44,7 @@ namespace bot { export namespace helper {
 
             return {
                 price: price/totalWeight,
-                time: d.time,
-                open: d.open,
-                close: d.close
+                time: d.time
             }
         })
 

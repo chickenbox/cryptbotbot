@@ -99,7 +99,7 @@ namespace bot { export namespace graph {
                         return {
                             normalizedPrice: d.price,
                             smoothedPrice: trendWatcher.smoothedData[i].price,
-                            time: d.time.getTime()
+                            time: d.time
                         }
                     }),
                     tradeRecords: history ? history.map(h=>{
