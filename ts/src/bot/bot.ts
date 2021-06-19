@@ -255,9 +255,11 @@ namespace bot {
             this.logger.log(`Execution Log ${new Date()}`)
             this.logger.log("=================================")
 
+            const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
+
             const [exchangeInfo, _] = await Promise.all( [
                 await this.binance.getExchangeInfo(),
-                await this.priceTracker.update()
+                await this.priceTracker.update(this.interval, whiteSymbols)
             ])
             
             let symbols = exchangeInfo.symbols

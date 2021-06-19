@@ -149,7 +149,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
 
             const respsone = await fetch( this.fullUrl("/klines") +"?"+ params )
 
-            return (await respsone.json() as any[][]).map(d=>{
+            const json: any[][] = await respsone.json()
+            return json.map(d=>{
 
                 return {
                     openTime: new Date(d[0]),

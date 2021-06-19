@@ -17,10 +17,12 @@ namespace bot { export namespace helper {
             readonly binance: com.danborutori.cryptoApi.Binance
         ){}
 
-        async update( interval: com.danborutori.cryptoApi.Interval ){
+        async update( interval: com.danborutori.cryptoApi.Interval, whiteSymbols: Set<string> ){
 
             const time = Date.now()
-            const prices = await this.binance.getSymbolPriceTicker()
+            const prices = (await this.binance.getSymbolPriceTicker()).filter(function(p){
+                return whiteSymbols.has(p.symbol)
+            })
 
             await Promise.all(prices.map(async price=>{
                 try{
