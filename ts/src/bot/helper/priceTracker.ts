@@ -45,7 +45,7 @@ namespace bot { export namespace helper {
                     })
 
                     if(records.length>recordLimit){
-                        records.splice(recordLimit)
+                        records.splice(0, records.length-recordLimit)
                     }
                 }catch(e){
                     console.error(e)
