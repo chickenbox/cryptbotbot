@@ -287,6 +287,10 @@ namespace bot {
             const maxAllocation = (homingTotal-this.holdingBalance)*this.maxAllocation
             const maxOrder = Math.max(0,Math.floor(maxAllocation/this.minimumOrderQuantity))
             if( buyDecisions.length>maxOrder ){
+                for( let i=maxOrder; i<buyDecisions.length; i++ ){
+                    const decision = buyDecisions[i]
+                    this.tradeHistory.wannaBuy(decision.baseAsset, this.homingAsset, decision.price, 0 )
+                }
                 buyDecisions.length = maxOrder
             }
             const averageHomingAsset = Math.min(availableHomingAsset/buyDecisions.length, maxAllocation)
