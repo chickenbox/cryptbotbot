@@ -39,20 +39,6 @@ namespace bot {
             sell: true
         }
 
-        get lastCandleTime(){
-
-            let r = 0
-
-            for( let t in this.trendWatchers ){
-                const d = this.trendWatchers[t].data
-                if( d.length>0 ){
-                    r = Math.max( d[d.length-1].time )
-                }
-            }
-
-            return r
-        }
-
         get log(){
             return this.logger.logString
         }
@@ -141,6 +127,8 @@ namespace bot {
         }
 
         async run(){
+            const now = Date.now()
+
             try{
                 try{
                     await this.performTrade()
@@ -149,16 +137,16 @@ namespace bot {
                 }
     
                 if( this.mockRun ){
-                    new test.TestMarker().test(this, new Date( Date.now()-1000*60*60*24*2 ))
+                    new test.TestMarker().test(this, new Date( now-1000*60*60*24*2 ))
                 }
             }catch(e){
                 this.logger.error(e)
             }
 
             // align data time slot
-            const nextTime = this.lastCandleTime+this.timeInterval
+            const nextTime = helper.snapTime( now+this.timeInterval, this.timeInterval )
             const fiveMinWait = 1000*60*5
-            const timeout = Math.max( fiveMinWait, nextTime-Date.now()+fiveMinWait )
+            const timeout = Math.max( fiveMinWait, nextTime-now+fiveMinWait )
 
             setTimeout(async ()=>{
                 try{
