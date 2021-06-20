@@ -45,7 +45,7 @@ namespace bot { export namespace helper {
                     })
 
                     if(records.length>recordLimit){
-                        records.splice(records.length-recordLimit)
+                        records.splice(recordLimit)
                     }
                 }catch(e){
                     console.error(e)
@@ -64,7 +64,7 @@ namespace bot { export namespace helper {
                 const startTime = snapTime( prices[0].time, interval )
                 const endTime = snapTime( prices[prices.length-1].time, interval )
 
-                const recordLen = (endTime-startTime)/interval
+                const recordLen = (endTime-startTime)/interval+1
 
                 const result: {time: number, price: number}[] = new Array(recordLen)
                 for( let i=0; i<result.length; i++ ){
@@ -77,7 +77,7 @@ namespace bot { export namespace helper {
                     const priceA = prices[idxA]
                     const priceB = prices[idxB]
                     const td = priceB.time-priceA.time
-                    const mix = (priceA.time-rt)/td
+                    const mix = td!=0 ? (priceA.time-rt)/td : 0
                     const price = priceA.price*(1-mix)+priceB.price*mix
 
                     result[i] = {

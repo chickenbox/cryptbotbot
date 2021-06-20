@@ -202,7 +202,8 @@ namespace bot {
                 }
 
                 // missing candle
-                if( (Date.now()-data[data.length-1].time)>this.timeInterval+5000 ){
+                const timeDiff = (Date.now()-data[data.length-1].time)-(this.timeInterval*2)
+                if( timeDiff>0 ){
                     return undefined
                 }
 
