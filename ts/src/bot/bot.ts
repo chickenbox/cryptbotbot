@@ -144,9 +144,8 @@ namespace bot {
             }
 
             // align data time slot
-            const nextTime = helper.snapTime( now+this.timeInterval, this.timeInterval )
-            const fiveMinWait = 1000*60*5
-            const timeout = Math.max( fiveMinWait, nextTime-now+fiveMinWait )
+            const nextTime = helper.snapTime( now, this.timeInterval )+this.timeInterval
+            const timeout = nextTime-now
 
             setTimeout(async ()=>{
                 try{
