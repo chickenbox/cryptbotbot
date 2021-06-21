@@ -189,8 +189,9 @@ namespace bot {
                 }
 
                 // missing candle
-                const timeDiff = (Date.now()-data[data.length-1].time)-(5*60*1000)
-                if( timeDiff>0 ){
+                const timeDiff = (Date.now()-data[data.length-1].time)
+                this.logger.log(`${symbol.symbol} delta: ${timeDiff/1000}s`)
+                if( timeDiff>5*60*1000 ){
                     return undefined
                 }
 
