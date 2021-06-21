@@ -189,7 +189,7 @@ namespace bot {
                 }
 
                 // missing candle
-                const timeDiff = (Date.now()-data[data.length-1].time)-(this.timeInterval*2)
+                const timeDiff = (Date.now()-data[data.length-1].time)-(5*60*1000)
                 if( timeDiff>0 ){
                     return undefined
                 }
