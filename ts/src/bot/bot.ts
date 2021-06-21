@@ -236,6 +236,7 @@ namespace bot {
         private async performTrade(){
             this.logger.log("=================================")
             this.logger.log(`Execution Log ${new Date()}`)
+            this.logger.log(`delta: ${(Date.now()-helper.snapTime(Date.now(),this.timeInterval))/1000}s`)
             this.logger.log("=================================")
 
             const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
