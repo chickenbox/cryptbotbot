@@ -94,20 +94,7 @@ namespace bot { export namespace helper {
             }
         }
 
-        static async create(
-            baseAsset: string,
-            data: DataEntry[],
-            smoothItr: number = 0,
-            downSample: number
-        ){
-            const t = new TrendWatcher(baseAsset, data, smoothItr, downSample)
-
-            t.resampling()
-
-            return t
-        }
-
-        private constructor(
+        constructor(
             readonly baseAsset: string,
             data: DataEntry[],
             readonly smoothItr: number = 0,
@@ -115,6 +102,7 @@ namespace bot { export namespace helper {
         ){
             this._downSampling = downSample
             this._rawData = data
+            this.resampling()
         }
 
         private resampling(){

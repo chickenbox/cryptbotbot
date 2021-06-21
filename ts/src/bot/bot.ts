@@ -172,7 +172,7 @@ namespace bot {
             return action
         }
 
-        private async makeDecision( symbol: {baseAsset: string, symbol: string }){
+        private makeDecision( symbol: {baseAsset: string, symbol: string }){
             if( symbol.baseAsset==this.homingAsset ) return undefined
 
             try{
@@ -205,14 +205,9 @@ namespace bot {
                         score: 0
                     } as Decision
 
-                const trendWatcher = await helper.TrendWatcher.create(
+                const trendWatcher = new helper.TrendWatcher(
                     symbol.baseAsset,
-                    data.map(d=>{
-                        return {
-                            price: d.price,
-                            time: d.time
-                        }
-                    }),
+                    data,
                     this.smoothAmount,
                     1
                 )
@@ -256,10 +251,9 @@ namespace bot {
                         this.whiteList.has(s.baseAsset)
             })
 
-            const decisions = (await Promise.all(symbols.map( symbol => {
-
+            const decisions = symbols.map( symbol => {
                 return this.makeDecision(symbol)
-            }))).filter(a=>a)
+            }).filter(a=>a)
 
             const balances = await this.trader.getBalances()
             for( let decision of decisions){
