@@ -26,17 +26,23 @@ namespace bot { export namespace helper {
 
             await Promise.all(prices.map(async price=>{
                 try{
-                    let records = this.prices[price.symbol]
+                    let records = this.prices[price.symbol] || (this.prices[price.symbol] = [])
 
-                    if( !records ){
-                        const data = await this.binance.getKlineCandlestickData(price.symbol, interval)
-                        records = data.map(function(d){
-                            return {
+                    let startTime = records.length>0 ? records[records.length-1].time : undefined
+
+                    if( !startTime || (Date.now()-startTime)>intervalToMilliSec(interval) ){
+                        const data = await this.binance.getKlineCandlestickData(
+                            price.symbol,
+                            interval,
+                            {
+                                startTime: startTime
+                            })
+                        for( let d of data ){
+                            records.push( {
                                 price: d.close,
                                 time: d.closeTime.getTime()
-                            }
-                        })
-                        this.prices[price.symbol] = records
+                            } )
+                        }
                     }
 
                     records.push({
