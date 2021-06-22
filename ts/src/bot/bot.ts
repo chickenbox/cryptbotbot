@@ -172,6 +172,10 @@ namespace bot {
             return action
         }
 
+        private scoreDecision( trendWatcher: helper.TrendWatcher, lastIdx: number ){
+            return trendWatcher.dDataDDt[lastIdx]/trendWatcher.data[lastIdx].price
+        }
+
         private makeDecision( symbol: {baseAsset: string, symbol: string }){
             if( symbol.baseAsset==this.homingAsset ) return undefined
 
@@ -224,7 +228,7 @@ namespace bot {
                         baseAsset: symbol.baseAsset,
                         price: trendWatcher.data[lastIdx].price,
                         action: action,
-                        score: trendWatcher.dDataDDt[lastIdx]
+                        score: this.scoreDecision( trendWatcher, lastIdx )
                     } as Decision
                 }
             }catch(e){
