@@ -192,6 +192,14 @@ namespace bot {
                     } as Decision
                 }
 
+                const trendWatcher = new helper.TrendWatcher(
+                    symbol.baseAsset,
+                    data,
+                    this.smoothAmount,
+                    1
+                )
+                this.trendWatchers[symbol.baseAsset] = trendWatcher
+
                 // missing candle
                 const timeDiff = (Date.now()-data[data.length-1].time)
                 this.logger.log(`${symbol.symbol} delta: ${timeDiff/1000}s`)
@@ -210,14 +218,6 @@ namespace bot {
                         score: 0
                     } as Decision
 
-                const trendWatcher = new helper.TrendWatcher(
-                    symbol.baseAsset,
-                    data,
-                    this.smoothAmount,
-                    1
-                )
-
-                this.trendWatchers[symbol.baseAsset] = trendWatcher
 
                 if( trendWatcher.data.length>2 ){
                     const lastIdx = trendWatcher.data.length-1
