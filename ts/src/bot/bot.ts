@@ -50,7 +50,7 @@ namespace bot {
         }
 
 
-        getRecentPrice( symbol: string ){
+        getRecentPrice( symbol: string ): number | undefined{
             const p = this.priceTracker.prices[symbol]
             return p && p.length>0 && p[p.length-1].price
         }
@@ -308,7 +308,7 @@ namespace bot {
                     this.logger.log( `${r.side} price: ${r.price} quantity: ${r.quantity} at ${r.time.toString()}` )
                 }
                 const symbol = `${baseAsset}${this.homingAsset}`
-                this.logger.log(`balance: ${this.performanceTracker.balance(symbol,this.getRecentPrice(symbol))}`)
+                this.logger.log(`balance: ${this.performanceTracker.balance(symbol,this.getRecentPrice(symbol) || 0)}`)
                 this.logger.log("======")
             }
             const balances = await this.trader.getBalances()
