@@ -29,6 +29,7 @@ namespace bot {
         private mockRun: boolean
         private whiteList: Set<string>
         private priceTracker: helper.PriceTracker
+        private balanceTracker: helper.BalanceTracker
         private trader = new trader.MockTrader()
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
@@ -83,6 +84,7 @@ namespace bot {
         ){
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure)
             this.priceTracker = new helper.PriceTracker(this.binance)
+            this.balanceTracker = new helper.BalanceTracker()
             this.homingAsset = config.homingAsset
             this.interval = config.interval
             this.minHLRation = config.minHLRation
@@ -307,6 +309,7 @@ namespace bot {
             this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
 
             const homingTotal = this.getHomingTotal(balances)
+            this.balanceTracker.add(homingTotal)
 
             this.logger.log(`Total in ${this.homingAsset}: ${homingTotal}`)
             this.logger.log("*****")
