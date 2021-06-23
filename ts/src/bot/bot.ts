@@ -30,6 +30,7 @@ namespace bot {
         private whiteList: Set<string>
         private priceTracker: helper.PriceTracker
         readonly balanceTracker: helper.BalanceTracker
+        readonly performanceTracker: helper.PerformanceTracker
         private trader = new trader.MockTrader()
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
@@ -85,6 +86,7 @@ namespace bot {
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure)
             this.priceTracker = new helper.PriceTracker(this.binance)
             this.balanceTracker = new helper.BalanceTracker()
+            this.performanceTracker = new helper.PerformanceTracker()
             this.homingAsset = config.homingAsset
             this.interval = config.interval
             this.minHLRation = config.minHLRation
@@ -236,11 +238,12 @@ namespace bot {
             for( let decision of decisions){
                 switch(decision.action){
                 case "sell":
-                    const quality = balances[decision.baseAsset] || 0
-                    if( quality>0 )
+                    const quantity = balances[decision.baseAsset] || 0
+                    if( quantity>0 )
                         try{
-                            await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
-                            this.tradeHistory.sell(decision.baseAsset, this.homingAsset, decision.price, quality )
+                            await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                            this.tradeHistory.sell(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                            this.performanceTracker.sell( `${decision.baseAsset}${this.homingAsset}`, decision.price, quantity )
                             await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
@@ -279,6 +282,7 @@ namespace bot {
                     try{
                         await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
                         this.tradeHistory.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                        this.performanceTracker.buy( `${decision.baseAsset}${this.homingAsset}`, decision.price, quantity )
                         await sleep(0.1)
                     }catch(e){
                         this.logger.error(e)
@@ -303,6 +307,8 @@ namespace bot {
                 for( let r of rs ){
                     this.logger.log( `${r.side} price: ${r.price} quantity: ${r.quantity} at ${r.time.toString()}` )
                 }
+                const symbol = `${baseAsset}${this.homingAsset}`
+                this.logger.log(`balance: ${this.performanceTracker.balance(symbol,this.getRecentPrice(symbol))}`)
                 this.logger.log("======")
             }
             const balances = await this.trader.getBalances()
