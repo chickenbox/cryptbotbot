@@ -292,6 +292,8 @@ namespace bot {
                 }
             }
 
+            this.performanceTracker.save()
+
             await this.logTrader()
             this.logger.log("=================================")
         }
@@ -307,7 +309,6 @@ namespace bot {
                 for( let r of rs ){
                     this.logger.log( `${r.side} price: ${r.price} quantity: ${r.quantity} at ${r.time.toString()}` )
                 }
-                this.logger.log(`balance: ${this.performanceTracker.balance(symbol,this.getRecentPrice(symbol) || 0)}`)
                 this.logger.log("======")
             }
             const balances = await this.trader.getBalances()

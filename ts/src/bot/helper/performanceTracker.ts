@@ -35,7 +35,7 @@ namespace bot { export namespace helper {
         sell( symbol: string, price: number, quantity: number ){
             const record = this.getRecord( symbol )
             record.holding -= quantity
-            record.spend -= quantity/price
+            record.spend -= quantity*price
         }
 
         balance( symbol: string, currentPrice: number ){

@@ -147,10 +147,11 @@ namespace bot { export namespace graph {
             </tr>
             ${
                 assets.map(r=>{
+                    const symnbol = `${r.asset}${this.bot.homingAsset}`
                     return `
                     <tr>
                     <th>
-                    ${r.asset}
+                    ${r.asset} Gain: ${this.bot.performanceTracker.balance(symnbol, this.bot.getRecentPrice(symnbol))}
                     </th>
                     </tr>
                     <tr>
