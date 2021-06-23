@@ -300,14 +300,13 @@ namespace bot {
             this.logger.log("*****")
             this.logger.log( "Log" )
             this.logger.log("*****")
-            for( let baseAsset in this.tradeHistory.history ){
+            for( let symbol in this.tradeHistory.history ){
                 this.logger.log("======")
-                this.logger.log(baseAsset)
-                const rs = this.tradeHistory.history[baseAsset]
+                this.logger.log(symbol)
+                const rs = this.tradeHistory.history[symbol]
                 for( let r of rs ){
                     this.logger.log( `${r.side} price: ${r.price} quantity: ${r.quantity} at ${r.time.toString()}` )
                 }
-                const symbol = `${baseAsset}${this.homingAsset}`
                 this.logger.log(`balance: ${this.performanceTracker.balance(symbol,this.getRecentPrice(symbol) || 0)}`)
                 this.logger.log("======")
             }
