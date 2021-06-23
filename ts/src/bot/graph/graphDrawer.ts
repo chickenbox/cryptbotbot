@@ -126,6 +126,25 @@ namespace bot { export namespace graph {
             ${drawGraph.toString()}
             </script>
             <table>
+            <tr>
+            <th>Balance ${this.bot.homingAsset}</th>
+            </tr>
+            <tr>
+            <td>
+            <canvas id="graphCanvasBalance" width="${graphWidth}" height="${graphHeight}" style="width: ${graphWidth}px; height: ${graphHeight}px;"></canvas>
+            <script>
+                drawGraph(graphCanvasBalance, ${JSON.stringify(this.bot.balanceTracker.balances.map(
+                    function(b){
+                        return {
+                            normalizedPrice: b.amount,
+                            smoothedPrice: b.amount,
+                            time: b.time
+                        }
+                    }
+                ))}, [], ${this.bot.timeInterval});
+            </script>
+            </td>
+            </tr>
             ${
                 assets.map(r=>{
                     return `

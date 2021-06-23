@@ -29,7 +29,7 @@ namespace bot {
         private mockRun: boolean
         private whiteList: Set<string>
         private priceTracker: helper.PriceTracker
-        private balanceTracker: helper.BalanceTracker
+        readonly balanceTracker: helper.BalanceTracker
         private trader = new trader.MockTrader()
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
