@@ -146,7 +146,7 @@ namespace bot {
         }
 
         private scoreDecision( trendWatcher: helper.TrendWatcher, lastIdx: number ){
-            return trendWatcher.dDataDDt[lastIdx]/trendWatcher.data[lastIdx].price
+            return new helper.DecisionScorer().score( trendWatcher, lastIdx )
         }
 
         private makeDecision( symbol: {baseAsset: string, symbol: string }){
