@@ -38,7 +38,12 @@ namespace bot { export namespace graph {
                 min = Math.min(d.normalizedPrice, min)
             }
         }
-        const range = max-min
+        let range = max-min
+        if( range==0 ){
+            range = 1
+            max = 0.5
+            min = -0.5
+        }
 
         for( let r of tradeRecords ){
             ctx.strokeStyle = r.color
@@ -66,6 +71,13 @@ namespace bot { export namespace graph {
         for( let d of data.slice(1) ){
             ctx.lineTo( (d.time-start)*w/timeRange, h-(d.smoothedPrice-min)*h/range )
         }
+        ctx.stroke()
+
+        ctx.strokeStyle = "grey"
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo( 0, h+min*h/range )
+        ctx.lineTo( w, h+min*h/range )
         ctx.stroke()
     }
 

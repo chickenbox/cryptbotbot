@@ -145,8 +145,8 @@ namespace bot {
             return action
         }
 
-        private scoreDecision( trendWatcher: helper.TrendWatcher, lastIdx: number ){
-            return new helper.DecisionScorer().score( trendWatcher, lastIdx )
+        private scoreDecision( trendWatcher: helper.TrendWatcher, lastIdx: number, balance: number ){
+            return new helper.DecisionScorer().score( trendWatcher, lastIdx, balance )
         }
 
         private makeDecision( symbol: {baseAsset: string, symbol: string }){
@@ -201,7 +201,7 @@ namespace bot {
                         baseAsset: symbol.baseAsset,
                         price: trendWatcher.data[lastIdx].price,
                         action: action,
-                        score: this.scoreDecision( trendWatcher, lastIdx )
+                        score: this.scoreDecision( trendWatcher, lastIdx, this.performanceTracker.balance(symbol.symbol, this.getRecentPrice(symbol.symbol)) )
                     } as Decision
                 }
             }catch(e){
