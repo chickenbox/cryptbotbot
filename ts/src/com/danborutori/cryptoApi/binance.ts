@@ -4,7 +4,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     type OrderType = "LIMIT" | "LIMIT_MAKER" | "MARKET" | "STOP_LOSS" | "STOP_LOSS_LIMIT" | "TAKE_PROFIT" | "TAKE_PROFIT_LIMIT"
     export type Interval = "1m" | "3m" | "5m" | "15m" | "30m" | "1h" | "2h" | "4h" | "6h" | "8h" | "12h" | "1d" | "3d" | "1w" | "1M"
     export type Side = "BUY" | "SELL"
-
+    type OrderStatus = "NEW" | "PARTIALLY_FILLED" | "FILLED" | "CANCELED" | "PENDING_CANCEL" | "REJECTED" | "EXPIRED"
+    type TimeInForce = "GTC" | "IOC" | "FOK"
 
     interface ExchangeInfoResponse {
 
@@ -85,6 +86,17 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         transactTime: number
     }
 
+    export interface NewOrderResultResponse extends NewOrderAckResponse {
+        price: string
+        origQty: string
+        executedQty: string
+        cummulativeQuoteQty: string
+        status: OrderStatus
+        timeInForce: TimeInForce
+        type: OrderType
+        side: Side
+    }
+
     interface Order {
         symbol: string
         orderId: number
@@ -94,8 +106,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         origQty: string
         executedQty: string
         cummulativeQuoteQty: string
-        status: "NEW" | "PARTIALLY_FILLED" | "FILLED" | "CANCELED" | "PENDING_CANCEL" | "REJECTED" | "EXPIRED"
-        timeInForce: "GTC" | "IOC" | "FOK"
+        status: OrderStatus
+        timeInForce: TimeInForce
         type: OrderType
         side: Side
     }
@@ -207,9 +219,9 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderAckResponse>{
+        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderResultResponse>{
             const params = new URLSearchParams({
-                newOrderRespType: "ACK",
+                newOrderRespType: "RESULT",
                 timestamp: await this.getServerTime()
             })
 
