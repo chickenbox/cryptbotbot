@@ -31,15 +31,31 @@ namespace bot { export namespace helper {
     
     function smoothData( baseAsset: string, data: DataEntry[], iteration: number ){
 
-        const smoothedData = data.map(function(d, idx){
+        let smoothedData = data.map(function(d, idx){
             const start = Math.max(0,idx-iteration+1)
             let price = 0
-            let weight = 1
             let totalWeight = 0
             for( let i=start; i<=idx; i++ ){
+                const weight = (i-start)/(idx-start)
                 price += data[i].price*weight
                 totalWeight += weight
-                weight *= 1.1
+            }
+
+            return {
+                price: price/totalWeight,
+                time: d.time
+            }
+        })
+
+        // further smooth
+        smoothedData = smoothedData.map( function(d, idx){
+            const start = Math.max(0,idx-Math.floor(iteration/2))
+            let price = 0
+            let totalWeight = 0
+            for( let i=start; i<=idx; i++ ){
+                const weight = 1
+                price += data[i].price*weight
+                totalWeight += weight
             }
 
             return {
