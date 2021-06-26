@@ -168,8 +168,7 @@ namespace bot {
                 const trendWatcher = new helper.TrendWatcher(
                     symbol.baseAsset,
                     data,
-                    this.smoothAmount,
-                    1
+                    this.smoothAmount
                 )
                 this.trendWatchers[symbol.baseAsset] = trendWatcher
 
