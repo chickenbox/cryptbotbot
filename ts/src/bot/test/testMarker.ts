@@ -20,14 +20,14 @@ namespace bot { export namespace test {
 
                 switch( action ){
                 case "buy":
-                    bot.tradeHistory.buy(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, date)
-                    bot.performanceTracker.buy(`${baseAsset}${bot.homingAsset}`, trendWatcher.data[i].price, 1)
+                    bot.tradeHistory.buy(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, trendWatcher.data[i].price, 0, date)
+                    bot.performanceTracker.buy(`${baseAsset}${bot.homingAsset}`, trendWatcher.data[i].price, 1/trendWatcher.data[i].price)
                     brought = true
                     break
                 case "sell":
                     if( brought ){
-                        bot.tradeHistory.sell(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, date)
-                        bot.performanceTracker.sell(`${baseAsset}${bot.homingAsset}`, trendWatcher.data[i].price, 1)
+                        bot.tradeHistory.sell(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, trendWatcher.data[i].price, 0, date)
+                        bot.performanceTracker.sell(`${baseAsset}${bot.homingAsset}`, trendWatcher.data[i].price, 1/trendWatcher.data[i].price)
                         brought = false
                     }
                     break

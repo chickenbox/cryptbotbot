@@ -240,9 +240,9 @@ namespace bot {
                     const quantity = balances[decision.baseAsset] || 0
                     if( quantity>0 )
                         try{
-                            await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quantity )
-                            this.tradeHistory.sell(decision.baseAsset, this.homingAsset, decision.price, quantity )
-                            this.performanceTracker.sell( `${decision.baseAsset}${this.homingAsset}`, decision.price, quantity )
+                            const response = await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                            this.tradeHistory.sell(decision.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
+                            this.performanceTracker.sell( `${decision.baseAsset}${this.homingAsset}`, response.price, response.quantity )
                             await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
@@ -279,9 +279,9 @@ namespace bot {
 
                 if( quantity>minQuantity )
                     try{
-                        await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
-                        this.tradeHistory.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
-                        this.performanceTracker.buy( `${decision.baseAsset}${this.homingAsset}`, decision.price, quantity )
+                        const response = await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                        this.tradeHistory.buy(decision.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
+                        this.performanceTracker.buy( `${decision.baseAsset}${this.homingAsset}`, response.price, response.quantity )
                         await sleep(0.1)
                     }catch(e){
                         this.logger.error(e)
@@ -306,7 +306,7 @@ namespace bot {
                 this.logger.log(symbol)
                 const rs = this.tradeHistory.history[symbol]
                 for( let r of rs ){
-                    this.logger.log( `${r.side} price: ${r.price} quantity: ${r.quantity} at ${r.time.toString()}` )
+                    this.logger.log( `${r.side} price: ${r.price}(${r.actualPrice}) quantity: ${r.quantity}(${r.actualQuantity}) at ${r.time.toString()}` )
                 }
                 this.logger.log("======")
             }
