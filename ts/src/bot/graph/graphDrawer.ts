@@ -3,7 +3,7 @@ namespace bot { export namespace graph {
     const graphWidth = 800
     const graphHeight = 300
 
-    const graphInterval = 1000*60*60*24*7
+    const graphInterval = 1000*60*60*24*2
 
     function drawGraph(
         canvas: HTMLCanvasElement,

@@ -156,7 +156,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             })
             options = options || {}
             for( let name in options ){
-                params.append(name, options[name])
+                if(options[name]!==undefined)
+                    params.append(name, options[name])
             }
 
             const respsone = await fetch( this.fullUrl("/klines") +"?"+ params )

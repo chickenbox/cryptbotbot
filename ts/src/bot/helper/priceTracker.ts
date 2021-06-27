@@ -1,7 +1,7 @@
 namespace bot { export namespace helper {
 
     const pricesLocalStorageKey = "PriceTracker.prices"
-    const recordLimit = 500
+    const recordLimit = 5000
 
     export class PriceTracker {
 

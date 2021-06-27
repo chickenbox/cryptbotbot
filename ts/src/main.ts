@@ -1,9 +1,9 @@
 setTimeout( function(){    
     const b = new bot.Bot({
         homingAsset: "USDT",
-        interval: "30m",
+        interval: "5m",
         minHLRation: 1.1,
-        smoothAmount: 96,
+        smoothAmount: 2*60/5,
         maxAllocation: 1/10,
         logLength: 10000,
         holdingBalance: 10000,
