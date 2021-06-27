@@ -110,7 +110,7 @@ namespace bot {
                 }
     
                 if( this.mockRun ){
-                    new test.TestMarker().test(this, new Date( now-1000*60*60*24*2 ))
+                    new test.TestMarker().test(this, new Date( now-1000*60*60*24*7 ))
                 }
             }catch(e){
                 this.logger.error(e)

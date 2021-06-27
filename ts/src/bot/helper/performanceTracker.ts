@@ -25,6 +25,10 @@ namespace bot { export namespace helper {
             })
         }
 
+        getHolding( symbol: string ){
+            return this.getRecord(symbol).holding
+        }
+
         buy( symbol: string, price: number, quantity: number ) {
             const record = this.getRecord( symbol )
 

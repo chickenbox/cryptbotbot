@@ -13,6 +13,7 @@ namespace bot { export namespace test {
 
             const startIndex = trendWatcher.data.findIndex(d=>d.time>start.getTime())
             let brought = false
+            const symbol = `${baseAsset}${bot.homingAsset}`
 
             for( let i = startIndex; i<trendWatcher.data.length; i++ ){
                 const action = bot.getAction( baseAsset, trendWatcher, i )
@@ -21,13 +22,14 @@ namespace bot { export namespace test {
                 switch( action ){
                 case "buy":
                     bot.tradeHistory.buy(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, trendWatcher.data[i].price, 0, date)
-                    bot.performanceTracker.buy(`${baseAsset}${bot.homingAsset}`, trendWatcher.data[i].price, 1/trendWatcher.data[i].price)
+                    bot.performanceTracker.buy(symbol, trendWatcher.data[i].price, 1/trendWatcher.data[i].price)
                     brought = true
                     break
                 case "sell":
                     if( brought ){
+                        const holding = bot.performanceTracker.getHolding(symbol)
                         bot.tradeHistory.sell(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, trendWatcher.data[i].price, 0, date)
-                        bot.performanceTracker.sell(`${baseAsset}${bot.homingAsset}`, trendWatcher.data[i].price, 1/trendWatcher.data[i].price)
+                        bot.performanceTracker.sell(symbol, trendWatcher.data[i].price, holding)
                         brought = false
                     }
                     break
