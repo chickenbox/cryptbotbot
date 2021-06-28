@@ -7,7 +7,7 @@ setTimeout( function(){
         maxAllocation: 1/10,
         logLength: 10000,
         holdingBalance: 10000,
-        minimumOrderQuantity: 5,
+        minimumOrderQuantity: 10,
         mockRun: process.argv[5]=="true",
         apiKey: process.argv[2],
         apiSecure: process.argv[3],

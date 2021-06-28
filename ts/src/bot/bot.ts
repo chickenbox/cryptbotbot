@@ -17,6 +17,13 @@ namespace bot {
         score: number
     }
 
+    function getMinQty( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol ): number | undefined {
+        const f = symbol.filters.find(function(f){return f.filterType=="LOT_SIZE"}) as com.danborutori.cryptoApi.FilterLotSize
+        if( f ){
+            return parseFloat( f.minQty )
+        }
+    }
+
     export class Bot {
         private binance: com.danborutori.cryptoApi.Binance
         readonly homingAsset: string
@@ -275,9 +282,8 @@ namespace bot {
 
             for( let decision of buyDecisions ){
                 let quantity = averageHomingAsset/decision.price
-
-                const newAmount = ((balances[decision.symbol.baseAsset] || 0)+quantity)*decision.price
-                const minQuantity = this.minimumOrderQuantity/decision.price
+                const newAmount = ((balances[decision.symbol.baseAsset] || 0)+quantity)*decision.price                
+                const minQuantity =  (getMinQty(decision.symbol) || this.minimumOrderQuantity)
 
                 if( newAmount>maxAllocation ){
                     quantity -= (newAmount-maxAllocation)/decision.price

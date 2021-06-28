@@ -12,6 +12,17 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         msg: string
     }
 
+    interface Filter {
+        filterType: "LOT_SIZE"
+    }
+
+    export interface FilterLotSize {
+        filterType: "LOT_SIZE"
+        minQty: string
+        maxQty: string
+        stepSize: string
+    }
+
     export interface ExchangeInfoSymbol {
         symbol: string
         status: SymbolStatus
@@ -28,7 +39,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         quoteOrderQtyMarketAllowed: boolean
         isSpotTradingAllowed: boolean
         isMarginTradingAllowed: boolean
-        filters: any[]
+        filters: Filter[]
             //These are defined in the Filters section.
             //All filters are optional
         permissions: string[]
