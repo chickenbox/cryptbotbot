@@ -81,11 +81,15 @@ namespace bot {
                 mockRun: boolean
                 apiKey: string
                 apiSecure: string
-                environment: com.danborutori.cryptoApi.Environment
+                environment: com.danborutori.cryptoApi.Environment                
             }
         ){
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure, config.environment)
-            this.trader = new trader.BinanceTrader(this.binance)
+            if( config.mockRun ){
+                this.trader = new trader.MockTrader()
+            }else{
+                this.trader = new trader.BinanceTrader(this.binance)
+            }
             this.priceTracker = new helper.PriceTracker(this.binance)
             this.balanceTracker = new helper.BalanceTracker()
             this.performanceTracker = new helper.PerformanceTracker()
