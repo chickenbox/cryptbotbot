@@ -31,7 +31,7 @@ namespace bot {
         private priceTracker: helper.PriceTracker
         readonly balanceTracker: helper.BalanceTracker
         readonly performanceTracker: helper.PerformanceTracker
-        private trader = new trader.MockTrader()
+        private trader: trader.Trader
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
         private logger: helper.Logger
@@ -81,9 +81,11 @@ namespace bot {
                 mockRun: boolean
                 apiKey: string
                 apiSecure: string
+                environment: com.danborutori.cryptoApi.Environment
             }
         ){
-            this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure)
+            this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure, config.environment)
+            this.trader = new trader.BinanceTrader(this.binance)
             this.priceTracker = new helper.PriceTracker(this.binance)
             this.balanceTracker = new helper.BalanceTracker()
             this.performanceTracker = new helper.PerformanceTracker()

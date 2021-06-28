@@ -1,5 +1,21 @@
 namespace bot { export namespace trader {
 
+    function convertResponse( response: com.danborutori.cryptoApi.NewOrderFullResponse ){
+        let price = 0
+        let quantity = 0
+        if( response.fills ){
+            for( let f of response.fills ){
+                const qty = parseFloat( f.qty )
+                price += parseFloat( f.price )*qty
+                quantity += qty
+            }
+        }
+        return {
+            price: price/quantity,
+            quantity: quantity
+        }
+    }
+
     export class BinanceTrader extends Trader {
         constructor(
             readonly binance: com.danborutori.cryptoApi.Binance
@@ -16,19 +32,13 @@ namespace bot { export namespace trader {
         }
 
         async buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ) {
-            const response = await this.binance.newOrder( `${baseAsset}${quoteAsset}`, "BUY", undefined, quantity*closePrice )
-            return {
-                price: parseFloat(response.price),
-                quantity: parseFloat(response.executedQty)
-            }
+            const response = await this.binance.newOrder( `${baseAsset}${quoteAsset}`, "BUY", quantity )
+            return convertResponse(response)
         }
 
         async sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ) {
             const response = await this.binance.newOrder( `${baseAsset}${quoteAsset}`, "SELL", quantity )
-            return {
-                price: parseFloat(response.price),
-                quantity: parseFloat(response.executedQty)
-            }
+            return convertResponse(response)
         }
     }
 

@@ -97,6 +97,15 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         side: Side
     }
 
+    export interface NewOrderFullResponse extends NewOrderResultResponse {
+        fills?: {
+            price: string,
+            qty: string,
+            commission: string,
+            commissionAsset: string
+        }[]
+    }
+
     interface Order {
         symbol: string
         orderId: number
@@ -121,16 +130,22 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         origQuoteOrderQty: string
     }
 
-    export class Binance {
-        static shared = new Binance()
+    export type Environment = "PRODUCTION" | "SPOT"
 
+    export class Binance {
         fullUrl( path: string ){
-            return `https://api.binance.com/api/v3${path}`
+            switch( this.env ){
+            case "PRODUCTION":
+                return `https://api.binance.com/api/v3${path}`
+            default:
+                return `https://testnet.binance.vision/api/v3${path}`
+            }
         }
 
         constructor(
             private apiKey?: string,
-            private apiSecure?: string
+            private apiSecure?: string,
+            private env: Environment
         ){}
 
         async getExchangeInfo() {
@@ -220,21 +235,15 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderResultResponse>{
+        async newOrder(symbol: string, side: Side, quantity: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse>{
             const params = new URLSearchParams({
                 symbol: symbol,
                 side: side,
                 type: type,
-                newOrderRespType: "RESULT",
+                quantity: quantity.toString(),
+                newOrderRespType: "FULL",
                 timestamp: await this.getServerTime()
             })
-
-            if( quantity!==undefined ){
-                params.append("quantity", quantity.toString())
-            }
-            if( quoteQuantity!==undefined ){
-                params.append("quoteQuantity", quantity.toString())
-            }
 
             const response = await fetch( this.fullUrl("/order"), {
                 method: "POST",
@@ -247,21 +256,15 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async testOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderResultResponse>{
+        async testOrder(symbol: string, side: Side, quantity: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse>{
             const params = new URLSearchParams({
                 symbol: symbol,
                 side: side,
                 type: type,
-                newOrderRespType: "RESULT",
+                quantity: quantity.toString(),
+                newOrderRespType: "FULL",
                 timestamp: await this.getServerTime()
             })
-
-            if( quantity!==undefined ){
-                params.append("quantity", quantity.toString())
-            }
-            if( quoteQuantity!==undefined ){
-                params.append("quoteQuantity", quantity.toString())
-            }
 
             const response = await fetch( this.fullUrl("/order/test"), {
                 method: "POST",
