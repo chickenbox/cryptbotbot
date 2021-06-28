@@ -16,6 +16,10 @@ namespace bot { export namespace trader {
         }
     }
 
+    function fixPrecision( n: number, precision: number ){
+        return parseFloat( n.toPrecision(precision) )
+    }
+
     export class BinanceTrader extends Trader {
         constructor(
             readonly binance: com.danborutori.cryptoApi.Binance
@@ -31,14 +35,30 @@ namespace bot { export namespace trader {
             return balances
         }
 
-        async buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ) {
-            const response = await this.binance.newOrder( `${baseAsset}${quoteAsset}`, "BUY", undefined, quantity*closePrice )
-            return convertResponse(response)
+        async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, closePrice: number, quantity: number ) {
+            try{
+                const response = await this.binance.newOrder( symbol.symbol, "BUY", undefined, fixPrecision( quantity*closePrice, symbol.quoteAssetPrecision))
+                return convertResponse(response)
+            }catch(e){
+                console.error(e)
+            }
+            return {
+                price: 0,
+                quantity: 0
+            }
         }
 
-        async sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ) {
-            const response = await this.binance.newOrder( `${baseAsset}${quoteAsset}`, "SELL", quantity )
-            return convertResponse(response)
+        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, closePrice: number, quantity: number ) {
+            try{
+                const response = await this.binance.newOrder( symbol.symbol, "SELL", fixPrecision( quantity, symbol.baseAssetPrecision ))
+                return convertResponse(response)
+            }catch(e){
+                console.error(e)
+            }
+            return {
+                price: 0,
+                quantity: 0
+            }
         }
     }
 

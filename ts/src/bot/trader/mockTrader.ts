@@ -17,7 +17,9 @@ namespace bot { export namespace trader {
             return this.balances
         }
 
-        async buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
+        async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, closePrice: number, quantity: number ){
+            const baseAsset = symbol.baseAsset
+            const quoteAsset = symbol.quoteAsset
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)+quantity
             this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)-quantity*closePrice
             this.saveBalances()
@@ -28,7 +30,9 @@ namespace bot { export namespace trader {
             }
         }
 
-        async sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ){
+        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, closePrice: number, quantity: number ){
+            const baseAsset = symbol.baseAsset
+            const quoteAsset = symbol.quoteAsset
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)-quantity
             this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)+quantity*closePrice
             this.saveBalances()

@@ -11,7 +11,7 @@ namespace bot {
     type Action = "buy" | "sell" | "none"
 
     interface Decision {
-        baseAsset: string
+        symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol
         price: number
         action: Action
         score: number
@@ -160,7 +160,7 @@ namespace bot {
                 // sell if no recent data
                 if( data.length<10 ){
                     return {
-                        baseAsset: symbol.baseAsset,
+                        symbol: symbol,
                         price: this.getRecentPrice(symbol.symbol),
                         action: "sell",
                         score: 0
@@ -186,7 +186,7 @@ namespace bot {
 
                 if( high/low <= this.minHLRation )
                     return {
-                        baseAsset: symbol.baseAsset,
+                        symbol: symbol,
                         price: this.getRecentPrice(symbol.symbol),
                         action: "sell",
                         score: 0
@@ -199,7 +199,7 @@ namespace bot {
                     let action = this.getAction(symbol.baseAsset, trendWatcher, lastIdx)
 
                     return {
-                        baseAsset: symbol.baseAsset,
+                        symbol: symbol,
                         price: trendWatcher.data[lastIdx].price,
                         action: action,
                         score: this.scoreDecision( trendWatcher, lastIdx, this.performanceTracker.balance(symbol.symbol, this.getRecentPrice(symbol.symbol)) )
@@ -239,12 +239,12 @@ namespace bot {
             for( let decision of decisions){
                 switch(decision.action){
                 case "sell":
-                    const quantity = balances[decision.baseAsset] || 0
+                    const quantity = balances[decision.symbol.baseAsset] || 0
                     if( quantity>0 )
                         try{
-                            const response = await this.trader.sell(decision.baseAsset, this.homingAsset, decision.price, quantity )
-                            this.tradeHistory.sell(decision.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
-                            this.performanceTracker.sell( `${decision.baseAsset}${this.homingAsset}`, response.price, response.quantity )
+                            const response = await this.trader.sell(decision.symbol, decision.price, quantity )
+                            this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
+                            this.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
                             await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
@@ -263,7 +263,7 @@ namespace bot {
             if( buyDecisions.length>maxOrder ){
                 for( let i=maxOrder; i<buyDecisions.length; i++ ){
                     const decision = buyDecisions[i]
-                    this.tradeHistory.wannaBuy(decision.baseAsset, this.homingAsset, decision.price, 0 )
+                    this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, 0 )
                 }
                 buyDecisions.length = maxOrder
             }
@@ -272,7 +272,7 @@ namespace bot {
             for( let decision of buyDecisions ){
                 let quantity = averageHomingAsset/decision.price
 
-                const newAmount = ((balances[decision.baseAsset] || 0)+quantity)*decision.price
+                const newAmount = ((balances[decision.symbol.baseAsset] || 0)+quantity)*decision.price
                 const minQuantity = this.minimumOrderQuantity/decision.price
 
                 if( newAmount>maxAllocation ){
@@ -281,15 +281,15 @@ namespace bot {
 
                 if( quantity>minQuantity )
                     try{
-                        const response = await this.trader.buy(decision.baseAsset, this.homingAsset, decision.price, quantity )
-                        this.tradeHistory.buy(decision.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
-                        this.performanceTracker.buy( `${decision.baseAsset}${this.homingAsset}`, response.price, response.quantity )
+                        const response = await this.trader.buy(decision.symbol, decision.price, quantity )
+                        this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
+                        this.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
                         await sleep(0.1)
                     }catch(e){
                         this.logger.error(e)
                     }
                 else{
-                    this.tradeHistory.wannaBuy(decision.baseAsset, this.homingAsset, decision.price, quantity )
+                    this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity )
                 }
             }
 

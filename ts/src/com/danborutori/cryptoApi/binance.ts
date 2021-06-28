@@ -7,6 +7,33 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     type OrderStatus = "NEW" | "PARTIALLY_FILLED" | "FILLED" | "CANCELED" | "PENDING_CANCEL" | "REJECTED" | "EXPIRED"
     type TimeInForce = "GTC" | "IOC" | "FOK"
 
+    interface ErrorResponse {
+        code: number
+        msg: string
+    }
+
+    export interface ExchangeInfoSymbol {
+        symbol: string
+        status: SymbolStatus
+        baseAsset: string
+        baseAssetPrecision: number
+        quoteAsset: string
+        quotePrecision: number // will be removed in future api versions (v4+)
+        quoteAssetPrecision: number
+        baseCommissionPrecision: number
+        quoteCommissionPrecision: number
+        orderTypes: OrderType[]
+        icebergAllowed: boolean
+        ocoAllowed: boolean
+        quoteOrderQtyMarketAllowed: boolean
+        isSpotTradingAllowed: boolean
+        isMarginTradingAllowed: boolean
+        filters: any[]
+            //These are defined in the Filters section.
+            //All filters are optional
+        permissions: string[]
+    }
+
     interface ExchangeInfoResponse {
 
         timezone: string
@@ -23,27 +50,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             maxNumAlgoOrders: number
         }[]
 
-        symbols: {
-            symbol: string
-            status: SymbolStatus
-            baseAsset: string
-            baseAssetPrecision: number
-            quoteAsset: string
-            quotePrecision: number // will be removed in future api versions (v4+)
-            quoteAssetPrecision: number
-            baseCommissionPrecision: number
-            quoteCommissionPrecision: number
-            orderTypes: OrderType[]
-            icebergAllowed: boolean
-            ocoAllowed: boolean
-            quoteOrderQtyMarketAllowed: boolean
-            isSpotTradingAllowed: boolean
-            isMarginTradingAllowed: boolean
-            filters: any[]
-                //These are defined in the Filters section.
-                //All filters are optional
-            permissions: string[]
-        }[]
+        symbols: ExchangeInfoSymbol[]
     }
 
     export interface KlineCandlestickData {
@@ -145,7 +152,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         constructor(
             private apiKey?: string,
             private apiSecure?: string,
-            private env: Environment
+            private env: Environment = "SPOT"
         ){}
 
         async getExchangeInfo() {
@@ -235,7 +242,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse>{
+        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse> {
             const params = new URLSearchParams({
                 symbol: symbol,
                 side: side,
@@ -259,7 +266,11 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 body: this.sign(params)
             } )
 
-            return response.json()
+            if( Math.floor(response.status/100)==2 ){
+                return response.json()
+            }else{
+                throw await response.json() as ErrorResponse
+            }
         }
 
         async testOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse>{
