@@ -297,7 +297,11 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 body: this.sign(params)
             } )
 
-            return response.json()
+            if( Math.floor(response.status/100)==2 ){
+                return response.json()
+            }else{
+                throw await response.json() as ErrorResponse
+            }
         }
 
         async cancelAllOpenOrder( symbol: string ): Promise<Order[]> {
