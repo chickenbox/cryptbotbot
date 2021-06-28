@@ -11,7 +11,7 @@ namespace bot { export namespace trader {
             }
         }
         return {
-            price: price/quantity,
+            price: quantity!=0?price/quantity:0,
             quantity: quantity
         }
     }
@@ -32,7 +32,7 @@ namespace bot { export namespace trader {
         }
 
         async buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number ) {
-            const response = await this.binance.newOrder( `${baseAsset}${quoteAsset}`, "BUY", quantity )
+            const response = await this.binance.newOrder( `${baseAsset}${quoteAsset}`, "BUY", undefined, quantity*closePrice )
             return convertResponse(response)
         }
 

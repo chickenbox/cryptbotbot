@@ -136,7 +136,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         fullUrl( path: string ){
             switch( this.env ){
             case "PRODUCTION":
-                return `https://api.binance.com/api/v3${path}`
+            return `https://api.binance.com/api/v3${path}`
             default:
                 return `https://testnet.binance.vision/api/v3${path}`
             }
@@ -235,15 +235,21 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async newOrder(symbol: string, side: Side, quantity: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse>{
+        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse>{
             const params = new URLSearchParams({
                 symbol: symbol,
                 side: side,
                 type: type,
-                quantity: quantity.toString(),
                 newOrderRespType: "FULL",
                 timestamp: await this.getServerTime()
             })
+
+            if( quantity!==undefined ){
+                params.append("quantity", quantity.toString())
+            }
+            if( quoteQuantity!==undefined ){
+                params.append("quoteOrderQty", quoteQuantity.toString())
+            }
 
             const response = await fetch( this.fullUrl("/order"), {
                 method: "POST",
@@ -256,15 +262,21 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async testOrder(symbol: string, side: Side, quantity: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse>{
+        async testOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse>{
             const params = new URLSearchParams({
                 symbol: symbol,
                 side: side,
                 type: type,
-                quantity: quantity.toString(),
                 newOrderRespType: "FULL",
                 timestamp: await this.getServerTime()
             })
+
+            if( quantity!==undefined ){
+                params.append("quantity", quantity.toString())
+            }
+            if( quoteQuantity!==undefined ){
+                params.append("quoteOrderQty", quoteQuantity.toString())
+            }
 
             const response = await fetch( this.fullUrl("/order/test"), {
                 method: "POST",
