@@ -222,6 +222,9 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
 
         async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderResultResponse>{
             const params = new URLSearchParams({
+                symbol: symbol,
+                side: side,
+                type: type,
                 newOrderRespType: "RESULT",
                 timestamp: await this.getServerTime()
             })
@@ -234,6 +237,33 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             }
 
             const response = await fetch( this.fullUrl("/order"), {
+                method: "POST",
+                headers: {
+                    "X-MBX-APIKEY": this.apiKey
+                },
+                body: this.sign(params)
+            } )
+
+            return response.json()
+        }
+
+        async testOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderResultResponse>{
+            const params = new URLSearchParams({
+                symbol: symbol,
+                side: side,
+                type: type,
+                newOrderRespType: "RESULT",
+                timestamp: await this.getServerTime()
+            })
+
+            if( quantity!==undefined ){
+                params.append("quantity", quantity.toString())
+            }
+            if( quoteQuantity!==undefined ){
+                params.append("quoteQuantity", quantity.toString())
+            }
+
+            const response = await fetch( this.fullUrl("/order/test"), {
                 method: "POST",
                 headers: {
                     "X-MBX-APIKEY": this.apiKey
