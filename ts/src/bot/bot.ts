@@ -96,8 +96,10 @@ namespace bot {
             switch( config.trader ){
             case "BINANCE":
                 this.trader = new trader.BinanceTrader(this.binance)
+                break
             default:
                 this.trader = new trader.MockTrader()
+                break
             }
             this.priceTracker = new helper.PriceTracker(this.binance)
             this.balanceTracker = new helper.BalanceTracker()
