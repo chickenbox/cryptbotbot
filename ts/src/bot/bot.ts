@@ -88,14 +88,16 @@ namespace bot {
                 mockRun: boolean
                 apiKey: string
                 apiSecure: string
-                environment: com.danborutori.cryptoApi.Environment                
+                environment: com.danborutori.cryptoApi.Environment
+                trader: "BINANCE" | "MOCK"
             }
         ){
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure, config.environment)
-            if( config.mockRun ){
-                this.trader = new trader.MockTrader()
-            }else{
+            switch( config.trader ){
+            case "BINANCE":
                 this.trader = new trader.BinanceTrader(this.binance)
+            default:
+                this.trader = new trader.MockTrader()
             }
             this.priceTracker = new helper.PriceTracker(this.binance)
             this.balanceTracker = new helper.BalanceTracker()
@@ -147,13 +149,14 @@ namespace bot {
 
             let action: Action = "none"
             
-            if( trendWatcher.dDataDt[index]<=0 && trendWatcher.dDataDt[index]+trendWatcher.dDataDDt[index]>=0 ){
+            if( trendWatcher.dDataDDt[index-1]<0 && trendWatcher.dDataDDt[index]>=0 ){
                 if( this.allow.buy)
                     action = "buy"
             }else{
-                if( trendWatcher.dDataDt[index]+trendWatcher.dDataDDt[index]<=0 )
+                if( trendWatcher.dDataDDt[index-1]>0 && trendWatcher.dDataDDt[index]<=0 ){
                     if( this.allow.sell)
                         action = "sell"
+                }
             }
             return action
         }
