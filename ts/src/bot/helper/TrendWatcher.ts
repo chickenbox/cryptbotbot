@@ -32,7 +32,7 @@ namespace bot { export namespace helper {
     }
 
     function dDataDT( data: number[] ){
-        return data.map( (d,i,arr)=>{
+        return data.map( function(d,i){
             if( i>0){
                 return d-data[i-1]
             }
