@@ -151,13 +151,11 @@ namespace bot {
 
             let action: Action = "none"
             
-            const valleySlope = -0.075//-0.025
-
-            if( trendWatcher.dDataDt[index]<valleySlope && trendWatcher.dDataDt[index]+trendWatcher.dDataDDt[index]>=0 ){
+            if( trendWatcher.dDataDDt[index-1]<0 && trendWatcher.dDataDDt[index]>=0 ){
                 if( this.allow.buy)
                     action = "buy"
             }else{
-                if( trendWatcher.dDataDt[index]+trendWatcher.dDataDDt[index]<=0 ){
+                if( trendWatcher.dDataDDt[index-1]>0 && trendWatcher.dDataDDt[index]<=0 ){
                     if( this.allow.sell)
                         action = "sell"
                 }

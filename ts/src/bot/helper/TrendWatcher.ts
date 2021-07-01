@@ -5,12 +5,12 @@ namespace bot { export namespace helper {
     }
 
     function smoothingCurve( n: number ){
-        const t = Math.pow(n,8)
+        const t = Math.pow(n,16)
 
         return Math.cos( (t-0.5)*Math.PI )
     }
 
-    function smoothData( baseAsset: string, data: DataEntry[], iteration: number ){
+    function smoothData( data: DataEntry[], iteration: number ){
 
         const smoothedData = data.map(function(d, idx){
             const start = Math.max(0,idx-iteration+1)
@@ -40,6 +40,21 @@ namespace bot { export namespace helper {
         })
     }
 
+    function smooth( data: number[], amount: number ){
+        return data.map( function(d,idx){
+            const start = Math.max(0,idx-amount+1)
+            let n = 0
+            let totalWeight = 0
+
+            for( let i=start; i<=idx; i++ ){
+                const weight = smoothingCurve((i-start)/(idx-start))
+                n += data[i]*weight
+                totalWeight += weight
+            }
+            return totalWeight!=0?n/totalWeight:0
+        })
+    }
+
     export class TrendWatcher {
 
         data: DataEntry[]
@@ -61,10 +76,10 @@ namespace bot { export namespace helper {
             readonly smoothItr: number = 0
         ){
             this.data = data
-            this.smoothedData = smoothData( this.baseAsset, this.data, this.smoothItr )
+            this.smoothedData = smoothData( this.data, this.smoothItr )
 
-            this.dDataDt = dDataDT(this.smoothedData.map(d=>d.price))
-            this.dDataDDt = dDataDT(this.dDataDt)
+            this.dDataDt = smooth( dDataDT(this.smoothedData.map(d=>d.price)), this.smoothItr)
+            this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr/2))
         }
 
         get lastDDataDt(){
