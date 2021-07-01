@@ -12,6 +12,10 @@ namespace bot { export namespace helper {
             return timestamp > (this.lockBuyTimestamps[symbol] || 0)
         }
 
+        getLockBuyTimestamp( symbol: string ){
+            return this.lockBuyTimestamps[symbol] || 0
+        }
+
     }
 
 }}

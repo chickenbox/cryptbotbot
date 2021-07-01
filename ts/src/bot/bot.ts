@@ -41,7 +41,7 @@ namespace bot {
         private trader: trader.Trader
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
-        private cooldownHelper = new helper.CoolDownHelper()
+        readonly cooldownHelper = new helper.CoolDownHelper()
         private logger: helper.Logger
         
         readonly allow = {
@@ -259,9 +259,14 @@ namespace bot {
                     const quantity = balances[decision.symbol.baseAsset] || 0
                     if( quantity>0 )
                         try{
+                            const beforeSpend = this.performanceTracker.getRecord(decision.symbol.symbol).spend
                             const response = await this.trader.sell(decision.symbol, quantity )
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
                             this.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
+                            const afterSpend = this.performanceTracker.getRecord(decision.symbol.symbol).spend
+                            if( afterSpend>beforeSpend ){ // lose money, cooldown 1 day
+                                this.cooldownHelper.setCoolDown(decision.symbol.symbol, Date.now()+1000*60*60*24)
+                            }
                             await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)

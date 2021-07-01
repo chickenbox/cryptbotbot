@@ -228,15 +228,21 @@ namespace bot { export namespace graph {
                     }
                 ))}, [], ${this.bot.timeInterval});
             </script>
+            <br/><br/>
             </td>
             </tr>
             ${
                 assets.map(r=>{
-                    const symnbol = `${r.asset}${this.bot.homingAsset}`
+                    const symbol = `${r.asset}${this.bot.homingAsset}`
+                    const cooldown = this.bot.cooldownHelper.getLockBuyTimestamp(symbol)
+                    let coolDownStr = "NA"
+                    if( cooldown>Date.now() )
+                        coolDownStr = new Date(cooldown).toDateString()
                     return `
                     <tr>
                     <th>
-                    ${r.asset} Gain: ${this.bot.performanceTracker.balance(symnbol, this.bot.getRecentPrice(symnbol))}
+                    ${r.asset} Gain: ${this.bot.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol))}<br/>
+                    Cooldown: ${coolDownStr}
                     </th>
                     </tr>
                     <tr>
@@ -245,6 +251,7 @@ namespace bot { export namespace graph {
                     <script>
                         drawGraph(graphCanvas${r.asset}, ${JSON.stringify(r.data)}, ${JSON.stringify(r.tradeRecords)}, ${this.bot.timeInterval});
                     </script>
+                    <br/><br/>
                     </td>
                     </tr>
                     `
