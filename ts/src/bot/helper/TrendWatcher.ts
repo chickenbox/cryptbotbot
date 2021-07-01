@@ -78,8 +78,8 @@ namespace bot { export namespace helper {
             this.data = data
             this.smoothedData = smoothData( this.data, this.smoothItr )
 
-            this.dDataDt = smooth( dDataDT(this.smoothedData.map(d=>d.price)), this.smoothItr)
-            this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr/2))
+            this.dDataDt = smooth( dDataDT(this.smoothedData.map(d=>d.price)), Math.floor(this.smoothItr))
+            this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr))
         }
 
         get lastDDataDt(){

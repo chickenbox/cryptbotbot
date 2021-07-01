@@ -18,7 +18,7 @@ namespace bot { export namespace helper {
             }
         }
 
-        private getRecord( symbol: string ){
+        getRecord( symbol: string ){
             return this.gains[ symbol ] || (this.gains[ symbol ] = {
                 holding: 0,
                 spend: 0

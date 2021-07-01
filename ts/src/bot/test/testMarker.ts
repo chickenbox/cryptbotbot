@@ -21,8 +21,9 @@ namespace bot { export namespace test {
 
                 switch( action ){
                 case "buy":
+                    const earning = Math.max(0,-bot.performanceTracker.getRecord(symbol).spend)
                     bot.tradeHistory.buy(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, trendWatcher.data[i].price, 0, date)
-                    bot.performanceTracker.buy(symbol, trendWatcher.data[i].price, 1/trendWatcher.data[i].price)
+                    bot.performanceTracker.buy(symbol, trendWatcher.data[i].price, (1+earning)/trendWatcher.data[i].price)
                     brought = true
                     break
                 case "sell":

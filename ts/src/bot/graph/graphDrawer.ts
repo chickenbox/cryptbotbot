@@ -105,7 +105,7 @@ namespace bot { export namespace graph {
             min = -0.5
         }
 
-        ctx.strokeStyle = "red"
+        ctx.strokeStyle = "#AAB7B8"
         ctx.lineWidth = 1
         ctx.beginPath()
         ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
@@ -194,7 +194,7 @@ namespace bot { export namespace graph {
                             color = "blue"
                             break
                         case "sell":
-                            color = "yellow"
+                            color = "red"
                             break                            
                         }
                         return {
