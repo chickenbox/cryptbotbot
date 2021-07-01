@@ -41,6 +41,7 @@ namespace bot {
         private trader: trader.Trader
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
+        private cooldownHelper = new helper.CoolDownHelper()
         private logger: helper.Logger
         
         readonly allow = {
@@ -152,7 +153,7 @@ namespace bot {
             let action: Action = "none"
             
             if( trendWatcher.dDataDDt[index-1]<0 && trendWatcher.dDataDDt[index]>=0 ){
-                if( this.allow.buy)
+                if( this.allow.buy && this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time))
                     action = "buy"
             }else{
                 if( trendWatcher.dDataDDt[index-1]>0 && trendWatcher.dDataDDt[index]<=0 ){
