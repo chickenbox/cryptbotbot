@@ -13,32 +13,42 @@ namespace bot { export namespace trader {
             return {USDT: 100}
         }()
 
+        constructor( readonly binance: com.danborutori.cryptoApi.Binance ){
+            super()
+        }
+
         async getBalances(){
             return this.balances
         }
 
-        async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, closePrice: number, quantity: number ){
+        async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number ){
+            const currentPrice = await this.binance.getSymbolPriceTicker(symbol.symbol)
+            const price = parseFloat(currentPrice.price)
+
             const baseAsset = symbol.baseAsset
             const quoteAsset = symbol.quoteAsset
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)+quantity
-            this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)-quantity*closePrice
+            this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)-quantity*price
             this.saveBalances()
 
             return {
-                price: closePrice,
+                price: price,
                 quantity: quantity
             }
         }
 
-        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, closePrice: number, quantity: number ){
+        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number ){
+            const currentPrice = await this.binance.getSymbolPriceTicker(symbol.symbol)
+            const price = parseFloat(currentPrice.price)
+
             const baseAsset = symbol.baseAsset
             const quoteAsset = symbol.quoteAsset
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)-quantity
-            this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)+quantity*closePrice
+            this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)+quantity*price
             this.saveBalances()
 
             return {
-                price: closePrice,
+                price: price,
                 quantity: quantity
             }
         }

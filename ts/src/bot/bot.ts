@@ -98,7 +98,7 @@ namespace bot {
                 this.trader = new trader.BinanceTrader(this.binance)
                 break
             default:
-                this.trader = new trader.MockTrader()
+                this.trader = new trader.MockTrader(this.binance)
                 break
             }
             this.priceTracker = new helper.PriceTracker(this.binance)
@@ -258,7 +258,7 @@ namespace bot {
                     const quantity = balances[decision.symbol.baseAsset] || 0
                     if( quantity>0 )
                         try{
-                            const response = await this.trader.sell(decision.symbol, decision.price, quantity )
+                            const response = await this.trader.sell(decision.symbol, quantity )
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
                             this.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
                             await sleep(0.1)
@@ -296,7 +296,7 @@ namespace bot {
 
                 if( quantity>minQuantity )
                     try{
-                        const response = await this.trader.buy(decision.symbol, decision.price, quantity )
+                        const response = await this.trader.buy(decision.symbol, quantity )
                         this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
                         this.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
                         await sleep(0.1)
