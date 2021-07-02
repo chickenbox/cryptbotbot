@@ -259,14 +259,10 @@ namespace bot {
                     const quantity = balances[decision.symbol.baseAsset] || 0
                     if( quantity>0 )
                         try{
-                            const beforeSpend = this.performanceTracker.getRecord(decision.symbol.symbol).spend
                             const response = await this.trader.sell(decision.symbol, quantity )
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
                             this.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
-                            const afterSpend = this.performanceTracker.getRecord(decision.symbol.symbol).spend
-                            if( afterSpend>beforeSpend ){ // lose money, cooldown 1 day
-                                this.cooldownHelper.setCoolDown(decision.symbol.symbol, Date.now()+1000*60*60*24)
-                            }
+                            this.cooldownHelper.sell( decision.symbol.symbol, response.price, response.quantity, Date.now() )
                             await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
@@ -305,6 +301,7 @@ namespace bot {
                         const response = await this.trader.buy(decision.symbol, quantity )
                         this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
                         this.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
+                        this.cooldownHelper.buy( decision.symbol.symbol, response.price, response.quantity )
                         await sleep(0.1)
                     }catch(e){
                         this.logger.error(e)

@@ -12,7 +12,6 @@ namespace bot { export namespace test {
         private _test( bot: bot.Bot, baseAsset: string, trendWatcher: helper.TrendWatcher, start: Date ){
 
             const startIndex = trendWatcher.data.findIndex(d=>d.time>start.getTime())
-            let brought = false
             const symbol = `${baseAsset}${bot.homingAsset}`
 
             for( let i = startIndex; i<trendWatcher.data.length; i++ ){
@@ -21,17 +20,19 @@ namespace bot { export namespace test {
 
                 switch( action ){
                 case "buy":
-                    const earning = Math.max(0,-bot.performanceTracker.getRecord(symbol).spend)
-                    bot.tradeHistory.buy(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, trendWatcher.data[i].price, 0, date)
-                    bot.performanceTracker.buy(symbol, trendWatcher.data[i].price, (1+earning)/trendWatcher.data[i].price)
-                    brought = true
+                    if( bot.cooldownHelper.canBuy(symbol, date.getTime()) ){
+                        const earning = Math.max(0,-bot.performanceTracker.getRecord(symbol).spend)
+                        bot.tradeHistory.buy(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, trendWatcher.data[i].price, 0, date)
+                        bot.performanceTracker.buy(symbol, trendWatcher.data[i].price, (1+earning)/trendWatcher.data[i].price)
+                        bot.cooldownHelper.buy(symbol, trendWatcher.data[i].price, (1+earning)/trendWatcher.data[i].price)
+                    }
                     break
                 case "sell":
-                    if( brought ){
-                        const holding = bot.performanceTracker.getHolding(symbol)
+                    const holding = bot.performanceTracker.getHolding(symbol)
+                    if( holding>0 ){
                         bot.tradeHistory.sell(baseAsset, bot.homingAsset, trendWatcher.data[i].price, 0, trendWatcher.data[i].price, 0, date)
                         bot.performanceTracker.sell(symbol, trendWatcher.data[i].price, holding)
-                        brought = false
+                        bot.cooldownHelper.sell(symbol, trendWatcher.data[i].price, holding, date.getTime())
                     }
                     break
                 }
