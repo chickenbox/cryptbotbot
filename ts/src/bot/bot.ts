@@ -142,6 +142,7 @@ namespace bot {
                     await this.performTrade( t )
                 }
                 this.logger.log("End Mock")
+                this.mockRun = false
             }
 
             const now = Date.now()
