@@ -45,7 +45,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         permissions: string[]
     }
 
-    interface ExchangeInfoResponse {
+    export interface ExchangeInfoResponse {
 
         timezone: string
         serverTime: number

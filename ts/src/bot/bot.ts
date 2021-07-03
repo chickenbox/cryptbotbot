@@ -262,6 +262,7 @@ namespace bot {
             return undefined
         }
 
+        private exchangeInfoCache?: com.danborutori.cryptoApi.ExchangeInfoResponse
         private async performTrade( mockTime?: number ){
             const isMock = mockTime!==undefined
             const now = mockTime===undefined?new Date():new Date( mockTime )
@@ -274,9 +275,11 @@ namespace bot {
             const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
 
             const [exchangeInfo, _] = await Promise.all( [
-                await this.binance.getExchangeInfo(),
-                mockTime || await this.priceTracker.update(this.interval, whiteSymbols)
+                isMock && this.exchangeInfoCache ? this.exchangeInfoCache : this.binance.getExchangeInfo(),
+                isMock ? this.priceTracker.update(this.interval, whiteSymbols) : undefined
             ])
+
+            this.exchangeInfoCache = exchangeInfo
             
             let symbols = exchangeInfo.symbols
             symbols = symbols.filter(s=>{
