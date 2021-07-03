@@ -82,9 +82,38 @@ namespace bot { export namespace helper {
             this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr))
         }
 
-        get lastDDataDt(){
-            if( this.dDataDt.length>0 )
-                return this.dDataDt[this.dDataDt.length-1]
+        isPeak( array: number[], index: number ){
+            if( index>=0 && index<array.length){
+                if( index-1>=0 && array[index-1]>array[index] )
+                    return false
+                if( index+1<array.length && array[index+1]>array[index] )
+                    return false
+                return true
+            }
+            return false
+        }
+
+        getLastPeak( index: number ){
+            let isPeak = false
+            for( let i=index-1; i>0; i-- ){
+                if( this.isPeak(this.dDataDt,i) ){
+                    return {
+                        index: i,
+                        value: this.dDataDt[i]
+                    }
+                }
+            }
+        }
+
+        isDownTrend( index: number ){
+            const lastPeak = this.getLastPeak(index)
+            const lastPeak2 = lastPeak && this.getLastPeak(lastPeak.index)
+
+            if( lastPeak && lastPeak2 ){
+                return lastPeak.value<lastPeak2.value
+            }
+
+            return false
         }
     }
 
