@@ -276,7 +276,7 @@ namespace bot {
 
             const [exchangeInfo, _] = await Promise.all( [
                 isMock && this.exchangeInfoCache ? this.exchangeInfoCache : this.binance.getExchangeInfo(),
-                isMock ? this.priceTracker.update(this.interval, whiteSymbols) : undefined
+                !isMock ? this.priceTracker.update(this.interval, whiteSymbols) : undefined
             ])
 
             this.exchangeInfoCache = exchangeInfo
