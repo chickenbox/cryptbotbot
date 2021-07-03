@@ -27,7 +27,7 @@ namespace bot { export namespace trader {
             }
         }
 
-        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, isMock: boolean, mockPrice?: number ){
+        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, mockPrice?: number ){
             const price = mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price)
 
             const baseAsset = symbol.baseAsset

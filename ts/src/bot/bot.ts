@@ -190,7 +190,7 @@ namespace bot {
             return new helper.DecisionScorer().score( trendWatcher, lastIdx, balance )
         }
 
-        private makeDecision( symbol: {baseAsset: string, symbol: string }, time: number){
+        private makeDecision( symbol: {baseAsset: string, symbol: string }, time: number, isMock: boolean){
             if( symbol.baseAsset==this.homingAsset ) return undefined
 
             try{
@@ -209,11 +209,18 @@ namespace bot {
                     } as Decision
                 }
 
-                const trendWatcher = new helper.TrendWatcher(
-                    symbol.baseAsset,
-                    data,
-                    this.smoothAmount
-                )
+                let trendWatcher: helper.TrendWatcher
+
+                if( isMock ){
+                    trendWatcher = this.trendWatchers[symbol.baseAsset]
+                }
+                if(!trendWatcher){
+                    trendWatcher = new helper.TrendWatcher(
+                        symbol.baseAsset,
+                        data,
+                        this.smoothAmount
+                    )
+                }
                 this.trendWatchers[symbol.baseAsset] = trendWatcher
 
                 // missing candle
@@ -252,7 +259,7 @@ namespace bot {
 
         private async performTrade( mockTime?: number ){
             const isMock = mockTime!==undefined
-            const now = new Date( mockTime )
+            const now = mockTime===undefined?new Date():new Date( mockTime )
 
             this.logger.log("=================================")
             this.logger.log(`Execution Log ${now}`)
@@ -273,7 +280,7 @@ namespace bot {
             })
 
             const decisions = symbols.map( symbol => {
-                return this.makeDecision(symbol, now.getTime() )
+                return this.makeDecision(symbol, now.getTime(), isMock)
             }).filter(a=>a)
 
             const balances = await this.trader.getBalances()
