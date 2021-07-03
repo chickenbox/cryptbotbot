@@ -241,7 +241,7 @@ namespace bot { export namespace graph {
                     return `
                     <tr>
                     <th>
-                    ${r.asset} Gain: ${this.bot.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol))}<br/>
+                    ${r.asset} Gain: ${this.bot.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))}<br/>
                     Cooldown: ${coolDownStr}
                     </th>
                     </tr>

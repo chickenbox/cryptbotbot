@@ -58,15 +58,22 @@ namespace bot {
         }
 
 
-        getRecentPrice( symbol: string ): number | undefined{
+        getRecentPrice( symbol: string, time: number ): number | undefined{
             const p = this.priceTracker.prices[symbol]
-            return p && p.length>0 && p[p.length-1].price
+            if( p ){
+                let index = p.findIndex(function(e,idx){
+                    return idx+1<p.length ? p[idx+1].time>time : true
+                })
+                if( index>=0 )
+                return p[index].price
+            }
+            
         }
 
-        private getHomingTotal( balances: {[key:string]:number} ){
+        private getHomingTotal( balances: {[key:string]:number}, time: number ){
             let homingTotal = balances[this.homingAsset]
             for( let b in balances ){
-                let currentPrice = this.getRecentPrice(`${b}${this.homingAsset}`)
+                let currentPrice = this.getRecentPrice(`${b}${this.homingAsset}`, time)
                 if( currentPrice!==undefined ){
                     homingTotal += balances[b]*currentPrice
                 }        
@@ -118,6 +125,25 @@ namespace bot {
         }
 
         async run(){
+
+            if( this.mockRun ){
+                let end = 0
+                for( let t in this.priceTracker.prices ){
+                    const p = this.priceTracker.prices[t]
+                    end = Math.max(end, p[p.length-1].time)
+                }
+
+                end = helper.snapTime( end, this.timeInterval )
+                const start = helper.snapTime( end-1000*60*60*24*7, this.timeInterval )
+
+                this.logger.log("Start Mock")
+                for( let t=start; t<end; t+=this.timeInterval ){
+                    this.logger.log(`Mocking: ${new Date(t).toUTCString()}`)
+                    await this.performTrade( t )
+                }
+                this.logger.log("End Mock")
+            }
+
             const now = Date.now()
 
             try{
@@ -125,10 +151,6 @@ namespace bot {
                     await this.performTrade()
                 }catch(e){
                     this.logger.error(e)
-                }
-    
-                if( this.mockRun ){
-                    new test.TestMarker().test(this, new Date( now-1000*60*60*24*7 ))
                 }
             }catch(e){
                 this.logger.error(e)
@@ -168,17 +190,20 @@ namespace bot {
             return new helper.DecisionScorer().score( trendWatcher, lastIdx, balance )
         }
 
-        private makeDecision( symbol: {baseAsset: string, symbol: string }){
+        private makeDecision( symbol: {baseAsset: string, symbol: string }, time: number){
             if( symbol.baseAsset==this.homingAsset ) return undefined
 
             try{
                 const data = this.priceTracker.getConstantIntervalPrice( symbol.symbol, this.timeInterval )
 
+                const index = data.findIndex(function(d, i){
+                    return i+1<data.length ? data[i+1].time>time : true
+                })
+
                 // sell if no recent data
                 if( data.length<10 ){
                     return {
                         symbol: symbol,
-                        price: this.getRecentPrice(symbol.symbol),
                         action: "sell",
                         score: 0
                     } as Decision
@@ -192,8 +217,7 @@ namespace bot {
                 this.trendWatchers[symbol.baseAsset] = trendWatcher
 
                 // missing candle
-                const timeDiff = (Date.now()-data[data.length-1].time)
-                this.logger.log(`${symbol.symbol} delta: ${timeDiff/1000}s`)
+                const timeDiff = (time-data[index].time)
                 if( timeDiff>5*60*1000 ){
                     return undefined
                 }
@@ -204,22 +228,19 @@ namespace bot {
                 if( high/low <= this.minHLRation )
                     return {
                         symbol: symbol,
-                        price: this.getRecentPrice(symbol.symbol),
                         action: "sell",
                         score: 0
                     } as Decision
 
 
                 if( trendWatcher.data.length>2 ){
-                    const lastIdx = trendWatcher.data.length-1
-
-                    let action = this.getAction(symbol.baseAsset, trendWatcher, lastIdx)
+                    let action = this.getAction(symbol.baseAsset, trendWatcher, index)
 
                     return {
                         symbol: symbol,
-                        price: trendWatcher.data[lastIdx].price,
+                        price: trendWatcher.data[index].price,
                         action: action,
-                        score: this.scoreDecision( trendWatcher, lastIdx, this.performanceTracker.balance(symbol.symbol, this.getRecentPrice(symbol.symbol)) )
+                        score: this.scoreDecision( trendWatcher, index, this.performanceTracker.balance(symbol.symbol, this.getRecentPrice(symbol.symbol, time)) )
                     } as Decision
                 }
             }catch(e){
@@ -229,17 +250,20 @@ namespace bot {
             return undefined
         }
 
-        private async performTrade(){
+        private async performTrade( mockTime?: number ){
+            const isMock = mockTime!==undefined
+            const now = new Date( mockTime )
+
             this.logger.log("=================================")
-            this.logger.log(`Execution Log ${new Date()}`)
-            this.logger.log(`delta: ${(Date.now()-helper.snapTime(Date.now(),this.timeInterval))/1000}s`)
+            this.logger.log(`Execution Log ${now}`)
+            this.logger.log(`delta: ${(now.getTime()-helper.snapTime(now.getTime(),this.timeInterval))/1000}s`)
             this.logger.log("=================================")
 
             const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
 
             const [exchangeInfo, _] = await Promise.all( [
                 await this.binance.getExchangeInfo(),
-                await this.priceTracker.update(this.interval, whiteSymbols)
+                mockTime || await this.priceTracker.update(this.interval, whiteSymbols)
             ])
             
             let symbols = exchangeInfo.symbols
@@ -249,7 +273,7 @@ namespace bot {
             })
 
             const decisions = symbols.map( symbol => {
-                return this.makeDecision(symbol)
+                return this.makeDecision(symbol, now.getTime() )
             }).filter(a=>a)
 
             const balances = await this.trader.getBalances()
@@ -259,11 +283,12 @@ namespace bot {
                     const quantity = balances[decision.symbol.baseAsset] || 0
                     if( quantity>0 )
                         try{
-                            const response = await this.trader.sell(decision.symbol, quantity )
-                            this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
+                            const response = await this.trader.sell(decision.symbol, quantity, isMock?decision.price:undefined)
+                            this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                             this.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
-                            this.cooldownHelper.sell( decision.symbol.symbol, response.price, response.quantity, Date.now() )
-                            await sleep(0.1)
+                            this.cooldownHelper.sell( decision.symbol.symbol, response.price, response.quantity, now.getTime() )
+                            if( !isMock )
+                                await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
                         }
@@ -271,7 +296,7 @@ namespace bot {
                 }
             }
 
-            const homingTotal = this.getHomingTotal(balances)
+            const homingTotal = this.getHomingTotal(balances, now.getTime())
             let buyDecisions = decisions.filter(function(a){ return a.action=="buy"}).sort(function(a,b){
                 return b.score-a.score
             })
@@ -281,7 +306,7 @@ namespace bot {
             if( buyDecisions.length>maxOrder ){
                 for( let i=maxOrder; i<buyDecisions.length; i++ ){
                     const decision = buyDecisions[i]
-                    this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, 0 )
+                    this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, 0, now )
                 }
                 buyDecisions.length = maxOrder
             }
@@ -298,26 +323,27 @@ namespace bot {
 
                 if( quantity>minQuantity )
                     try{
-                        const response = await this.trader.buy(decision.symbol, quantity )
-                        this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity )
+                        const response = await this.trader.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
+                        this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                         this.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
                         this.cooldownHelper.buy( decision.symbol.symbol, response.price, response.quantity )
-                        await sleep(0.1)
+                        if( !isMock )
+                            await sleep(0.1)
                     }catch(e){
                         this.logger.error(e)
                     }
                 else{
-                    this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity )
+                    this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, now )
                 }
             }
 
             this.performanceTracker.save()
 
-            await this.logTrader()
+            await this.logTrader(now.getTime())
             this.logger.log("=================================")
         }
 
-        async logTrader(){
+        async logTrader( time: number ){
             this.logger.log("*****")
             this.logger.log( "Log" )
             this.logger.log("*****")
@@ -333,8 +359,8 @@ namespace bot {
             const balances = await this.trader.getBalances()
             this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
 
-            const homingTotal = this.getHomingTotal(balances)
-            this.balanceTracker.add(homingTotal)
+            const homingTotal = this.getHomingTotal(balances, time)
+            this.balanceTracker.add(homingTotal, time)
 
             this.logger.log(`Total in ${this.homingAsset}: ${homingTotal}`)
             this.logger.log("*****")

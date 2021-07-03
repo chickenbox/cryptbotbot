@@ -12,7 +12,7 @@ namespace bot { export namespace trader {
             time: Date
         }[]} = {}
 
-        buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time?: Date ){
+        buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time: Date ){
             const symbol = `${baseAsset}${quoteAsset}`
             const h = this.history[symbol] || (this.history[symbol] = []) 
             h.push({
@@ -27,7 +27,7 @@ namespace bot { export namespace trader {
                 this.history[symbol] = h.slice(h.length-recordLimit)
         }
 
-        sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time?: Date ){
+        sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time: Date ){
             const symbol = `${baseAsset}${quoteAsset}`
             const h = this.history[symbol] || (this.history[symbol] = []) 
             h.push({
@@ -42,7 +42,7 @@ namespace bot { export namespace trader {
                 this.history[symbol] = h.slice(h.length-recordLimit)
         }
 
-        wannaBuy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, time?: Date ){
+        wannaBuy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, time: Date ){
             const symbol = `${baseAsset}${quoteAsset}`
             const h = this.history[symbol] || (this.history[symbol] = []) 
             h.push({

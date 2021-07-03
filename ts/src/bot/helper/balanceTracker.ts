@@ -15,9 +15,9 @@ namespace bot { export namespace helper {
             }
         }
 
-        add( balance: number ){
+        add( balance: number, time: number ){
             this.balances.push({
-                time: Date.now(),
+                time: time,
                 amount: balance
             })
         }

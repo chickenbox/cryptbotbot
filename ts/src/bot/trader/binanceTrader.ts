@@ -35,9 +35,9 @@ namespace bot { export namespace trader {
             return balances
         }
 
-        async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number ) {
+        async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number ) {
             try{
-                const response = await this.binance.newOrder( symbol.symbol, "BUY", undefined, fixPrecision( quantity*closePrice, symbol.quoteAssetPrecision))
+                const response = await this.binance.newOrder( symbol.symbol, "BUY", undefined, fixPrecision( quoteAssetQuantity, symbol.quoteAssetPrecision))
                 return convertResponse(response)
             }catch(e){
                 console.error(e)
@@ -48,7 +48,7 @@ namespace bot { export namespace trader {
             }
         }
 
-        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number ) {
+        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, mockPrice?: number ) {
             try{
                 const response = await this.binance.newOrder( symbol.symbol, "SELL", fixPrecision( quantity, symbol.baseAssetPrecision ))
                 return convertResponse(response)
