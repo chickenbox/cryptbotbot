@@ -2,8 +2,7 @@ namespace bot { export namespace graph {
 
     const graphWidth = 800
     const graphHeight = 300
-
-    const graphInterval = 1000*60*60*24*7
+    const graphInterval = bot.graphInterval
 
     function drawGraph(
         canvas: HTMLCanvasElement,
@@ -18,7 +17,8 @@ namespace bot { export namespace graph {
             color: string,
             time: number
         }[],
-        step: number ){
+        step: number )
+    {
         const ctx = canvas.getContext("2d")!
 
         const w = canvas.width

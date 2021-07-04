@@ -131,7 +131,7 @@ namespace bot {
             }
 
             end = helper.snapTime( end, this.timeInterval )
-            const start = helper.snapTime( end-1000*60*60*24*7, this.timeInterval )
+            const start = helper.snapTime( end-graphInterval, this.timeInterval )
 
             this.logger.log("Start Mock")
             for( let t=start; t<end; t+=this.timeInterval ){
