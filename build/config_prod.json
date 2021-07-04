@@ -1,0 +1,9 @@
+{
+    "apiKey": "a2eKLVCGEFUg0uEu5qmJhARJmpm0J1raWTtw4DSA6ZJs4RbsaZs5yd85bLgq5ETQ",
+    "apiSecret": "DapGDDQLIHYHmRcOdcivDadwK6osUDWwSV6IpaGek6CTsqgfp5cnp1VReROPMK0B",
+    "env": "PRODUCTION",
+    "mock": false,
+    "trader": "BINANCE",
+    "holdingBalance": 10000,
+    "whiteList":["DOGE","BTC","ETH","BNB","BUSD","USDC","TUSD","PAX","BCH","EOS","XRP","TRX","ETC","LTC","ADA","ATOM","DASH","HBAR","LINK","MATIC","NEO","QTUM","WRX","XMR","1INCH","AAVE","ALGO","ALPHA","AUDIO","AUD","BAL","BAND","BAT","BEAM","BTT","CHZ","COMP","CRV","DOT","ENJ","EUR","FIL","FTM","GBP","GRT","HNT","JST","KNC","MITH","MKR","OMG","ONT","PAXG","RUNE","ZEN","ZEC","YFII","YFI","XLM","WAVES","VET","UNI","TOMO","SXP","SUSHI","SRM","SOL","SNX","SHIB"]
+}
