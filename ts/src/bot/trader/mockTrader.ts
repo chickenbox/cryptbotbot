@@ -3,7 +3,15 @@ namespace bot { export namespace trader {
     const balancesLocalStorageKey = "MockTrader.balances"
 
     export class MockTrader extends Trader {
-        private balances: {[key: string]: number} = {USDT:11000}
+        private balances: {[key: string]: number} = function(){
+
+            const s = localStorage.getItem(balancesLocalStorageKey)
+            if( s ){
+                return JSON.parse(s)
+            }
+
+            return {USDT: 10000}
+        }()
 
         constructor( readonly binance: com.danborutori.cryptoApi.Binance ){
             super()

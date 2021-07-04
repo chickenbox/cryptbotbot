@@ -124,6 +124,11 @@ namespace bot {
         async mock(){
             await this.priceTracker.update(this.interval, this.whiteList)
             this.performanceTracker.reset()
+            const balances = await this.trader.getBalances()
+            for( let k in balances ){
+                delete balances[k]
+            }
+            balances[this.homingAsset] = 11000
 
             let end = 0
             for( let t in this.priceTracker.prices ){
