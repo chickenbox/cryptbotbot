@@ -123,6 +123,7 @@ namespace bot {
 
         async mock(){
             await this.priceTracker.update(this.interval, this.whiteList)
+            this.performanceTracker.reset()
 
             let end = 0
             for( let t in this.priceTracker.prices ){
@@ -175,8 +176,10 @@ namespace bot {
             if( trendWatcher.dDataDDt[index-1]<0 && trendWatcher.dDataDDt[index]>=0 ){
                 if( this.allow.buy && this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
 
-                    // const downTrend = trendWatcher.isDownTrend( index, 1000*60*60*24*2/this.timeInterval )
-                    // if( !downTrend )
+                    const downTrend = trendWatcher.isDownTrend(
+                        index,
+                        1000*60*60*24*2/this.timeInterval )
+                    if( !downTrend )
                         action = "buy"
                 }
             }else{

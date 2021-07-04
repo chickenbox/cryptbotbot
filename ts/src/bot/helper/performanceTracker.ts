@@ -50,6 +50,12 @@ namespace bot { export namespace helper {
         save(){
             localStorage.setItem(performanceTrackerGainsLocalStorageKey, JSON.stringify(this.gains,null,2))
         }
+
+        reset(){
+            for( let s in this.gains ){
+                delete this.gains[s]
+            }
+        }
     }
 
 }}

@@ -93,27 +93,33 @@ namespace bot { export namespace helper {
             return false
         }
 
-        getLastPeak( index: number, endIndex: number ){
-            let isPeak = false
-            for( let i=index-1; i>=Math.max(0,endIndex); i-- ){
-                if( this.isPeak(this.dDataDt,i) ){
-                    return {
-                        index: i,
-                        value: this.dDataDt[i]
-                    }
-                }
-            }
-        }
+        // getLastPeak( index: number, endIndex: number ){
+        //     let isPeak = false
+        //     for( let i=index-1; i>=Math.max(0,endIndex); i-- ){
+        //         if( this.isPeak(this.dDataDt,i) ){
+        //             return {
+        //                 index: i,
+        //                 value: this.dDataDt[i]
+        //             }
+        //         }
+        //     }
+        // }
 
         isDownTrend( index: number, range: number ){
-            const lastPeak = this.getLastPeak(index, index-range)
-            const lastPeak2 = lastPeak && this.getLastPeak(lastPeak.index, lastPeak.index-range)
+            const startIndex = index-range
+            const endIndex = index
+            const meanIndex = Math.floor((startIndex+endIndex)/2)
 
-            if( lastPeak && lastPeak2 ){
-                return lastPeak.value<lastPeak2.value
+            let startValue = 0
+            let endValue = 0
+            for( let i = startIndex; i<meanIndex; i++ ){
+                startValue += this.dDataDt[i]
+            }
+            for( let i = meanIndex; i<endIndex; i++ ){
+                endValue += this.dDataDt[i]
             }
 
-            return false
+            return startValue>endValue
         }
     }
 
