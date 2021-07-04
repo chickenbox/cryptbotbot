@@ -9,7 +9,7 @@ interface BotConfig {
 }
 
 const fs = require("fs")
-fs.readFile(process.argv[2], "utf8", function (err,data) {
+fs.readFile(process.argv[2], "utf8", async function (err,data) {
     if (err) {
         return console.log(err);
     }else{
@@ -24,7 +24,6 @@ fs.readFile(process.argv[2], "utf8", function (err,data) {
             logLength: 10000,
             holdingBalance: config.holdingBalance,
             minimumOrderQuantity: 10,
-            mockRun: config.mock,
             apiKey: config.apiKey,
             apiSecure: config.apiSecret,
             environment: config.env,
@@ -32,6 +31,11 @@ fs.readFile(process.argv[2], "utf8", function (err,data) {
             whiteList:config.whiteList
         })
         const httpHelper = new bot.helper.HttpHelper(b,3333)
+
+        if(config.mock){
+            await b.mock()
+        }
+
         b.run()
     }
 });

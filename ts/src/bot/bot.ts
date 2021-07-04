@@ -33,7 +33,6 @@ namespace bot {
         private maxAllocation: number
         private holdingBalance: number
         private minimumOrderQuantity: number // in homingAsset
-        private mockRun: boolean
         private whiteList: Set<string>
         private priceTracker: helper.PriceTracker
         readonly balanceTracker: helper.BalanceTracker
@@ -93,7 +92,6 @@ namespace bot {
                 holdingBalance: number
                 minimumOrderQuantity: number
                 whiteList: string[]
-                mockRun: boolean
                 apiKey: string
                 apiSecure: string
                 environment: com.danborutori.cryptoApi.Environment
@@ -120,31 +118,30 @@ namespace bot {
             this.holdingBalance = config.holdingBalance
             this.minimumOrderQuantity = config.minimumOrderQuantity
             this.whiteList = new Set(config.whiteList)
-            this.mockRun = config.mockRun
             this.logger = new  helper.Logger(config.logLength)
         }
 
-        async run(){
+        async mock(){
+            await this.priceTracker.update(this.interval, this.whiteList)
 
-            if( this.mockRun ){
-                let end = 0
-                for( let t in this.priceTracker.prices ){
-                    const p = this.priceTracker.prices[t]
-                    end = Math.max(end, p[p.length-1].time)
-                }
-
-                end = helper.snapTime( end, this.timeInterval )
-                const start = helper.snapTime( end-1000*60*60*24*7, this.timeInterval )
-
-                this.logger.log("Start Mock")
-                for( let t=start; t<end; t+=this.timeInterval ){
-                    this.logger.log(`Mocking: ${new Date(t).toUTCString()}`)
-                    await this.performTrade( t )
-                }
-                this.logger.log("End Mock")
-                this.mockRun = false
+            let end = 0
+            for( let t in this.priceTracker.prices ){
+                const p = this.priceTracker.prices[t]
+                end = Math.max(end, p[p.length-1].time)
             }
 
+            end = helper.snapTime( end, this.timeInterval )
+            const start = helper.snapTime( end-1000*60*60*24*7, this.timeInterval )
+
+            this.logger.log("Start Mock")
+            for( let t=start; t<end; t+=this.timeInterval ){
+                this.logger.log(`Mocking: ${new Date(t).toUTCString()}`)
+                await this.performTrade( t )
+            }
+            this.logger.log("End Mock")
+        }
+
+        async run(){
             const now = Date.now()
 
             try{
