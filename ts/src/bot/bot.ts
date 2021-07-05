@@ -189,9 +189,6 @@ namespace bot {
                 }
             }else{
                 if(
-                    (index-3<0 || trendWatcher.dDataDDt[index-3]>0) &&  // prevent missing sell moment
-                    (index-2<0 || trendWatcher.dDataDDt[index-2]>0) &&  // prevent missing sell moment
-                    (index-1<0 || trendWatcher.dDataDDt[index-1]>0) &&
                     trendWatcher.dDataDDt[index]<=0
                 ){
                     if( this.allow.sell)
