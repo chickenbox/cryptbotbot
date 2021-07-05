@@ -1,5 +1,30 @@
 namespace com { export namespace danborutori { export namespace cryptoApi {
 
+    function sleep( second: number ){
+        return new Promise<void>( (resolve, reject)=>{
+            setTimeout(function(){
+                resolve()
+            }, second*1000)
+        })
+    }
+
+    async function autoRetryFetch( input: RequestInfo, init?: RequestInit ){
+        let retryCount = 0
+        while(true){
+            try{
+                return await fetch(input, init)
+            }catch(e){
+                if( e && e.errno=="EAI_AGAIN" && retryCount<10 ){
+                    // backoff 3 second than retry
+                    await sleep(3)
+                    retryCount++
+                }else{
+                    throw e
+                }
+            }
+        }
+    }
+
     type SymbolStatus = "PRE_TRADING" | "TRADING" | "POST_TRADING" | "END_OF_DAY" | "HALT" | "AUCTION_MATCH" | "BREAK"
     type OrderType = "LIMIT" | "LIMIT_MAKER" | "MARKET" | "STOP_LOSS" | "STOP_LOSS_LIMIT" | "TAKE_PROFIT" | "TAKE_PROFIT_LIMIT"
     export type Interval = "1m" | "3m" | "5m" | "15m" | "30m" | "1h" | "2h" | "4h" | "6h" | "8h" | "12h" | "1d" | "3d" | "1w" | "1M"
@@ -168,7 +193,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
 
         async getExchangeInfo() {
 
-            const response = await fetch( this.fullUrl("/exchangeInfo") )
+            const response = await autoRetryFetch( this.fullUrl("/exchangeInfo") )
             return await response.json() as ExchangeInfoResponse
 
         }
@@ -193,7 +218,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                     params.append(name, options[name])
             }
 
-            const respsone = await fetch( this.fullUrl("/klines") +"?"+ params )
+            const respsone = await autoRetryFetch( this.fullUrl("/klines") +"?"+ params )
 
             const json: any[][] = await respsone.json()
             return json.map(d=>{
@@ -221,13 +246,13 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             if( symbol )
                 params.append("symbol", symbol)
 
-            const response = await fetch(this.fullUrl("/ticker/price") +"?"+ params)
+            const response = await autoRetryFetch(this.fullUrl("/ticker/price") +"?"+ params)
             const json = await response.json()
             return json
         }
 
         async getServerTime(){
-            const response = await fetch(this.fullUrl("/time"))
+            const response = await autoRetryFetch(this.fullUrl("/time"))
             const json = await response.json()
             return json.serverTime
         }
@@ -243,7 +268,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 timestamp: await this.getServerTime()
             })
 
-            const response = await fetch( this.fullUrl("/account")+"?"+this.sign(params), {
+            const response = await autoRetryFetch( this.fullUrl("/account")+"?"+this.sign(params), {
                 method: "GET",
                 headers: {
                     "X-MBX-APIKEY": this.apiKey
@@ -269,7 +294,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 params.append("quoteOrderQty", quoteQuantity.toString())
             }
 
-            const response = await fetch( this.fullUrl("/order"), {
+            const response = await autoRetryFetch( this.fullUrl("/order"), {
                 method: "POST",
                 headers: {
                     "X-MBX-APIKEY": this.apiKey
@@ -300,7 +325,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 params.append("quoteOrderQty", quoteQuantity.toString())
             }
 
-            const response = await fetch( this.fullUrl("/order/test"), {
+            const response = await autoRetryFetch( this.fullUrl("/order/test"), {
                 method: "POST",
                 headers: {
                     "X-MBX-APIKEY": this.apiKey
@@ -321,7 +346,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 timestamp: await this.getServerTime()
             })
 
-            const response = await fetch( this.fullUrl("/openOrders"), {
+            const response = await autoRetryFetch( this.fullUrl("/openOrders"), {
                 method: "DELETE",
                 headers: {
                     "X-MBX-APIKEY": this.apiKey
@@ -339,7 +364,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
 
             symbol!==undefined && params.append("symbol", symbol)
 
-            const response = await fetch( this.fullUrl("/openOrders")+"?"+this.sign(params), {
+            const response = await autoRetryFetch( this.fullUrl("/openOrders")+"?"+this.sign(params), {
                 method: "GET",
                 headers: {
                     "X-MBX-APIKEY": this.apiKey

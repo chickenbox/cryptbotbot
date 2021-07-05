@@ -93,6 +93,7 @@ namespace bot { export namespace helper {
                 }
                 return result
             }
+            return []
         }
     }
 
