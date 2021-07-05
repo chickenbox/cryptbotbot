@@ -14,11 +14,22 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             try{
                 return await fetch(input, init)
             }catch(e){
-                if( e && e.errno=="EAI_AGAIN" && retryCount<10 ){
-                    // backoff 3 second than retry
-                    await sleep(3)
-                    retryCount++
-                }else{
+                switch( e.errno ){
+                case "EAI_AGAIN":
+                case "EAI_BADFLAGS":
+                case "EAI_FAIL":
+                case "EAI_FAMILY":
+                case "EAI_MEMORY":
+                case "EAI_NONAME":
+                case "EAI_SERVICE":
+                case "EAI_SOCKTYPE":
+                    if( retryCount<10 ){
+                        // backoff 3 second than retry
+                        await sleep(3)
+                        retryCount++
+                    }
+                    break
+                default:
                     throw e
                 }
             }
