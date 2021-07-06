@@ -4,10 +4,18 @@ namespace bot { export namespace helper {
         readonly time: number
     }
 
+    const curveCache = new Map<number,number>()
     function smoothingCurve( n: number ){
-        const t = Math.pow(n,16)
+        if( curveCache.has(n) ){
+            return curveCache.get(n)
+        }
 
-        return Math.cos( (t-0.5)*Math.PI )
+        const t = Math.pow(n,16)
+        const v = Math.cos( (t-0.5)*Math.PI )
+
+        curveCache.set(n,v)
+
+        return v
     }
 
     function smoothData( data: DataEntry[], iteration: number ){
