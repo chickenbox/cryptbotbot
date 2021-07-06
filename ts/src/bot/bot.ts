@@ -206,7 +206,15 @@ namespace bot {
             if( symbol.baseAsset==this.homingAsset ) return undefined
 
             try{
-                const data = this.priceTracker.getConstantIntervalPrice( symbol.symbol, this.timeInterval )
+                let trendWatcher: helper.TrendWatcher
+
+                if( isMock ){
+                    trendWatcher = this.trendWatchers[symbol.baseAsset]
+                }
+
+                const data = trendWatcher?
+                    trendWatcher.data:
+                    this.priceTracker.getConstantIntervalPrice( symbol.symbol, this.timeInterval )
 
                 const index = data.findIndex(function(d, i){
                     return i+1<data.length ? data[i+1].time>time : true
@@ -221,11 +229,6 @@ namespace bot {
                     } as Decision
                 }
 
-                let trendWatcher: helper.TrendWatcher
-
-                if( isMock ){
-                    trendWatcher = this.trendWatchers[symbol.baseAsset]
-                }
                 if(!trendWatcher){
                     trendWatcher = new helper.TrendWatcher(
                         symbol.baseAsset,
