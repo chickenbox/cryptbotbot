@@ -133,6 +133,7 @@ namespace bot {
             for( let k in history ){
                 delete history[k]
             }
+            this.balanceTracker.balances.length = 0
 
             let end = 0
             for( let t in this.priceTracker.prices ){
@@ -365,12 +366,11 @@ namespace bot {
             }
 
             if( !isMock ){
+                await this.logTrader(now.getTime())
                 this.performanceTracker.save()
                 this.tradeHistory.save()
             }
 
-            if( !isMock )
-                await this.logTrader(now.getTime())
             {
                 const balances = await this.trader.getBalances()
                 this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
@@ -381,6 +381,7 @@ namespace bot {
                 this.logger.log(`Total in ${this.homingAsset}: ${homingTotal}`)
                 this.logger.log("*****")
             }
+            if( !isMock )this.balanceTracker.save()
             this.logger.log("=================================")
         }
 

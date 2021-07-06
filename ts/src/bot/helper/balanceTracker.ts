@@ -21,6 +21,10 @@ namespace bot { export namespace helper {
                 amount: balance
             })
         }
+
+        save(){
+            localStorage.setItem(balanceTrackerlocalStorageKey, JSON.stringify(this.balances))
+        }
     }
 
 }}
