@@ -299,7 +299,7 @@ namespace bot {
             }).filter(a=>a)
 
             const balances = await this.trader.getBalances()
-            for( let decision of decisions){
+            await Promise.all(decisions.map(async decision=>{
                 switch(decision.action){
                 case "sell":
                     const quantity = balances[decision.symbol.baseAsset] || 0
@@ -309,14 +309,12 @@ namespace bot {
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                             this.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
                             this.cooldownHelper.sell( decision.symbol.symbol, response.price, response.quantity, now.getTime() )
-                            if( !isMock )
-                                await sleep(0.1)
                         }catch(e){
                             this.logger.error(e)
                         }
                     break
                 }
-            }
+            }))
 
             const homingTotal = this.getHomingTotal(balances, now.getTime())
             let buyDecisions = decisions.filter(function(a){ return a.action=="buy"}).sort(function(a,b){

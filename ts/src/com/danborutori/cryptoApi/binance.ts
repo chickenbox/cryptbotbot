@@ -186,6 +186,25 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
 
     export type Environment = "PRODUCTION" | "SPOT"
 
+    class RateLimiter {
+        readonly orderPerSecond = 10
+
+        private orderTimestamps: number[] = []
+
+        async order(){
+            const now = Date.now()
+            while( this.orderTimestamps.length>0 && this.orderTimestamps[0]<now-1000 ){
+                this.orderTimestamps.splice(0,1)
+            }
+
+            if( this.orderTimestamps.length>=this.orderPerSecond ){
+                await sleep( now-this.orderTimestamps[0] )
+            }
+
+            this.orderTimestamps.push(now)
+        }
+    }
+
     export class Binance {
         fullUrl( path: string ){
             switch( this.env ){
@@ -195,6 +214,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 return `https://testnet.binance.vision/api/v3${path}`
             }
         }
+
+        private rateLimiter = new RateLimiter()
 
         constructor(
             private apiKey?: string,
@@ -290,6 +311,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         }
 
         async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse> {
+            await this.rateLimiter.order()
+
             const params = new URLSearchParams({
                 symbol: symbol,
                 side: side,
