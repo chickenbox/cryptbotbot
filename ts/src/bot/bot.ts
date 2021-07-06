@@ -362,7 +362,18 @@ namespace bot {
 
             this.performanceTracker.save()
 
-            await this.logTrader(now.getTime())
+            if( !isMock )
+                await this.logTrader(now.getTime())
+            {
+                const balances = await this.trader.getBalances()
+                this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
+
+                const homingTotal = this.getHomingTotal(balances, now.getTime())
+                this.balanceTracker.add(homingTotal, now.getTime())
+
+                this.logger.log(`Total in ${this.homingAsset}: ${homingTotal}`)
+                this.logger.log("*****")
+            }
             this.logger.log("=================================")
         }
 
@@ -379,14 +390,6 @@ namespace bot {
                 }
                 this.logger.log("======")
             }
-            const balances = await this.trader.getBalances()
-            this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
-
-            const homingTotal = this.getHomingTotal(balances, time)
-            this.balanceTracker.add(homingTotal, time)
-
-            this.logger.log(`Total in ${this.homingAsset}: ${homingTotal}`)
-            this.logger.log("*****")
         }
    }
 
