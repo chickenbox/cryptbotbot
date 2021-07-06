@@ -183,7 +183,7 @@ namespace bot {
 
                     const downTrend = trendWatcher.isDownTrend(
                         index,
-                        1000*60*60*24*2/this.timeInterval )
+                        1000*60*60*24*2.5/this.timeInterval )
                     if( !downTrend )
                         action = "buy"
                 }
