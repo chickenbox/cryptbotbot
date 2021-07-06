@@ -121,10 +121,12 @@ namespace bot { export namespace helper {
             let startValue = 0
             let endValue = 0
             for( let i = startIndex; i<meanIndex; i++ ){
-                startValue += this.dDataDt[i]
+                if( i>=0 )
+                    startValue += this.dDataDt[i]
             }
             for( let i = meanIndex; i<endIndex; i++ ){
-                endValue += this.dDataDt[i]
+                if( i>=0 )
+                    endValue += this.dDataDt[i]
             }
 
             return startValue>endValue
