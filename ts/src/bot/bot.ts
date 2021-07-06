@@ -129,6 +129,10 @@ namespace bot {
                 delete balances[k]
             }
             balances[this.homingAsset] = 11000
+            const history = await this.tradeHistory.history
+            for( let k in history ){
+                delete history[k]
+            }
 
             let end = 0
             for( let t in this.priceTracker.prices ){
@@ -360,8 +364,10 @@ namespace bot {
                 }
             }
 
-            if( !isMock )
+            if( !isMock ){
                 this.performanceTracker.save()
+                this.tradeHistory.save()
+            }
 
             if( !isMock )
                 await this.logTrader(now.getTime())

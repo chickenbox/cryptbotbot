@@ -1,16 +1,25 @@
 namespace bot { export namespace trader {
 
     const recordLimit = 100
+    const localStorageKey = "bot.trader.History"
 
     export class History {
-        readonly history: {[symbol:string]:{
+        private _history: {[symbol:string]:{
             price: number
             quantity: number
             actualPrice: number
             actualQuantity: number
             side: "buy" | "sell" | "want to buy"
-            time: Date
+            time: number
         }[]} = {}
+
+        get history(){
+            return this._history
+        }
+
+        constructor(){
+            this.load()
+        }
 
         buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time: Date ){
             const symbol = `${baseAsset}${quoteAsset}`
@@ -21,7 +30,7 @@ namespace bot { export namespace trader {
                 actualPrice: actualPrice,
                 actualQuantity: actualQuantity,
                 side: "buy",
-                time: time || new Date()
+                time: time?time.getTime():Date.now()
             })
             if(h.length>recordLimit)
                 this.history[symbol] = h.slice(h.length-recordLimit)
@@ -36,7 +45,7 @@ namespace bot { export namespace trader {
                 actualPrice: actualPrice,
                 actualQuantity: actualQuantity,
                 side: "sell",
-                time: time || new Date()
+                time: time?time.getTime():Date.now()
             })
             if(h.length>recordLimit)
                 this.history[symbol] = h.slice(h.length-recordLimit)
@@ -51,10 +60,21 @@ namespace bot { export namespace trader {
                 actualPrice: closePrice,
                 actualQuantity: quantity,
                 side: "want to buy",
-                time: time || new Date()
+                time: time?time.getTime():Date.now()
             })
             if(h.length>recordLimit)
                 this.history[symbol] = h.slice(h.length-recordLimit)
+        }
+
+        private load(){
+            const s = localStorage.getItem(localStorageKey)
+            if( s ){
+                this._history = JSON.parse(s)
+            }
+        }
+
+        save(){
+            localStorage.setItem( localStorageKey, JSON.stringify(this._history,null,2) )
         }
     }
 

@@ -213,7 +213,7 @@ namespace bot { export namespace graph {
                         }
                         return {
                             color: color,
-                            time: h.time.getTime()
+                            time: h.time
                         }
                     }) : []
                 })
