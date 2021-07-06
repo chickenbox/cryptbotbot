@@ -360,7 +360,8 @@ namespace bot {
                 }
             }
 
-            this.performanceTracker.save()
+            if( !isMock )
+                this.performanceTracker.save()
 
             if( !isMock )
                 await this.logTrader(now.getTime())
