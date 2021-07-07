@@ -1,11 +1,15 @@
 namespace com { export namespace danborutori { export namespace cryptoApi {
 
     function sleep( second: number ){
-        return new Promise<void>( (resolve, reject)=>{
-            setTimeout(function(){
-                resolve()
-            }, second*1000)
-        })
+        if( second>0 ){
+            return new Promise<void>( (resolve, reject)=>{
+                setTimeout(function(){
+                    resolve()
+                }, second*1000)
+            })
+        }else{
+            return Promise.resolve()
+        }
     }
 
     async function autoRetryFetch( input: RequestInfo, init?: RequestInit ){
@@ -188,17 +192,40 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
 
     class RateLimiter {
         readonly orderPerSecond = 10
+        readonly requestPerMinute = 1200
 
+        private requestTimestamps: number[] = []
         private orderTimestamps: number[] = []
 
-        async order(){
-            const now = Date.now()
-            while( this.orderTimestamps.length>0 && this.orderTimestamps[0]<now-1000 ){
-                this.orderTimestamps.splice(0,1)
+        async request(){
+            let now: number
+            while(true){
+                now = Date.now()
+                while( this.requestTimestamps.length>0 && this.requestTimestamps[0]<now-1000*60 ){
+                    this.requestTimestamps.splice(0,1)
+                }
+
+                if( this.requestTimestamps.length>=this.requestPerMinute ){
+                    await sleep( 1000*60-(now-this.requestTimestamps[0]) )
+                }else
+                    break
             }
 
-            if( this.orderTimestamps.length>=this.orderPerSecond ){
-                await sleep( now-this.orderTimestamps[0] )
+            this.requestTimestamps.push(now)
+        }
+
+        async order(){
+            let now: number
+            while(true){
+                now = Date.now()
+                while( this.orderTimestamps.length>0 && this.orderTimestamps[0]<now-1000 ){
+                    this.orderTimestamps.splice(0,1)
+                }
+
+                if( this.orderTimestamps.length>=this.orderPerSecond ){
+                    await sleep( 1000-(now-this.orderTimestamps[0]) )
+                }else
+                    break
             }
 
             this.orderTimestamps.push(now)
@@ -224,6 +251,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         ){}
 
         async getExchangeInfo() {
+            await this.rateLimiter.request()
 
             const response = await autoRetryFetch( this.fullUrl("/exchangeInfo") )
             return await response.json() as ExchangeInfoResponse
@@ -239,6 +267,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 limit? : number //Default 500; max 1000.
             }
         ): Promise<KlineCandlestickData[]>{
+            await this.rateLimiter.request()
 
             const params = new URLSearchParams({
                 symbol: symbol,
@@ -274,6 +303,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         async getSymbolPriceTicker(): Promise<{symbol: string; price: string}[]>
         async getSymbolPriceTicker(symbol: string): Promise<{symbol: string; price: string}>
         async getSymbolPriceTicker( symbol?: string ){
+            await this.rateLimiter.request()
+
             const params = new URLSearchParams()
             if( symbol )
                 params.append("symbol", symbol)
@@ -284,6 +315,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         }
 
         async getServerTime(){
+            await this.rateLimiter.request()
+
             const response = await autoRetryFetch(this.fullUrl("/time"))
             const json = await response.json()
             return json.serverTime
@@ -295,6 +328,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         }
 
         async getAccountInfo(): Promise<AccountInfo>{
+            await this.rateLimiter.request()
 
             const params = new URLSearchParams({
                 timestamp: await this.getServerTime()
@@ -344,6 +378,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         }
 
         async testOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse>{
+            await this.rateLimiter.request()
+
             const params = new URLSearchParams({
                 symbol: symbol,
                 side: side,
@@ -375,6 +411,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         }
 
         async cancelAllOpenOrder( symbol: string ): Promise<Order[]> {
+            await this.rateLimiter.request()
+
             const params = new URLSearchParams({
                 symbol: symbol,
                 timestamp: await this.getServerTime()
@@ -392,6 +430,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         }
 
         async getCurrentOpenOrders( symbol?: string ): Promise<CurrentOpenOrder[]>{
+            await this.rateLimiter.request()
+
             const params = new URLSearchParams({
                 timestamp: await this.getServerTime()
             })
