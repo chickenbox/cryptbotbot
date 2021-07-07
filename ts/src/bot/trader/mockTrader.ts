@@ -1,6 +1,7 @@
 namespace bot { export namespace trader {
 
     const balancesLocalStorageKey = "MockTrader.balances"
+    const commissionRate = 0.001
 
     export class MockTrader extends Trader {
         private balances: {[key: string]: number} = function(){
@@ -24,9 +25,11 @@ namespace bot { export namespace trader {
         async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number ){
             const price = mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price)
 
+            const netQty = quantity*(1-commissionRate)
+
             const baseAsset = symbol.baseAsset
             const quoteAsset = symbol.quoteAsset
-            this.balances[baseAsset] = (this.balances[baseAsset] || 0)+quantity
+            this.balances[baseAsset] = (this.balances[baseAsset] || 0)+netQty
             this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)-quantity*price
 
             return {
@@ -38,10 +41,12 @@ namespace bot { export namespace trader {
         async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, mockPrice?: number ){
             const price = mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price)
 
+            const netQty = quantity*(1-commissionRate)
+
             const baseAsset = symbol.baseAsset
             const quoteAsset = symbol.quoteAsset
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)-quantity
-            this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)+quantity*price
+            this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)+netQty*price
 
             return {
                 price: price,
