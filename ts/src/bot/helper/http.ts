@@ -23,7 +23,11 @@ namespace bot { export namespace helper {
 
         private server: HttpServer
 
-        constructor( readonly bot: bot.Bot, port: number ){
+        constructor(
+            readonly bot: bot.Bot,
+            port: number,
+            private password: string
+        ){
             this.server = http.createServer((request, response)=>{
 
                 let data = ""
@@ -43,6 +47,7 @@ namespace bot { export namespace helper {
             const t = url.split("?")
             const path = t[0]
             const queryString = t[1]
+            if( queryString!=this.password ) return
 
             switch( path ){
             case "/showLog":
@@ -55,7 +60,7 @@ namespace bot { export namespace helper {
                 this.goOut( response )
                 break
             default:
-                this.showUsage( response )
+                this.showUsage( response, queryString )
                 break
             }
         }
@@ -81,7 +86,7 @@ namespace bot { export namespace helper {
             response.end("{\"success\":true}}")
         }
 
-        private showUsage( response: HttpResponse ){
+        private showUsage( response: HttpResponse, queryString: string ){
             response.writeHead(200, { "Content-Type": "text/html" })
             response.end(`<html>
             <body>
@@ -95,13 +100,13 @@ namespace bot { export namespace helper {
             Path:<br/>
             <table>
             <tr>
-            <td><a href="/showLog">/showLog</a></td><td>to print log</td>
+            <td><a href="/showLog?${queryString}">/showLog</a></td><td>to print log</td>
             </tr>
             <tr>
-            <td><a href="/goHome">/goHome</a></td><td>force all access to homing asset</td>
+            <td><a href="/goHome?${queryString}">/goHome</a></td><td>force all access to homing asset</td>
             </tr>
             <tr>
-            <td><a href="/goOut">/goOut</a></td><td>Normal Trace</td>
+            <td><a href="/goOut?${queryString}">/goOut</a></td><td>Normal Trace</td>
             </tr>
             </table>
             ${new graph.Drawer(this.bot).html}

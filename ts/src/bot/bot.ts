@@ -61,6 +61,7 @@ namespace bot {
             const exchangeInfo = await this.binance.getExchangeInfo()
             const filteredSymbols =  exchangeInfo.symbols.filter(s=>{
                 return s.quoteAsset==this.homingAsset &&
+                    s.status=="TRADING" &&
                     s.orderTypes.indexOf("MARKET")>=0 &&
                     s.permissions.indexOf("SPOT")>=0 &&
                     s.isSpotTradingAllowed
