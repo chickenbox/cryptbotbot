@@ -62,7 +62,8 @@ namespace bot {
             const filteredSymbols =  exchangeInfo.symbols.filter(s=>{
                 return s.quoteAsset==this.homingAsset &&
                     s.orderTypes.indexOf("MARKET")>=0 &&
-                    s.permissions.indexOf("SPOT")>=0
+                    s.permissions.indexOf("SPOT")>=0 &&
+                    s.isSpotTradingAllowed
             })
 
             for( let baseAsset of filteredSymbols.map(s=>s.baseAsset))
