@@ -122,7 +122,8 @@ namespace bot {
         }
 
         async mock(){
-            await this.priceTracker.update(this.interval, this.whiteList)
+            const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
+            await this.priceTracker.update(this.interval, whiteSymbols)
             this.performanceTracker.reset()
             const balances = await this.trader.getBalances()
             for( let k in balances ){
