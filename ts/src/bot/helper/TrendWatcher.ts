@@ -66,6 +66,8 @@ namespace bot { export namespace helper {
     function delta( data: number[] ){
         if( data.length<=1 ) return 0
 
+        data = Array.from(data).sort()
+
         let max = data[0]
         let min = data[0]
         let diff = 0
