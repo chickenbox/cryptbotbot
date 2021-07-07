@@ -268,7 +268,9 @@ namespace bot {
                 const high = data.reduce((a,b)=>Math.max(a,b.price), Number.NEGATIVE_INFINITY)
                 const low = data.reduce((a,b)=>Math.min(a,b.price), Number.POSITIVE_INFINITY)
 
-                if( high/low <= this.minHLRation )
+                if( high/low <= this.minHLRation ||
+                    trendWatcher.deltaValue < 0.001
+                )
                     return {
                         symbol: symbol,
                         action: "sell",

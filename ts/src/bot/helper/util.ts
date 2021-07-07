@@ -40,4 +40,21 @@ namespace bot { export namespace helper {
             return 1000*60*60*24*30
         }
     }
+
+    function mean( data: number[] ){
+        return data.length!=0 ? 
+            data.reduce((a,b)=>a+b,0)/data.length :
+            0
+    }
+
+    export function standardDeviation( data: number[] ) {
+        const m = mean( data )
+
+        return data.length!=0 ? 
+            Math.sqrt( data.reduce( (a,b)=>{
+                const d = b-m
+                return a + b*b
+            }, 0) / data.length ):
+            0
+    }
 }}

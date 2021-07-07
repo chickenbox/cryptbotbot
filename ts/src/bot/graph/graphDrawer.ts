@@ -7,7 +7,7 @@ namespace bot { export namespace graph {
     function drawGraph(
         canvas: HTMLCanvasElement,
         data: {
-            normalizedPrice: number,
+            price: number,
             smoothedPrice: number,
             dSmoothedPrice: number,
             ddSmoothedPrice: number,
@@ -37,8 +37,8 @@ namespace bot { export namespace graph {
 
         for( let d of data ){
             if( d.time >= start-step && d.time <= end+step ){
-                max = Math.max(d.normalizedPrice, max)
-                min = Math.min(d.normalizedPrice, min)
+                max = Math.max(d.price, max)
+                min = Math.min(d.price, min)
             }
         }
         let range = max-min
@@ -61,9 +61,9 @@ namespace bot { export namespace graph {
         ctx.strokeStyle = "black"
         ctx.lineWidth = 1
         ctx.beginPath()
-        ctx.moveTo( (data[0].time-start)*w/timeRange, h-(data[0].normalizedPrice-min)*h/range )
+        ctx.moveTo( (data[0].time-start)*w/timeRange, h-(data[0].price-min)*h/range )
         for( let d of data.slice(1) ){
-            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.normalizedPrice-min)*h/range )
+            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
         }
         ctx.stroke()
 
@@ -173,13 +173,14 @@ namespace bot { export namespace graph {
             const assets: {
                 asset: string
                 data: {
-                    normalizedPrice: number,
-                    smoothedPrice: number,
-                    ddSmoothedPrice: number,
+                    price: number
+                    smoothedPrice: number
+                    ddSmoothedPrice: number
                     time: number
                 }[]
+                deltaValue: number
                 tradeRecords: {
-                    color: string,
+                    color: string
                     time: number
                 }[]
             }[] = []
@@ -193,7 +194,7 @@ namespace bot { export namespace graph {
                     asset: baseAsset,
                     data: trendWatcher.data.map((d,i)=>{
                         return {
-                            normalizedPrice: d.price,
+                            price: d.price,
                             smoothedPrice: trendWatcher.smoothedData[i].price,
                             dSmoothedPrice: trendWatcher.dDataDt[i],
                             ddSmoothedPrice: trendWatcher.dDataDDt[i],
@@ -201,6 +202,7 @@ namespace bot { export namespace graph {
                             time: d.time
                         }
                     }),
+                    deltaValue: trendWatcher.deltaValue,
                     tradeRecords: history ? history.map(h=>{
                         let color = "purple"
                         switch( h.side ){
@@ -235,7 +237,7 @@ namespace bot { export namespace graph {
                 drawGraph(graphCanvasBalance, ${JSON.stringify(this.bot.balanceTracker.balances.map(
                     function(b){
                         return {
-                            normalizedPrice: b.amount,
+                            price: b.amount,
                             smoothedPrice: b.amount,
                             time: b.time
                         }
@@ -255,7 +257,9 @@ namespace bot { export namespace graph {
                     return `
                     <tr>
                     <th>
-                    ${r.asset} Gain: ${this.bot.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))}<br/>
+                    ${r.asset}<br/>
+                    delta: ${r.deltaValue}<br/>
+                    Gain: ${this.bot.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))}<br/>
                     Cooldown: ${coolDownStr}
                     </th>
                     </tr>
