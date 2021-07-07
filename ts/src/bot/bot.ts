@@ -62,8 +62,7 @@ namespace bot {
             const filteredSymbols =  exchangeInfo.symbols.filter(s=>{
                 return s.quoteAsset==this.homingAsset &&
                     s.orderTypes.indexOf("MARKET")>=0 &&
-                    s.permissions.indexOf("SPOT")>=0 &&
-                    !this.blackList.has( s.baseAsset )
+                    s.permissions.indexOf("SPOT")>=0
             })
 
             for( let baseAsset of filteredSymbols.map(s=>s.baseAsset))
@@ -269,7 +268,8 @@ namespace bot {
                 const low = data.reduce((a,b)=>Math.min(a,b.price), Number.POSITIVE_INFINITY)
 
                 if( high/low <= this.minHLRation ||
-                    trendWatcher.deltaValue < 0.0001
+                    trendWatcher.deltaValue < 0.0001 ||
+                    this.blackList.has(symbol.baseAsset)
                 )
                     return {
                         symbol: symbol,
