@@ -1,6 +1,7 @@
 namespace bot { export namespace helper {
 
     const balanceTrackerlocalStorageKey = "BalanceTracker.balances"
+    const limit = 1000
 
     export class BalanceTracker {
 
@@ -20,6 +21,9 @@ namespace bot { export namespace helper {
                 time: time,
                 amount: balance
             })
+
+            if( this.balances.length>limit )
+                this.balances.splice(0,this.balances.length-limit)
         }
 
         save(){
