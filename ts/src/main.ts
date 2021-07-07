@@ -30,6 +30,7 @@ fs.readFile(process.argv[2], "utf8", async function (err,data) {
             trader: config.trader,
             whiteList:config.whiteList
         })
+        await b.init()
         const httpHelper = new bot.helper.HttpHelper(b,3333)
 
         if(config.mock){

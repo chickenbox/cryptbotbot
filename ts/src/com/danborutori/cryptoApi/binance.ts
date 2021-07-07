@@ -46,6 +46,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     export type Side = "BUY" | "SELL"
     type OrderStatus = "NEW" | "PARTIALLY_FILLED" | "FILLED" | "CANCELED" | "PENDING_CANCEL" | "REJECTED" | "EXPIRED"
     type TimeInForce = "GTC" | "IOC" | "FOK"
+    type Permission = "SPOT" | "MARGIN"
 
     interface ErrorResponse {
         code: number
@@ -82,7 +83,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         filters: Filter[]
             //These are defined in the Filters section.
             //All filters are optional
-        permissions: string[]
+        permissions: Permission[]
     }
 
     export interface ExchangeInfoResponse {

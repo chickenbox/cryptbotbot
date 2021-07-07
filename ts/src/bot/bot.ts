@@ -56,6 +56,18 @@ namespace bot {
             return helper.intervalToMilliSec(this.interval)
         }
 
+        async init(){
+            const exchangeInfo = await this.binance.getExchangeInfo()
+            const filteredSymbols =  exchangeInfo.symbols.filter(s=>{
+                return s.quoteAsset==this.homingAsset &&
+                    s.orderTypes.indexOf("MARKET")>=0 &&
+                    s.permissions.indexOf("SPOT")>=0
+            })
+
+            for( let baseAsset of filteredSymbols.map(s=>s.baseAsset))
+                this.whiteList.add( baseAsset )
+        }
+
 
         getRecentPrice( symbol: string, time: number ): number | undefined{
             const p = this.priceTracker.prices[symbol]
