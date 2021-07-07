@@ -34,6 +34,7 @@ namespace bot {
         private holdingBalance: number
         private minimumOrderQuantity: number // in homingAsset
         private whiteList: Set<string>
+        private blackList: Set<string>
         private priceTracker: helper.PriceTracker
         readonly balanceTracker: helper.BalanceTracker
         readonly performanceTracker: helper.PerformanceTracker
@@ -61,7 +62,8 @@ namespace bot {
             const filteredSymbols =  exchangeInfo.symbols.filter(s=>{
                 return s.quoteAsset==this.homingAsset &&
                     s.orderTypes.indexOf("MARKET")>=0 &&
-                    s.permissions.indexOf("SPOT")>=0
+                    s.permissions.indexOf("SPOT")>=0 &&
+                    !this.blackList.has( s.baseAsset )
             })
 
             for( let baseAsset of filteredSymbols.map(s=>s.baseAsset))
@@ -103,7 +105,7 @@ namespace bot {
                 logLength: number
                 holdingBalance: number
                 minimumOrderQuantity: number
-                whiteList: string[]
+                blackList: string[]
                 apiKey: string
                 apiSecure: string
                 environment: com.danborutori.cryptoApi.Environment
@@ -129,8 +131,9 @@ namespace bot {
             this.maxAllocation = config.maxAllocation
             this.holdingBalance = config.holdingBalance
             this.minimumOrderQuantity = config.minimumOrderQuantity
-            this.whiteList = new Set(config.whiteList)
             this.logger = new  helper.Logger(config.logLength)
+            this.whiteList = new Set()
+            this.blackList = new Set(config.blackList)
         }
 
         async mock(){

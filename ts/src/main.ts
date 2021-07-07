@@ -5,7 +5,7 @@ interface BotConfig {
     mock: boolean
     trader: "BINANCE" | "MOCK"
     holdingBalance: number
-    whiteList: string[]
+    blackList: string[]
 }
 
 const fs = require("fs")
@@ -28,7 +28,7 @@ fs.readFile(process.argv[2], "utf8", async function (err,data) {
             apiSecure: config.apiSecret,
             environment: config.env,
             trader: config.trader,
-            whiteList:config.whiteList
+            blackList: config.blackList
         })
         await b.init()
         const httpHelper = new bot.helper.HttpHelper(b,3333)
