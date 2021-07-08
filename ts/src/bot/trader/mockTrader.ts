@@ -13,6 +13,7 @@ namespace bot { export namespace trader {
 
             return {USDT: 10000}
         }()
+        private timeout: number = -1
 
         constructor( readonly binance: com.danborutori.cryptoApi.Binance ){
             super()
@@ -32,6 +33,8 @@ namespace bot { export namespace trader {
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)+netQty
             this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)-quantity*price
 
+            this.save()
+
             return {
                 price: price,
                 quantity: quantity
@@ -48,10 +51,21 @@ namespace bot { export namespace trader {
             this.balances[baseAsset] = (this.balances[baseAsset] || 0)-quantity
             this.balances[quoteAsset] = (this.balances[quoteAsset] || 0)+netQty*price
 
+            this.save()
+
             return {
                 price: price,
                 quantity: quantity
             }
+        }
+
+        private save(){
+            if(this.timeout>=0)
+                clearTimeout(this.timeout)
+            this.timeout = setTimeout(()=>{
+                localStorage.setItem(balancesLocalStorageKey, JSON.stringify(this.balances))
+                this.timeout = -1
+            }, 100)
         }
     }
 
