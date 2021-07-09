@@ -63,12 +63,28 @@ namespace bot { export namespace helper {
         })
     }
 
+    function noisyness( data: number[] ){
+        return data.map( (d,index)=>{
+            let noisyness = 0
+
+            const sampleCnt = 10
+            for( let i=Math.max(0,index-sampleCnt); i<index; i++ ){
+                if( i-1 >= 0 )
+                    noisyness += Math.abs( data[i]-data[i-1] )
+            }
+            noisyness /= sampleCnt
+
+            return noisyness
+        })
+    }
+
     export class TrendWatcher {
 
         data: DataEntry[]
         smoothedData: DataEntry[]
         dDataDt: number[]
         dDataDDt: number[]
+        noisyness: number[]
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -88,6 +104,7 @@ namespace bot { export namespace helper {
 
             this.dDataDt = smooth( dDataDT(this.smoothedData.map(d=>d.price)), Math.floor(this.smoothItr))
             this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr))
+            this.noisyness = noisyness(data.map(d=>d.price))
         }
 
         isPeak( array: number[], index: number ){

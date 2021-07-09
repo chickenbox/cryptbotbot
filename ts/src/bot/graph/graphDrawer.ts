@@ -11,6 +11,7 @@ namespace bot { export namespace graph {
             smoothedPrice: number,
             dSmoothedPrice: number,
             ddSmoothedPrice: number,
+            noisyness: number,
             peak: boolean,
             time: number
         }[],
@@ -166,6 +167,40 @@ namespace bot { export namespace graph {
         ctx.moveTo( 0, h+min*h/range )
         ctx.lineTo( w, h+min*h/range )
         ctx.stroke()
+
+        curveD = data.map(d=>{
+            return {
+                price: d.noisyness,
+                time: d.time
+            }
+        })
+        //noisyness
+        max = Number.NEGATIVE_INFINITY
+        min = Number.POSITIVE_INFINITY
+
+        for( let d of curveD ){
+            if( d.time >= start-step && d.time <= end+step ){
+                max = Math.max(d.price, max)
+                min = Math.min(d.price, min)
+            }
+        }
+        range = max-min
+        if( range==0 ){
+            range = 1
+            max = 0.5
+            min = -0.5
+        }
+
+        ctx.strokeStyle = "silver"
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        for( let d of curveD.slice(1) ){
+            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        }
+        ctx.moveTo( 0, h+min*h/range )
+        ctx.lineTo( w, h+min*h/range )
+        ctx.stroke()
     }
 
     export class Drawer {
@@ -180,6 +215,7 @@ namespace bot { export namespace graph {
                     price: number
                     smoothedPrice: number
                     ddSmoothedPrice: number
+                    noisyness: number
                     time: number
                 }[]
                 tradeRecords: {
@@ -202,6 +238,7 @@ namespace bot { export namespace graph {
                             smoothedPrice: trendWatcher.smoothedData[i].price,
                             dSmoothedPrice: trendWatcher.dDataDt[i],
                             ddSmoothedPrice: trendWatcher.dDataDDt[i],
+                            noisyness: trendWatcher.noisyness[i],
                             peak: trendWatcher.isPeak( trendWatcher.dDataDt, i ),
                             time: d.time
                         }
