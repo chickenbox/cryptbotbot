@@ -20,6 +20,7 @@ namespace bot { export namespace graph {
             price: number,
             time: number
         }[],
+        noisynessMean: number,
         step: number )
     {
         const ctx = canvas.getContext("2d")!
@@ -198,8 +199,8 @@ namespace bot { export namespace graph {
         for( let d of curveD.slice(1) ){
             ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
         }
-        ctx.moveTo( 0, h+min*h/range )
-        ctx.lineTo( w, h+min*h/range )
+        ctx.moveTo( 0, h-(noisynessMean-min)*h/range )
+        ctx.lineTo( w, h-(noisynessMean-min)*h/range )
         ctx.stroke()
     }
 
@@ -222,7 +223,8 @@ namespace bot { export namespace graph {
                     color: string
                     price: number,
                     time: number
-                }[]
+                }[],
+                noisynessMean: number
             }[] = []
 
             for( let baseAsset in this.bot.trendWatchers ){
@@ -258,7 +260,8 @@ namespace bot { export namespace graph {
                             price: h.actualPrice,
                             time: h.time
                         }
-                    }) : []
+                    }) : [],
+                    noisynessMean: trendWatcher.noisynessMean
                 })
             }
 
@@ -283,7 +286,7 @@ namespace bot { export namespace graph {
                             time: b.time
                         }
                     }
-                ))}, [], ${this.bot.timeInterval});
+                ))}, [], ${this.bot.timeInterval}, 0);
             </script>
             <br/><br/>
             </td>
@@ -313,7 +316,7 @@ namespace bot { export namespace graph {
                     <td>
                     <canvas id="graphCanvas${r.asset}" width="${graphWidth}" height="${graphHeight}" style="width: ${graphWidth}px; height: ${graphHeight}px;"></canvas>
                     <script>
-                        drawGraph(graphCanvas${r.asset}, ${JSON.stringify(r.data)}, ${JSON.stringify(r.tradeRecords)}, ${this.bot.timeInterval});
+                        drawGraph(graphCanvas${r.asset}, ${JSON.stringify(r.data)}, ${JSON.stringify(r.tradeRecords)}, ${this.bot.timeInterval}, ${r.noisynessMean});
                     </script>
                     <br/><br/>
                     </td>

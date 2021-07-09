@@ -24,14 +24,15 @@ namespace bot { export namespace helper {
             const start = Math.max(0,idx-iteration+1)
             let price = 0
             let totalWeight = 0
-            for( let i=start; i<=idx; i++ ){
-                const weight = smoothingCurve((i-start)/(idx-start))
-                price += data[i].price*weight
-                totalWeight += weight
-            }
+            if(idx!=start)
+                for( let i=start; i<=idx; i++ ){
+                    const weight = smoothingCurve((i-start)/(idx-start))
+                    price += data[i].price*weight
+                    totalWeight += weight
+                }
 
             return {
-                price: price/totalWeight,
+                price: totalWeight!=0?price/totalWeight:0,
                 time: d.time
             }
         })
@@ -54,11 +55,12 @@ namespace bot { export namespace helper {
             let n = 0
             let totalWeight = 0
 
-            for( let i=start; i<=idx; i++ ){
-                const weight = smoothingCurve((i-start)/(idx-start))
-                n += data[i]*weight
-                totalWeight += weight
-            }
+            if(idx!=start)
+                for( let i=start; i<=idx; i++ ){
+                    const weight = smoothingCurve((i-start)/(idx-start))
+                    n += data[i]*weight
+                    totalWeight += weight
+                }
             return totalWeight!=0?n/totalWeight:0
         })
     }
@@ -85,6 +87,7 @@ namespace bot { export namespace helper {
         dDataDt: number[]
         dDataDDt: number[]
         noisyness: number[]
+        noisynessMean: number
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -104,7 +107,12 @@ namespace bot { export namespace helper {
 
             this.dDataDt = smooth( dDataDT(this.smoothedData.map(d=>d.price)), Math.floor(this.smoothItr))
             this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr))
+            //this.noisyness = smooth( noisyness(data.map(d=>d.price)), Math.floor(this.smoothItr))
             this.noisyness = noisyness(data.map(d=>d.price))
+            this.noisynessMean = this.noisyness.length!=0?this.noisyness.reduce(function(a,b){
+                return a+b
+            }, 0)/this.noisyness.length:
+            0
         }
 
         isPeak( array: number[], index: number ){
