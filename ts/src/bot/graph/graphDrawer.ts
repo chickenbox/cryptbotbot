@@ -16,6 +16,7 @@ namespace bot { export namespace graph {
         }[],
         tradeRecords: {
             color: string,
+            price: number,
             time: number
         }[],
         step: number )
@@ -52,9 +53,12 @@ namespace bot { export namespace graph {
             ctx.strokeStyle = r.color
             ctx.lineWidth = 1
             const x = (r.time-start)*w/timeRange
+            const y = (1-(r.price-min)/range)*h
             ctx.beginPath()
             ctx.moveTo(x,0)
             ctx.lineTo(x,h)
+            ctx.moveTo(x+1.5,y)
+            ctx.arc(x,y,1.5,0,Math.PI*2)
             ctx.stroke()
         }
 
@@ -181,6 +185,7 @@ namespace bot { export namespace graph {
                 deltaValue: number
                 tradeRecords: {
                     color: string
+                    price: number,
                     time: number
                 }[]
             }[] = []
@@ -215,6 +220,7 @@ namespace bot { export namespace graph {
                         }
                         return {
                             color: color,
+                            price: h.actualPrice,
                             time: h.time
                         }
                     }) : []
