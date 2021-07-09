@@ -182,7 +182,6 @@ namespace bot { export namespace graph {
                     ddSmoothedPrice: number
                     time: number
                 }[]
-                deltaValue: number
                 tradeRecords: {
                     color: string
                     price: number,
@@ -207,7 +206,6 @@ namespace bot { export namespace graph {
                             time: d.time
                         }
                     }),
-                    deltaValue: trendWatcher.deltaValue,
                     tradeRecords: history ? history.map(h=>{
                         let color = "purple"
                         switch( h.side ){
@@ -270,7 +268,6 @@ namespace bot { export namespace graph {
                     <tr>
                     <th>
                     ${r.asset}<br/>
-                    delta: ${r.deltaValue}<br/>
                     Gain: ${this.bot.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))}<br/>
                     Cooldown: ${coolDownStr}
                     </th>

@@ -63,37 +63,12 @@ namespace bot { export namespace helper {
         })
     }
 
-    function delta( data: number[] ){
-        if( data.length<=1 ) return 0
-
-        data = Array.from(data).sort()
-
-        let max = data[0]
-        let min = data[0]
-        let diff = 0
-
-        for( let i=1; i<data.length; i++ ){
-            max = Math.max(max, data[i])
-            min = Math.min(min, data[i])
-            diff += Math.abs(data[i-1]-data[i])
-        }
-
-        if( max!=min ){
-            diff /= data.length
-
-            return diff/(max-min)
-        }else{
-            return 0
-        }
-    }
-
     export class TrendWatcher {
 
         data: DataEntry[]
         smoothedData: DataEntry[]
         dDataDt: number[]
         dDataDDt: number[]
-        readonly deltaValue: number
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -113,7 +88,6 @@ namespace bot { export namespace helper {
 
             this.dDataDt = smooth( dDataDT(this.smoothedData.map(d=>d.price)), Math.floor(this.smoothItr))
             this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr))
-            this.deltaValue = delta( data.map(d=>d.price) )
         }
 
         isPeak( array: number[], index: number ){
