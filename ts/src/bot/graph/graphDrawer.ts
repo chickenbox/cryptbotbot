@@ -20,8 +20,9 @@ namespace bot { export namespace graph {
             price: number,
             time: number
         }[],
-        noisynessMean: number,
-        step: number )
+        step: number,
+        noisynessMean: number
+    )
     {
         const ctx = canvas.getContext("2d")!
 
@@ -194,14 +195,20 @@ namespace bot { export namespace graph {
 
         ctx.strokeStyle = "silver"
         ctx.lineWidth = 1
+        ctx.setLineDash([1,1])
         ctx.beginPath()
         ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
         for( let d of curveD.slice(1) ){
             ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
         }
-        ctx.moveTo( 0, h-(noisynessMean-min)*h/range )
-        ctx.lineTo( w, h-(noisynessMean-min)*h/range )
+        const nh = h-(noisynessMean-min)*h/range
+        const nh2 = h-(noisynessMean*2-min)*h/range
+        ctx.moveTo( 0, nh )
+        ctx.lineTo( w, nh )
+        ctx.moveTo( 0, nh2 )
+        ctx.lineTo( w, nh2 )
         ctx.stroke()
+        ctx.setLineDash([])
     }
 
     export class Drawer {

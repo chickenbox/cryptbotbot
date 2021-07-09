@@ -107,7 +107,7 @@ namespace bot { export namespace helper {
 
             this.dDataDt = smooth( dDataDT(this.smoothedData.map(d=>d.price)), Math.floor(this.smoothItr))
             this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr))
-            //this.noisyness = smooth( noisyness(data.map(d=>d.price)), Math.floor(this.smoothItr))
+            // this.noisyness = smooth( noisyness(data.map(d=>d.price)), Math.floor(this.smoothItr))
             this.noisyness = noisyness(data.map(d=>d.price))
             this.noisynessMean = this.noisyness.length!=0?this.noisyness.reduce(function(a,b){
                 return a+b
