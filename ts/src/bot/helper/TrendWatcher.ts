@@ -80,6 +80,16 @@ namespace bot { export namespace helper {
         })
     }
 
+    function mean( data: number[], range: number ){
+        return data.map(function(d,index){
+            let m = 0
+            for( let i=Math.max(0,index-range); i<=index; i++ ){
+                m += data[i]
+            }
+            return m/range
+        })
+    }
+
     export class TrendWatcher {
 
         data: DataEntry[]
@@ -87,7 +97,7 @@ namespace bot { export namespace helper {
         dDataDt: number[]
         dDataDDt: number[]
         noisyness: number[]
-        noisynessMean: number
+        noisynessMean: number[]
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -109,10 +119,7 @@ namespace bot { export namespace helper {
             this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr))
             // this.noisyness = smooth( noisyness(data.map(d=>d.price)), Math.floor(this.smoothItr))
             this.noisyness = noisyness(data.map(d=>d.price))
-            this.noisynessMean = this.noisyness.length!=0?this.noisyness.reduce(function(a,b){
-                return a+b
-            }, 0)/this.noisyness.length:
-            0
+            this.noisynessMean = mean(this.noisyness,this.smoothItr)
         }
 
         isPeak( array: number[], index: number ){

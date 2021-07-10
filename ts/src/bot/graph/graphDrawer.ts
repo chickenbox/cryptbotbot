@@ -12,6 +12,7 @@ namespace bot { export namespace graph {
             dSmoothedPrice: number,
             ddSmoothedPrice: number,
             noisyness: number,
+            noisynessMean: number,
             peak: boolean,
             time: number
         }[],
@@ -20,8 +21,7 @@ namespace bot { export namespace graph {
             price: number,
             time: number
         }[],
-        step: number,
-        noisynessMean: number
+        step: number
     )
     {
         const ctx = canvas.getContext("2d")!
@@ -195,18 +195,30 @@ namespace bot { export namespace graph {
 
         ctx.strokeStyle = "silver"
         ctx.lineWidth = 1
-        ctx.setLineDash([1,1])
+        ctx.setLineDash([6,6])
         ctx.beginPath()
         ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
         for( let d of curveD.slice(1) ){
             ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
         }
-        const nh = h-(noisynessMean-min)*h/range
-        const nh2 = h-(noisynessMean*2-min)*h/range
-        ctx.moveTo( 0, nh )
-        ctx.lineTo( w, nh )
-        ctx.moveTo( 0, nh2 )
-        ctx.lineTo( w, nh2 )
+        ctx.stroke()
+        ctx.setLineDash([])
+
+        curveD = data.map(d=>{
+            return {
+                price: d.noisynessMean*2,
+                time: d.time
+            }
+        })
+        //noisyness mean
+        ctx.strokeStyle = "silver"
+        ctx.lineWidth = 1
+        ctx.setLineDash([6,6])
+        ctx.beginPath()
+        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        for( let d of curveD.slice(1) ){
+            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        }
         ctx.stroke()
         ctx.setLineDash([])
     }
@@ -224,14 +236,14 @@ namespace bot { export namespace graph {
                     smoothedPrice: number
                     ddSmoothedPrice: number
                     noisyness: number
+                    noisynessMean: number
                     time: number
                 }[]
                 tradeRecords: {
                     color: string
                     price: number,
                     time: number
-                }[],
-                noisynessMean: number
+                }[]
             }[] = []
 
             for( let baseAsset in this.bot.trendWatchers ){
@@ -248,6 +260,7 @@ namespace bot { export namespace graph {
                             dSmoothedPrice: trendWatcher.dDataDt[i],
                             ddSmoothedPrice: trendWatcher.dDataDDt[i],
                             noisyness: trendWatcher.noisyness[i],
+                            noisynessMean: trendWatcher.noisynessMean[i],
                             peak: trendWatcher.isPeak( trendWatcher.dDataDt, i ),
                             time: d.time
                         }
@@ -267,8 +280,7 @@ namespace bot { export namespace graph {
                             price: h.actualPrice,
                             time: h.time
                         }
-                    }) : [],
-                    noisynessMean: trendWatcher.noisynessMean
+                    }) : []
                 })
             }
 
@@ -293,7 +305,7 @@ namespace bot { export namespace graph {
                             time: b.time
                         }
                     }
-                ))}, [], ${this.bot.timeInterval}, 0);
+                ))}, [], ${this.bot.timeInterval});
             </script>
             <br/><br/>
             </td>
@@ -323,7 +335,7 @@ namespace bot { export namespace graph {
                     <td>
                     <canvas id="graphCanvas${r.asset}" width="${graphWidth}" height="${graphHeight}" style="width: ${graphWidth}px; height: ${graphHeight}px;"></canvas>
                     <script>
-                        drawGraph(graphCanvas${r.asset}, ${JSON.stringify(r.data)}, ${JSON.stringify(r.tradeRecords)}, ${this.bot.timeInterval}, ${r.noisynessMean});
+                        drawGraph(graphCanvas${r.asset}, ${JSON.stringify(r.data)}, ${JSON.stringify(r.tradeRecords)}, ${this.bot.timeInterval});
                     </script>
                     <br/><br/>
                     </td>

@@ -207,7 +207,7 @@ namespace bot {
                         index,
                         1000*60*60*24*2.5/this.timeInterval )
                     if( !downTrend &&
-                        trendWatcher.noisyness[index]<trendWatcher.noisynessMean*2 // prevent trade in when market is noisy
+                        trendWatcher.noisyness[index]<trendWatcher.noisynessMean[index]*2 // prevent trade in when market is noisy
                     )
                         action = "buy"
                 }
