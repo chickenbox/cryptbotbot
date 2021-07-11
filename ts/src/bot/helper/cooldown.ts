@@ -1,6 +1,6 @@
 namespace bot { export namespace helper {
 
-    const cooldownInterval = 1000*60*60*12
+    const cooldownInterval = 1000*60*60*24*3
 
     export class CoolDownHelper {
 
