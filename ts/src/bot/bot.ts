@@ -28,7 +28,6 @@ namespace bot {
         private binance: com.danborutori.cryptoApi.Binance
         readonly homingAsset: string
         private interval: com.danborutori.cryptoApi.Interval
-        private minHLRation: number
         private smoothAmount: number
         private maxAllocation: number
         private holdingBalance: number
@@ -100,7 +99,6 @@ namespace bot {
             config: {
                 homingAsset: string
                 interval: com.danborutori.cryptoApi.Interval
-                minHLRation: number
                 smoothAmount: number
                 maxAllocation: number
                 logLength: number
@@ -127,7 +125,6 @@ namespace bot {
             this.performanceTracker = new helper.PerformanceTracker()
             this.homingAsset = config.homingAsset
             this.interval = config.interval
-            this.minHLRation = config.minHLRation
             this.smoothAmount = config.smoothAmount
             this.maxAllocation = config.maxAllocation
             this.holdingBalance = config.holdingBalance
@@ -271,10 +268,7 @@ namespace bot {
                 const high = data.reduce((a,b)=>Math.max(a,b.price), Number.NEGATIVE_INFINITY)
                 const low = data.reduce((a,b)=>Math.min(a,b.price), Number.POSITIVE_INFINITY)
 
-                if( //high/low <= this.minHLRation ||
-                    //trendWatcher.deltaValue < 0.0009 ||
-                    this.blackList.has(symbol.baseAsset)
-                )
+                if( this.blackList.has(symbol.baseAsset) )
                     return {
                         symbol: symbol,
                         action: "sell",
@@ -348,7 +342,11 @@ namespace bot {
 
             const homingTotal = this.getHomingTotal(balances, now.getTime())
             let buyDecisions = decisions.filter(function(a){ return a.action=="buy"}).sort(function(a,b){
-                return b.score-a.score
+                const c = b.score-a.score
+                if( c!=0 )
+                    return c
+                else
+                    return Math.random() //shuffle
             })
             const availableHomingAsset = Math.max(0,((await this.trader.getBalances())[this.homingAsset] || 0)-this.holdingBalance)
             const maxAllocation = (homingTotal-this.holdingBalance)*this.maxAllocation

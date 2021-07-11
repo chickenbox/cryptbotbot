@@ -19,7 +19,6 @@ fs.readFile(process.argv[2], "utf8", async function (err,data) {
         const b = new bot.Bot({
             homingAsset: "USDT",
             interval: "30m",
-            minHLRation: 1.1,
             smoothAmount: 3*24*60/30,
             maxAllocation: 1/10,
             logLength: 10000,
