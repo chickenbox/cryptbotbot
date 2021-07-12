@@ -38,7 +38,10 @@ fs.readFile(process.argv[2], "utf8", async function (err,data) {
         )
 
         if(config.mock){
-            await b.mock()
+            // await b.mock()
+            bot.helper.silentLog = true
+            const config = await new bot.BotOptimizer().optimize(b)
+            console.log(`OPT Config: ${config}`)
         }
 
         b.run()

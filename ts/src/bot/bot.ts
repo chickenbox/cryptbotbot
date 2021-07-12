@@ -94,7 +94,6 @@ namespace bot {
             return homingTotal
         }
 
-
         constructor(
             config: {
                 homingAsset: string
@@ -148,6 +147,9 @@ namespace bot {
                 delete history[k]
             }
             this.balanceTracker.balances.length = 0
+            for( let k in this.trendWatchers ){
+                delete this.trendWatchers[k]
+            }
 
             let end = 0
             for( let t in this.priceTracker.prices ){
@@ -159,11 +161,14 @@ namespace bot {
             const start = helper.snapTime( end-graphInterval, this.timeInterval )
 
             this.logger.log("Start Mock")
+            let finalBalance = 0
             for( let t=start; t<end; t+=this.timeInterval ){
                 this.logger.log(`Mocking: ${new Date(t).toUTCString()}`)
-                await this.performTrade( t )
+                finalBalance = await this.performTrade( t )
             }
             this.logger.log("End Mock")
+
+            return finalBalance
         }
 
         async run(){
@@ -340,7 +345,7 @@ namespace bot {
                 }
             }))
 
-            const homingTotal = this.getHomingTotal(balances, now.getTime())
+            let homingTotal = this.getHomingTotal(balances, now.getTime())
             let buyDecisions = decisions.filter(function(a){ return a.action=="buy"}).sort(function(a,b){
                 const c = b.score-a.score
                 if( c!=0 )
@@ -395,7 +400,7 @@ namespace bot {
                 const balances = await this.trader.getBalances()
                 this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
 
-                const homingTotal = this.getHomingTotal(balances, now.getTime())
+                homingTotal = this.getHomingTotal(balances, now.getTime())
                 this.balanceTracker.add(homingTotal, now.getTime())
 
                 this.logger.log(`Total in ${this.homingAsset}: ${homingTotal}`)
@@ -403,6 +408,8 @@ namespace bot {
             }
             if( !isMock )this.balanceTracker.save()
             this.logger.log("=================================")
+
+            return homingTotal
         }
 
         async logTrader( time: number ){

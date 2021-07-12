@@ -1,6 +1,7 @@
 namespace bot { export namespace helper {
 
     const logLocalStorageKey = "Bot.log"
+    export let silentLog = false
 
     export class Logger {
 
@@ -24,6 +25,7 @@ namespace bot { export namespace helper {
         }
 
         writeLog( message: any, tag: string ){
+            if( silentLog ) return
 
             this.logs.push({
                 time: new Date().toString(),
@@ -46,6 +48,8 @@ namespace bot { export namespace helper {
         }
 
         log( message: any ){
+            if( silentLog ) return
+
             if( typeof(message) == "string" ) {
                 console.log( message )
 
@@ -58,6 +62,8 @@ namespace bot { export namespace helper {
         }
 
         error( e: Error ){
+            if( silentLog ) return
+
             console.error(e)
             this.writeLog( e,"e")
         }

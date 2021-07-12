@@ -5,7 +5,6 @@ namespace bot { export namespace helper {
             min: number
             max: number
         }
-        init: number
     }
 
     export class Optimizer {
@@ -13,16 +12,17 @@ namespace bot { export namespace helper {
         async optimize(
             healthFunction: (params: number[])=>Promise<number>,
             parameter: Parameter[],
-            populationSize: number = 100,
-            maxGeneration: 1000
+            populationSize: number = 10,
+            maxGeneration: number = 10
         ): Promise<number[]> {
-            const population: {
+            let population: {
                 parameter: number[]
                 healthyness: number
             }[] = new Array(populationSize)
 
             // init population
             for( let i=0; i<population.length; i++ ){
+                console.log( `init population ${i}` )
                 const p = this.randomParameters(parameter)
                 population[i] = {
                     parameter: p,
@@ -35,16 +35,20 @@ namespace bot { export namespace helper {
 
             for( let i=0; i<maxGeneration; i++ ){
                 // next generation
-                for( let i=Math.floor(population.length/2); i<population.length; i++ ){
+                for( let j=Math.floor(population.length/2); j<population.length; j++ ){
+                    console.log( `next generation ${i}-${j}` )
                     const idx0 = Math.floor(Math.random()*population.length/2)
                     const idx1 = Math.floor(Math.random()*population.length/2)
-                    this.cross(population[idx0].parameter, population[idx1].parameter, population[i].parameter)
-                    population[i].healthyness = await healthFunction(population[i].parameter)
+                    this.cross(population[idx0].parameter, population[idx1].parameter, population[j].parameter)
+                    population[j].healthyness = await healthFunction(population[j].parameter) 
                 }
 
                 population.sort(function(a,b){
-                    return a.healthyness-b.healthyness
+                    return b.healthyness-a.healthyness
                 })
+
+                console.log( `Generation ${i}: ${population[0].parameter}` )
+                console.log( `Best Health: ${population[0].healthyness}` )
             }
 
             return population[0].parameter
