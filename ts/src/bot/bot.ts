@@ -200,10 +200,7 @@ namespace bot {
             if( trendWatcher.dDataDDt[index-1]<0 && trendWatcher.dDataDDt[index]>=0 ){
                 if( this.allow.buy && this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
 
-                    const downTrend = trendWatcher.isDownTrend(
-                        index,
-                        1000*60*60*24*2.5/this.timeInterval )
-                    if( !downTrend &&
+                    if( 
                         trendWatcher.noisyness[index]<trendWatcher.noisynessMean[index]*2 // prevent trade in when market is noisy
                     )
                         action = "buy"
