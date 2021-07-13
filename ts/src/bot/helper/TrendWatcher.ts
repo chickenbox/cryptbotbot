@@ -69,7 +69,7 @@ namespace bot { export namespace helper {
         return data.map( (d,index)=>{
             let noisyness = 0
 
-            const sampleCnt = 10
+            const sampleCnt = 5
             for( let i=Math.max(0,index-sampleCnt); i<index; i++ ){
                 if( i-1 >= 0 )
                     noisyness += Math.abs( data[i]-data[i-1] )
@@ -119,7 +119,7 @@ namespace bot { export namespace helper {
             this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr))
             // this.noisyness = smooth( noisyness(data.map(d=>d.price)), Math.floor(this.smoothItr))
             this.noisyness = noisyness(data.map(d=>d.price))
-            this.noisynessMean = mean(this.noisyness,this.smoothItr)
+            this.noisynessMean = mean(this.noisyness,this.smoothItr/2)
         }
 
         isPeak( array: number[], index: number ){
