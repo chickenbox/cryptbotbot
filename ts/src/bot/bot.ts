@@ -135,7 +135,8 @@ namespace bot {
         async mock(){
             const origTraders = Array.from( this.traders )
             this.traders.length = 0
-            this.traders.push(new trader.MockTrader(this.binance))
+            const mockTrader = new trader.MockTrader(this.binance) 
+            this.traders.push(mockTrader)
 
             const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
             await this.priceTracker.update(this.interval, whiteSymbols)
@@ -169,6 +170,11 @@ namespace bot {
 
             this.traders.length = 0
             for( let t of origTraders ) {
+                if( t instanceof trader.MockTrader ){
+                    for( let k in mockTrader.performanceTracker.gains ){
+                        t.performanceTracker.gains[k] = mockTrader.performanceTracker.gains[k]
+                    }
+                }
                 this.traders.push(t)
             }
         }
