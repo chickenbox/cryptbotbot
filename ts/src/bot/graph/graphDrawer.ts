@@ -316,7 +316,7 @@ namespace bot { export namespace graph {
                     const sb = `${b.asset}${this.bot.homingAsset}`
                     const gainA = this.bot.performanceTracker.balance(sa, this.bot.getRecentPrice(sa, Date.now()))
                     const gainB = this.bot.performanceTracker.balance(sb, this.bot.getRecentPrice(sb, Date.now()))
-                    return gainA-gainB
+                    return gainB-gainA
                 }).map(r=>{
                     const symbol = `${r.asset}${this.bot.homingAsset}`
                     const cooldown = this.bot.cooldownHelper.getLockBuyTimestamp(symbol)
