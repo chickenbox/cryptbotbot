@@ -135,6 +135,9 @@ namespace bot {
         }
 
         async mock(){
+            const origTrader = this.trader
+            this.trader = new trader.MockTrader(this.binance)
+
             const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
             await this.priceTracker.update(this.interval, whiteSymbols)
             this.performanceTracker.reset()
@@ -164,6 +167,8 @@ namespace bot {
                 await this.performTrade( t )
             }
             this.logger.log("End Mock")
+
+            this.trader = origTrader
         }
 
         async run(){
