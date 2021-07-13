@@ -90,6 +90,17 @@ namespace bot { export namespace helper {
         })
     }
 
+    function maxShift( data: number[], range: number ){
+        return data.map(function(d,idx){
+            let v = d
+            for( let i=Math.max(0,idx-range); i<idx; i++ ){
+                v = Math.max( v, data[i] )
+            }
+
+            return v
+        })
+    }
+
     export class TrendWatcher {
 
         data: DataEntry[]
@@ -120,6 +131,7 @@ namespace bot { export namespace helper {
             // this.noisyness = smooth( noisyness(data.map(d=>d.price)), Math.floor(this.smoothItr))
             this.noisyness = noisyness(data.map(d=>d.price))
             this.noisynessMean = mean(this.noisyness,this.smoothItr/2)
+            this.noisyness = maxShift(this.noisyness, this.smoothItr/2)
         }
 
         isPeak( array: number[], index: number ){
