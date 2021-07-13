@@ -7,12 +7,14 @@ namespace bot { export namespace helper {
         private lockBuyTimestamps: { [symbol: string]: {
             balance: number
             cooldownTimestamp: number
+            consecuiveLost: number
         } } = {}
 
         private getRecrod( symbol: string ){
             return this.lockBuyTimestamps[symbol] || (this.lockBuyTimestamps[symbol] = {
                 balance: 0,
-                cooldownTimestamp: 0
+                cooldownTimestamp: 0,
+                consecuiveLost: 0
             })
         }
 
@@ -34,7 +36,10 @@ namespace bot { export namespace helper {
             const r = this.getRecrod(symbol)
 
             if( -r.balance>price*quantity ){
-                r.cooldownTimestamp = timestamp+cooldownInterval
+                r.consecuiveLost += 1
+                r.cooldownTimestamp = timestamp+cooldownInterval*r.consecuiveLost
+            }else{
+                r.consecuiveLost = 0
             }
 
             r.balance = 0
