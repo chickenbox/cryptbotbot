@@ -202,7 +202,7 @@ namespace bot {
 
                     const downTrend = trendWatcher.isDownTrend(
                         index,
-                        1000*60*60*24*2.5/this.timeInterval )
+                        1000*60*60*24*13.580989173500056/this.timeInterval )
                     if( !downTrend &&
                         trendWatcher.noisyness[index]<trendWatcher.noisynessMean[index]*2 // prevent trade in when market is noisy
                     )

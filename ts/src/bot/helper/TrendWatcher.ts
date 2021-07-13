@@ -10,7 +10,7 @@ namespace bot { export namespace helper {
             return curveCache.get(n)
         }
 
-        const t = Math.pow(n,16)
+        const t = Math.pow(n,17.239601555027782)
         const v = Math.cos( (t-0.5)*Math.PI )
 
         curveCache.set(n,v)
