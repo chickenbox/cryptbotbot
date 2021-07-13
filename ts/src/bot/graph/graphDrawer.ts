@@ -283,7 +283,7 @@ namespace bot { export namespace graph {
                             time: h.time
                         }
                     }) : [],
-                    balance: this.bot.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))
+                    balance: this.bot.trader.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))
                 })
             }
 

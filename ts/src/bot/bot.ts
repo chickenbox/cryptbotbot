@@ -36,8 +36,7 @@ namespace bot {
         private blackList: Set<string>
         private priceTracker: helper.PriceTracker
         readonly balanceTracker: helper.BalanceTracker
-        readonly performanceTracker: helper.PerformanceTracker
-        private trader: trader.Trader
+        trader: trader.Trader
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
         readonly cooldownHelper = new helper.CoolDownHelper()
@@ -122,7 +121,6 @@ namespace bot {
             }
             this.priceTracker = new helper.PriceTracker(this.binance)
             this.balanceTracker = new helper.BalanceTracker()
-            this.performanceTracker = new helper.PerformanceTracker()
             this.homingAsset = config.homingAsset
             this.interval = config.interval
             this.smoothAmount = config.smoothAmount
@@ -140,7 +138,7 @@ namespace bot {
 
             const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
             await this.priceTracker.update(this.interval, whiteSymbols)
-            this.performanceTracker.reset()
+            this.trader.performanceTracker.reset()
             const balances = await this.trader.getBalances()
             for( let k in balances ){
                 delete balances[k]
@@ -288,7 +286,7 @@ namespace bot {
                         symbol: symbol,
                         price: trendWatcher.data[index].price,
                         action: action,
-                        score: this.scoreDecision( trendWatcher, index, this.performanceTracker.balance(symbol.symbol, this.getRecentPrice(symbol.symbol, time)) )
+                        score: this.scoreDecision( trendWatcher, index, this.trader.performanceTracker.balance(symbol.symbol, this.getRecentPrice(symbol.symbol, time)) )
                     } as Decision
                 }
             }catch(e){
@@ -336,7 +334,7 @@ namespace bot {
                         try{
                             const response = await this.trader.sell(decision.symbol, quantity, isMock?decision.price:undefined)
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
-                            this.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
+                            this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
                             this.cooldownHelper.sell( decision.symbol.symbol, response.price, response.quantity, now.getTime() )
                         }catch(e){
                             this.logger.error(e)
@@ -378,7 +376,7 @@ namespace bot {
                     try{
                         const response = await this.trader.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
                         this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
-                        this.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
+                        this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
                         this.cooldownHelper.buy( decision.symbol.symbol, response.price, response.quantity )
                         if( !isMock )
                             await sleep(0.1)
@@ -392,7 +390,7 @@ namespace bot {
 
             if( !isMock ){
                 await this.logTrader(now.getTime())
-                this.performanceTracker.save()
+                this.trader.performanceTracker.save()
                 this.tradeHistory.save()
             }
 
