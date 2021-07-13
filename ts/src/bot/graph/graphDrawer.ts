@@ -243,13 +243,15 @@ namespace bot { export namespace graph {
                     color: string
                     price: number,
                     time: number
-                }[]
+                }[],
+                balance: number
             }[] = []
 
             for( let baseAsset in this.bot.trendWatchers ){
                 const trendWatcher = this.bot.trendWatchers[baseAsset]
+                const symbol = `${baseAsset}${this.bot.homingAsset}`
 
-                const history = this.bot.tradeHistory.history[`${baseAsset}${this.bot.homingAsset}`]
+                const history = this.bot.tradeHistory.history[symbol]
 
                 assets.push({
                     asset: baseAsset,
@@ -280,7 +282,8 @@ namespace bot { export namespace graph {
                             price: h.actualPrice,
                             time: h.time
                         }
-                    }) : []
+                    }) : [],
+                    balance: this.bot.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))
                 })
             }
 
@@ -311,12 +314,8 @@ namespace bot { export namespace graph {
             </td>
             </tr>
             ${
-                assets.sort((a,b)=>{
-                    const sa = `${a.asset}${this.bot.homingAsset}`
-                    const sb = `${b.asset}${this.bot.homingAsset}`
-                    const gainA = this.bot.performanceTracker.balance(sa, this.bot.getRecentPrice(sa, Date.now()))
-                    const gainB = this.bot.performanceTracker.balance(sb, this.bot.getRecentPrice(sb, Date.now()))
-                    return gainB-gainA
+                assets.sort(function(a,b){
+                    return b.balance-a.balance
                 }).map(r=>{
                     const symbol = `${r.asset}${this.bot.homingAsset}`
                     const cooldown = this.bot.cooldownHelper.getLockBuyTimestamp(symbol)
@@ -327,7 +326,7 @@ namespace bot { export namespace graph {
                     <tr>
                     <th>
                     ${r.asset}<br/>
-                    Gain: ${this.bot.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))}<br/>
+                    Gain: ${r.balance}<br/>
                     Cooldown: ${coolDownStr}
                     </th>
                     </tr>
@@ -343,7 +342,8 @@ namespace bot { export namespace graph {
                     `
                 }).join("")
             }
-            </table>
+            </table><br/><br/>
+            negative list: [${assets.filter(a=>a.balance<=-3).map(a=>`"${a.asset}"`).join(", ")}]
             `
         }
 
