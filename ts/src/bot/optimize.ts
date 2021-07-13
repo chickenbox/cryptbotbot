@@ -6,7 +6,8 @@ namespace bot {
 
             let healthFunction = async function( params: number[] ){
 
-                helper.smoothCurvePow = Math.floor(params[0])
+                helper.smoothCurvePow = params[0]
+                bot.downTrendInterval = params[1]
                 helper.curveCache.clear()
                 return await bot.mock()
             }
@@ -19,8 +20,14 @@ namespace bot {
                         min: 0,
                         max: 32
                     }
-                }]
-            )
+                },
+                {
+                    range: {
+                        min: 1,
+                        max: 14
+                    }
+                }
+                ])
 
             return config
         }

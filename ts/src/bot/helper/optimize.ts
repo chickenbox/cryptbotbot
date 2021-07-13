@@ -12,7 +12,7 @@ namespace bot { export namespace helper {
         async optimize(
             healthFunction: (params: number[])=>Promise<number>,
             parameter: Parameter[],
-            populationSize: number = 10,
+            populationSize: number = 20,
             maxGeneration: number = 10
         ): Promise<number[]> {
             let population: {
@@ -30,15 +30,21 @@ namespace bot { export namespace helper {
                 }
             }
             population.sort(function(a,b){
-                return a.healthyness-b.healthyness
+                return b.healthyness-a.healthyness
             })
 
             for( let i=0; i<maxGeneration; i++ ){
                 // next generation
-                for( let j=Math.floor(population.length/2); j<population.length; j++ ){
+                let j=3
+                for( ; j<population.length*2; j++ ){
                     console.log( `next generation ${i}-${j}` )
-                    const idx0 = Math.floor(Math.random()*population.length/2)
-                    const idx1 = Math.floor(Math.random()*population.length/2)
+                    population[j].parameter = this.randomParameters(parameter)
+                    population[j].healthyness = await healthFunction(population[j].parameter) 
+                }
+                for( ; j<population.length; j++ ){
+                    console.log( `next generation ${i}-${j}` )
+                    const idx0 = Math.floor(Math.random()*population.length*2)
+                    const idx1 = Math.floor(Math.random()*population.length*2)
                     this.cross(population[idx0].parameter, population[idx1].parameter, population[j].parameter)
                     population[j].healthyness = await healthFunction(population[j].parameter) 
                 }
@@ -47,7 +53,7 @@ namespace bot { export namespace helper {
                     return b.healthyness-a.healthyness
                 })
 
-                console.log( `Generation ${i}: ${population[0].parameter}` )
+                console.log( `Generation ${i}: ${population[0].parameter.map(n=>n.toString()).join(", ")}` )
                 console.log( `Best Health: ${population[0].healthyness}` )
             }
 
