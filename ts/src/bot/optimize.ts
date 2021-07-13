@@ -8,6 +8,9 @@ namespace bot {
 
                 helper.smoothCurvePow = params[0]
                 bot.downTrendInterval = params[1]
+                helper.cooldownInterval = params[2]
+                helper.decisionScoreFactor1 = params[3]
+                helper.decisionScoreFactor2 = params[4]
                 helper.curveCache.clear()
                 return await bot.mock()
             }
@@ -25,6 +28,24 @@ namespace bot {
                     range: {
                         min: 1,
                         max: 14
+                    }
+                },
+                {
+                    range: {
+                        min: 1000*60*60*24,
+                        max: 1000*60*60*24*15
+                    }
+                },
+                {
+                    range: {
+                        min: 0,
+                        max: 1
+                    }
+                },
+                {
+                    range: {
+                        min: 0,
+                        max: 1
                     }
                 }
                 ])

@@ -28,7 +28,7 @@ namespace bot {
         private binance: com.danborutori.cryptoApi.Binance
         readonly homingAsset: string
         private interval: com.danborutori.cryptoApi.Interval
-        private smoothAmount: number
+        public smoothAmount: number
         private maxAllocation: number
         private holdingBalance: number
         private minimumOrderQuantity: number // in homingAsset

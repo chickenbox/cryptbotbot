@@ -12,7 +12,7 @@ namespace bot { export namespace helper {
         async optimize(
             healthFunction: (params: number[])=>Promise<number>,
             parameter: Parameter[],
-            populationSize: number = 20,
+            populationSize: number = 15,
             maxGeneration: number = 10
         ): Promise<number[]> {
             let population: {
@@ -35,16 +35,10 @@ namespace bot { export namespace helper {
 
             for( let i=0; i<maxGeneration; i++ ){
                 // next generation
-                let j=3
-                for( ; j<population.length*2; j++ ){
+                for( let j=Math.floor(population.length/3); j<population.length; j++ ){
                     console.log( `next generation ${i}-${j}` )
-                    population[j].parameter = this.randomParameters(parameter)
-                    population[j].healthyness = await healthFunction(population[j].parameter) 
-                }
-                for( ; j<population.length; j++ ){
-                    console.log( `next generation ${i}-${j}` )
-                    const idx0 = Math.floor(Math.random()*population.length*2)
-                    const idx1 = Math.floor(Math.random()*population.length*2)
+                    const idx0 = Math.floor(Math.random()*population.length/3)
+                    const idx1 = Math.floor(Math.random()*population.length/3)
                     this.cross(population[idx0].parameter, population[idx1].parameter, population[j].parameter)
                     population[j].healthyness = await healthFunction(population[j].parameter) 
                 }

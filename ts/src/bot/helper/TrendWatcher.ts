@@ -67,11 +67,12 @@ namespace bot { export namespace helper {
         })
     }
 
+    export let noisynessSampleCnt = 10
     function noisyness( data: number[] ){
         return data.map( (d,index)=>{
             let noisyness = 0
 
-            const sampleCnt = 10
+            const sampleCnt = noisynessSampleCnt
             for( let i=Math.max(0,index-sampleCnt); i<index; i++ ){
                 if( i-1 >= 0 )
                     noisyness += Math.abs( data[i]-data[i-1] )
