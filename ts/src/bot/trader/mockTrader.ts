@@ -15,8 +15,8 @@ namespace bot { export namespace trader {
         }()
         private timeout: number = -1
 
-        constructor( readonly binance: com.danborutori.cryptoApi.Binance ){
-            super()
+        constructor( readonly binance: com.danborutori.cryptoApi.Binance, id?: string ){
+            super( new helper.PerformanceTracker(id) )
         }
 
         async getBalances(){

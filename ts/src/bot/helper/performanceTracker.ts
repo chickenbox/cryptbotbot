@@ -9,8 +9,15 @@ namespace bot { export namespace helper {
             spend: number
         } }
 
-        constructor(){
-            const s = localStorage.getItem(performanceTrackerGainsLocalStorageKey)
+        private get storageKey(){
+            if( this.id ){
+                return performanceTrackerGainsLocalStorageKey+"."+this.id
+            }
+                return performanceTrackerGainsLocalStorageKey
+        }
+
+        constructor(readonly id?: string){
+            const s = localStorage.getItem(this.storageKey)
             if( s ){
                 this.gains = JSON.parse(s)
             }else{
@@ -48,7 +55,7 @@ namespace bot { export namespace helper {
         }
 
         save(){
-            localStorage.setItem(performanceTrackerGainsLocalStorageKey, JSON.stringify(this.gains,null,2))
+            localStorage.setItem(this.storageKey, JSON.stringify(this.gains,null,2))
         }
 
         reset(){
