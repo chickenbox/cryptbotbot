@@ -36,7 +36,7 @@ namespace bot {
         private blackList: Set<string>
         private priceTracker: helper.PriceTracker
         readonly balanceTracker: helper.BalanceTracker
-        readonly traders: trader.Trader[] = []
+        readonly trader: trader.Trader
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
         readonly cooldownHelper = new helper.CoolDownHelper()
@@ -113,10 +113,10 @@ namespace bot {
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure, config.environment)
             switch( config.trader ){
             case "BINANCE":
-                this.traders.push( new trader.BinanceTrader(this.binance) )
+                this.trader = new trader.BinanceTrader(this.binance)
                 break
             default:
-                this.traders.push( new trader.MockTrader(this.binance) )
+                this.trader = new trader.MockTrader(this.binance)
                 break
             }
             this.priceTracker = new helper.PriceTracker(this.binance)
@@ -135,8 +135,8 @@ namespace bot {
         async mock(){
             const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
             await this.priceTracker.update(this.interval, whiteSymbols)
-            this.traders[0].performanceTracker.reset()
-            const balances = await this.traders[0].getBalances()
+            this.trader.performanceTracker.reset()
+            const balances = await this.trader.getBalances()
             for( let k in balances ){
                 delete balances[k]
             }
@@ -159,7 +159,7 @@ namespace bot {
             this.logger.log("Start Mock")
             for( let t=start; t<end; t+=this.timeInterval ){
                 this.logger.log(`Mocking: ${new Date(t).toUTCString()}`)
-                await this.performTrade( this.traders[0], t )
+                await this.performTrade( t )
             }
             this.logger.log("End Mock")
         }
@@ -169,8 +169,7 @@ namespace bot {
 
             try{
                 try{
-                    for( let t of this.traders )
-                        await this.performTrade(t)
+                    await this.performTrade()
                 }catch(e){
                     this.logger.error(e)
                 }
@@ -298,7 +297,7 @@ namespace bot {
         }
 
         private exchangeInfoCache?: com.danborutori.cryptoApi.ExchangeInfoResponse
-        private async performTrade( trader: trader.Trader, mockTime?: number ){
+        private async performTrade( mockTime?: number ){
             const isMock = mockTime!==undefined
             const now = mockTime===undefined?new Date():new Date( mockTime )
 
@@ -323,19 +322,19 @@ namespace bot {
             })
 
             const decisions = symbols.map( symbol => {
-                return this.makeDecision(trader, symbol, now.getTime(), isMock)
+                return this.makeDecision(this.trader, symbol, now.getTime(), isMock)
             }).filter(a=>a)
 
-            const balances = await trader.getBalances()
+            const balances = await this.trader.getBalances()
             await Promise.all(decisions.map(async decision=>{
                 switch(decision.action){
                 case "sell":
                     const quantity = balances[decision.symbol.baseAsset] || 0
                     if( quantity>0 )
                         try{
-                            const response = await trader.sell(decision.symbol, quantity, isMock?decision.price:undefined)
+                            const response = await this.trader.sell(decision.symbol, quantity, isMock?decision.price:undefined)
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
-                            trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
+                            this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
                             this.cooldownHelper.sell( decision.symbol.symbol, response.price, response.quantity, now.getTime() )
                         }catch(e){
                             this.logger.error(e)
@@ -352,7 +351,7 @@ namespace bot {
                 else
                     return Math.random() //shuffle
             })
-            const availableHomingAsset = Math.max(0,((await trader.getBalances())[this.homingAsset] || 0)-this.holdingBalance)
+            const availableHomingAsset = Math.max(0,((await this.trader.getBalances())[this.homingAsset] || 0)-this.holdingBalance)
             const maxAllocation = (homingTotal-this.holdingBalance)*this.maxAllocation
             const maxOrder = Math.max(0,Math.floor(maxAllocation/this.minimumOrderQuantity))
             if( buyDecisions.length>maxOrder ){
@@ -375,9 +374,9 @@ namespace bot {
 
                 if( quantity>minQuantity )
                     try{
-                        const response = await trader.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
+                        const response = await this.trader.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
                         this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
-                        trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
+                        this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
                         this.cooldownHelper.buy( decision.symbol.symbol, response.price, response.quantity )
                         if( !isMock )
                             await sleep(0.1)
@@ -391,12 +390,12 @@ namespace bot {
 
             if( !isMock ){
                 await this.logTrader(now.getTime())
-                trader.performanceTracker.save()
+                this.trader.performanceTracker.save()
                 this.tradeHistory.save()
             }
 
             {
-                const balances = await trader.getBalances()
+                const balances = await this.trader.getBalances()
                 this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
 
                 const homingTotal = this.getHomingTotal(balances, now.getTime())
