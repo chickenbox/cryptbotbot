@@ -280,7 +280,15 @@ namespace bot { export namespace graph {
                         return {
                             color: color,
                             price: h.actualPrice,
-                            time: h.time
+                            time: h.time,
+
+                            smoothedPrice: 0,
+                            dSmoothedPrice: 0,
+                            ddSmoothedPrice: 0,
+                            noisyness: 0,
+                            noisynessMean: 0,
+                            peak: 0
+
                         }
                     }) : [],
                     balance: this.bot.trader.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))
