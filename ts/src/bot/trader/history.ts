@@ -17,7 +17,7 @@ namespace bot { export namespace trader {
             return this._history
         }
 
-        constructor(){
+        constructor( private keySuffix: string ){
             this.load()
         }
 
@@ -67,14 +67,14 @@ namespace bot { export namespace trader {
         }
 
         private load(){
-            const s = localStorage.getItem(localStorageKey)
+            const s = localStorage.getItem(localStorageKey+this.keySuffix)
             if( s ){
                 this._history = JSON.parse(s)
             }
         }
 
         save(){
-            localStorage.setItem( localStorageKey, JSON.stringify(this._history,null,2) )
+            localStorage.setItem( localStorageKey+this.keySuffix, JSON.stringify(this._history,null,2) )
         }
     }
 

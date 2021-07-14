@@ -7,8 +7,10 @@ namespace bot { export namespace helper {
 
         readonly balances: {time: number, amount: number }[]
 
-        constructor(){
-            const s = localStorage.getItem(balanceTrackerlocalStorageKey)
+        constructor(
+            private keySuffix: string
+        ){
+            const s = localStorage.getItem(balanceTrackerlocalStorageKey+keySuffix)
             if( s ){
                 this.balances = JSON.parse(s)    
             }else{
@@ -27,7 +29,7 @@ namespace bot { export namespace helper {
         }
 
         save(){
-            localStorage.setItem(balanceTrackerlocalStorageKey, JSON.stringify(this.balances))
+            localStorage.setItem(balanceTrackerlocalStorageKey+this.keySuffix, JSON.stringify(this.balances))
         }
     }
 

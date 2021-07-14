@@ -5,17 +5,19 @@ namespace bot { export namespace helper {
 
     export class PriceTracker {
 
-        readonly prices: {[symbol: string]: {time: number, price: number}[]} = function(){
-            const s = localStorage.getItem(pricesLocalStorageKey)
-            if( s ){
-                return JSON.parse(s)
-            }
-            return {}
-        }()
+        readonly prices: {[symbol: string]: {time: number, price: number}[]}
 
         constructor(
-            readonly binance: com.danborutori.cryptoApi.Binance
-        ){}
+            readonly binance: com.danborutori.cryptoApi.Binance,
+            private keySuffix: string
+        ){
+            const s = localStorage.getItem(pricesLocalStorageKey+keySuffix)
+            if( s ){
+                this.prices = JSON.parse(s)
+            }else{
+                this.prices = {}
+            }
+        }
 
         async update( interval: com.danborutori.cryptoApi.Interval, whiteSymbols: Set<string> ){
 
@@ -58,7 +60,7 @@ namespace bot { export namespace helper {
                 }
             }))
 
-            localStorage.setItem( pricesLocalStorageKey, JSON.stringify(this.prices, null, 2) )
+            localStorage.setItem( pricesLocalStorageKey+this.keySuffix, JSON.stringify(this.prices, null, 2) )
         }
 
         getConstantIntervalPrice( symbol: string, interval: number ){

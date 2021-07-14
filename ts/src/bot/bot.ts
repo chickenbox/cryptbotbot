@@ -37,7 +37,7 @@ namespace bot {
         private priceTracker: helper.PriceTracker
         readonly balanceTracker: helper.BalanceTracker
         readonly trader: trader.Trader
-        readonly tradeHistory = new trader.History()
+        readonly tradeHistory: trader.History
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
         readonly cooldownHelper = new helper.CoolDownHelper()
         private logger: helper.Logger
@@ -108,19 +108,21 @@ namespace bot {
                 apiSecure: string
                 environment: com.danborutori.cryptoApi.Environment
                 trader: "BINANCE" | "MOCK"
-            }
+            },
+            keySuffix: string = ""
         ){
+            this.tradeHistory = new trader.History( keySuffix )
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure, config.environment)
             switch( config.trader ){
             case "BINANCE":
                 this.trader = new trader.BinanceTrader(this.binance)
                 break
             default:
-                this.trader = new trader.MockTrader(this.binance)
+                this.trader = new trader.MockTrader(this.binance, keySuffix)
                 break
             }
-            this.priceTracker = new helper.PriceTracker(this.binance)
-            this.balanceTracker = new helper.BalanceTracker()
+            this.priceTracker = new helper.PriceTracker(this.binance, keySuffix)
+            this.balanceTracker = new helper.BalanceTracker(keySuffix)
             this.homingAsset = config.homingAsset
             this.interval = config.interval
             this.smoothAmount = config.smoothAmount

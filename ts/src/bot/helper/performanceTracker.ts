@@ -9,8 +9,10 @@ namespace bot { export namespace helper {
             spend: number
         } }
 
-        constructor(){
-            const s = localStorage.getItem(performanceTrackerGainsLocalStorageKey)
+        constructor(
+            private keySuffix: string
+        ){
+            const s = localStorage.getItem(performanceTrackerGainsLocalStorageKey+keySuffix)
             if( s ){
                 this.gains = JSON.parse(s)
             }else{
@@ -48,7 +50,7 @@ namespace bot { export namespace helper {
         }
 
         save(){
-            localStorage.setItem(performanceTrackerGainsLocalStorageKey, JSON.stringify(this.gains,null,2))
+            localStorage.setItem(performanceTrackerGainsLocalStorageKey+this.keySuffix, JSON.stringify(this.gains,null,2))
         }
 
         reset(){
