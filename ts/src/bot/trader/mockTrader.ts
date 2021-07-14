@@ -11,7 +11,7 @@ namespace bot { export namespace trader {
             readonly binance: com.danborutori.cryptoApi.Binance,
             private keySuffix: string
         ){
-            super()
+            super( keySuffix )
             const s = localStorage.getItem(balancesLocalStorageKey+keySuffix)
             if( s ){
                 this.balances = JSON.parse(s)

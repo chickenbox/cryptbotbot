@@ -6,7 +6,11 @@ namespace bot { export namespace trader {
     }
 
     export abstract class Trader {
-        readonly performanceTracker: helper.PerformanceTracker = new helper.PerformanceTracker()
+        readonly performanceTracker: helper.PerformanceTracker
+
+        constructor( keySuffix: string ){
+            this.performanceTracker = new helper.PerformanceTracker(keySuffix)
+        }
 
         abstract getBalances(): Promise<{[asset: string]: number}>
 
