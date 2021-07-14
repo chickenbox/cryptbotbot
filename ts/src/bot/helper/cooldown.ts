@@ -1,8 +1,14 @@
 namespace bot { export namespace helper {
 
     const cooldownInterval = 1000*60*60*24*3
+    const storageKey = "cooldownHelper.lockBuyTimestamps"
 
     export class CoolDownHelper {
+
+
+        constructor( private keySuffix: string ){
+            this.load()
+        }
 
         private lockBuyTimestamps: { [symbol: string]: {
             balance: number
@@ -45,6 +51,19 @@ namespace bot { export namespace helper {
             r.balance = 0
         }
 
+        private load(){
+            const s = localStorage.getItem(storageKey+this.keySuffix)
+            if( s )
+                this.lockBuyTimestamps = JSON.parse(s)
+        }
+
+        save(){
+            localStorage.setItem( storageKey+this.keySuffix, JSON.stringify(this.lockBuyTimestamps))
+        }
+
+        reset(){
+            this.lockBuyTimestamps = {}
+        }
     }
 
 }}

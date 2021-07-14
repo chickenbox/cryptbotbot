@@ -39,7 +39,7 @@ namespace bot {
         readonly trader: trader.Trader
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
-        readonly cooldownHelper = new helper.CoolDownHelper()
+        readonly cooldownHelper = new helper.CoolDownHelper("")
         private logger: helper.Logger
         
         readonly allow = {
@@ -146,6 +146,7 @@ namespace bot {
                 delete history[k]
             }
             this.balanceTracker.balances.length = 0
+            this.cooldownHelper.reset()
 
             let end = 0
             for( let t in this.priceTracker.prices ){
@@ -392,6 +393,7 @@ namespace bot {
                 await this.logTrader(now.getTime())
                 this.trader.performanceTracker.save()
                 this.tradeHistory.save()
+                this.cooldownHelper.save()
             }
 
             {
