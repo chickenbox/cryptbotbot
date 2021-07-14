@@ -325,6 +325,7 @@ namespace bot {
                 return this.makeDecision(this.trader, symbol, now.getTime(), isMock)
             }).filter(a=>a)
 
+            await this.trader.beginTrade()
             const balances = await this.trader.getBalances()
             await Promise.all(decisions.map(async decision=>{
                 switch(decision.action){
@@ -375,11 +376,11 @@ namespace bot {
                 if( quantity>minQuantity )
                     try{
                         const response = await this.trader.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
-                        this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
-                        this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
-                        this.cooldownHelper.buy( decision.symbol.symbol, response.price, response.quantity )
-                        if( !isMock )
-                            await sleep(0.1)
+                        if( response ){
+                            this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
+                            this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
+                            this.cooldownHelper.buy( decision.symbol.symbol, response.price, response.quantity )
+                        }
                     }catch(e){
                         this.logger.error(e)
                     }
@@ -387,6 +388,8 @@ namespace bot {
                     this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, now )
                 }
             }
+
+            await this.trader.endTrade()
 
             if( !isMock ){
                 await this.logTrader(now.getTime())

@@ -14,9 +14,13 @@ namespace bot { export namespace trader {
 
         abstract getBalances(): Promise<{[asset: string]: number}>
 
-        abstract buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number  ): Promise<TradeResponse>
+        async beginTrade() {}
+
+        abstract buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number  ): Promise<TradeResponse | null>
 
         abstract sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, mockPrice?: number ): Promise<TradeResponse>
+
+        async endTrade() {}
     }
 
 }}

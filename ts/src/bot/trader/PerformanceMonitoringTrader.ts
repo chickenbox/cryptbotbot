@@ -14,6 +14,11 @@ namespace bot { export namespace trader {
             return this.actualTrader.getBalances()
         }
 
+        async beginTrade(){
+            await this.mockTrader.beginTrade()
+            await this.actualTrader.beginTrade()
+        }
+
         async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number  ) {
             await this.mockTrader.buy( symbol, quantity, quoteAssetQuantity)
             return this.actualTrader.buy( symbol, quantity, quoteAssetQuantity)
@@ -24,6 +29,10 @@ namespace bot { export namespace trader {
             return this.actualTrader.sell(symbol, quantity, mockPrice)
         }
 
+        async endTrade(){
+            await this.mockTrader.endTrade()
+            await this.actualTrader.endTrade()
+        }
     }
 
 }}

@@ -4,19 +4,27 @@ namespace bot { export namespace trader {
     const commissionRate = 0.001
 
     export class MockTrader extends Trader {
-        private balances: {[key: string]: number} = function(){
-
-            const s = localStorage.getItem(balancesLocalStorageKey)
-            if( s ){
-                return JSON.parse(s)
+        private get localStorageKey(){
+            if( this.id ){
+                return balancesLocalStorageKey+"."+this.id
             }
+            return balancesLocalStorageKey
+        }
 
-            return {USDT: 10000}
-        }()
+        private balances: {[key: string]: number}
         private timeout: number = -1
 
-        constructor( readonly binance: com.danborutori.cryptoApi.Binance, id?: string ){
+        constructor(
+            readonly binance: com.danborutori.cryptoApi.Binance,
+            readonly id?: string
+        ){
             super( new helper.PerformanceTracker(id) )
+
+            const s = localStorage.getItem(this.localStorageKey)
+            if( s ){
+                this.balances = JSON.parse(s)
+            }
+            this.balances = {USDT: 10000}
         }
 
         async getBalances(){
@@ -63,7 +71,7 @@ namespace bot { export namespace trader {
             if(this.timeout>=0)
                 clearTimeout(this.timeout)
             this.timeout = setTimeout(()=>{
-                localStorage.setItem(balancesLocalStorageKey, JSON.stringify(this.balances))
+                localStorage.setItem(this.localStorageKey, JSON.stringify(this.balances))
                 this.timeout = -1
             }, 100)
         }
