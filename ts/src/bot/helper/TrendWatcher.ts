@@ -162,15 +162,15 @@ namespace bot { export namespace helper {
             const endIndex = index
             const meanIndex = Math.floor((startIndex+endIndex)/2)
 
-            let startValue = 0
-            let endValue = 0
+            let startValue = Number.MIN_VALUE
+            let endValue = Number.MIN_VALUE
             for( let i = startIndex; i<meanIndex; i++ ){
                 if( i>=0 )
-                    startValue += this.dDataDt[i]
+                    startValue = Math.max(startValue, this.dDataDt[i])
             }
             for( let i = meanIndex; i<endIndex; i++ ){
                 if( i>=0 )
-                    endValue += this.dDataDt[i]
+                    endValue = Math.max( endValue, this.dDataDt[i] )
             }
 
             return startValue>endValue
