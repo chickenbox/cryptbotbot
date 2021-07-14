@@ -133,11 +133,6 @@ namespace bot {
         }
 
         async mock(){
-            const origTraders = Array.from( this.traders )
-            this.traders.length = 0
-            const mockTrader = new trader.MockTrader(this.binance) 
-            this.traders.push(mockTrader)
-
             const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
             await this.priceTracker.update(this.interval, whiteSymbols)
             this.traders[0].performanceTracker.reset()
@@ -167,14 +162,6 @@ namespace bot {
                 await this.performTrade( this.traders[0], t )
             }
             this.logger.log("End Mock")
-
-            this.traders.length = 0
-            for( let t of origTraders ) {
-                if( t instanceof trader.MockTrader ){
-                    t.copy(mockTrader)
-                }
-                this.traders.push(t)
-            }
         }
 
         async run(){

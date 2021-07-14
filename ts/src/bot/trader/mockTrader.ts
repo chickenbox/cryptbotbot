@@ -19,15 +19,6 @@ namespace bot { export namespace trader {
             super()
         }
 
-        copy( trader: MockTrader ){
-            for( let k in trader.performanceTracker.gains ){
-                this.performanceTracker.gains[k] = trader.performanceTracker.gains[k]
-            }
-            for( let k in trader.balances ){
-                this.balances[k] = trader.balances[k]
-            }
-        }
-
         async getBalances(){
             return this.balances
         }
