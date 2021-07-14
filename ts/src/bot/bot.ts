@@ -171,9 +171,7 @@ namespace bot {
             this.traders.length = 0
             for( let t of origTraders ) {
                 if( t instanceof trader.MockTrader ){
-                    for( let k in mockTrader.performanceTracker.gains ){
-                        t.performanceTracker.gains[k] = mockTrader.performanceTracker.gains[k]
-                    }
+                    t.copy(mockTrader)
                 }
                 this.traders.push(t)
             }
