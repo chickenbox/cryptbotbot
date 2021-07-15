@@ -32,7 +32,7 @@ namespace bot { export namespace helper {
                 }
 
             return {
-                price: totalWeight!=0?price/totalWeight:0,
+                price: totalWeight!=0?price/totalWeight:d,
                 time: d.time
             }
         })
@@ -43,8 +43,7 @@ namespace bot { export namespace helper {
     function dDataDT( data: number[] ){
         return data.map( function(d,i){
             if( i>0){
-                const v = d-data[i-1]
-                return Math.abs(v)<10000?v:0 // max filter
+                return d-data[i-1]
             }
             return 0
         })
