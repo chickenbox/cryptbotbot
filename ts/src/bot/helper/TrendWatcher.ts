@@ -43,7 +43,8 @@ namespace bot { export namespace helper {
     function dDataDT( data: number[] ){
         return data.map( function(d,i){
             if( i>0){
-                return d-data[i-1]
+                const v = d-data[i-1]
+                return Math.abs(v)<10000?v:0 // max filter
             }
             return 0
         })
