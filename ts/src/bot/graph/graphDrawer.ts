@@ -10,6 +10,7 @@ namespace bot { export namespace graph {
             price: number,
             ma1: number,
             ma2: number,
+            ma3: number,
             time: number
         }[],
         tradeRecords: {
@@ -103,6 +104,24 @@ namespace bot { export namespace graph {
         ctx.moveTo( 0, h+min*h/range )
         ctx.lineTo( w, h+min*h/range )
         ctx.stroke()
+
+        curveD = data.map(d=>{
+            return {
+                price: d.ma3,
+                time: d.time
+            }
+        })
+
+        ctx.strokeStyle = "blue"
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        for( let d of curveD.slice(1) ){
+            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        }
+        ctx.moveTo( 0, h+min*h/range )
+        ctx.lineTo( w, h+min*h/range )
+        ctx.stroke()
     }
 
     export class Drawer {
@@ -117,6 +136,7 @@ namespace bot { export namespace graph {
                     price: number
                     ma1: number
                     ma2: number
+                    ma3: number
                     time: number
                 }[]
                 tradeRecords: {
@@ -140,6 +160,7 @@ namespace bot { export namespace graph {
                             price: d.price,
                             ma1: trendWatcher.ma1[i],
                             ma2: trendWatcher.ma2[i],
+                            ma3: trendWatcher.ma3[i],
                             time: d.time
                         }
                     }).filter(a=>{
@@ -160,6 +181,7 @@ namespace bot { export namespace graph {
                             price: h.actualPrice,
                             ma1: 0,
                             ma2: 0,
+                            ma3: 0,
                             time: h.time,
                         }
                     }).filter(a=>{
@@ -188,6 +210,7 @@ namespace bot { export namespace graph {
                             price: b.amount,
                             ma1: 0,
                             ma2: 0,
+                            ma3: 0,
                             time: b.time
                         }
                     }

@@ -196,21 +196,17 @@ namespace bot {
 
             let action: Action = "none"
             
-            if( index>0 && trendWatcher.ma1[index]>=trendWatcher.ma2[index] &&
-                trendWatcher.ma1[index-1]<trendWatcher.ma2[index-1]
+            if( index>0 &&
+                trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
+                trendWatcher.ma1[index]>=trendWatcher.ma2[index] && 
+                trendWatcher.data[index].price<trendWatcher.ma3[index]
             ){
                 if( this.allow.buy ){//&& this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
                         action = "buy"
                 }
             }else{
                 if(
-                    trendWatcher.ma1[index]<trendWatcher.ma2[index] ||
-                    (
-                        index>0 &&
-                        index+1<trendWatcher.ma1.length &&
-                        trendWatcher.ma1[index]>trendWatcher.ma1[index-1] &&
-                        trendWatcher.ma1[index]>trendWatcher.ma1[index+1]
-                    )
+                    trendWatcher.ma1[index]<=trendWatcher.ma2[index]
                 ){
                     if( this.allow.sell)
                         action = "sell"

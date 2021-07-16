@@ -4,7 +4,7 @@ namespace bot { export namespace helper {
         readonly time: number
     }
 
-    function movAvg( data: DataEntry[], iteration: number ){
+    function movAvg( data: number[], iteration: number ){
 
         const smoothedData = data.map(function(d, idx){
             const start = Math.max(0,idx-iteration+1)
@@ -13,17 +13,20 @@ namespace bot { export namespace helper {
             if(idx!=start)
                 for( let i=start; i<=idx; i++ ){
                     const weight = 1
-                    price += data[i].price*weight
+                    price += data[i]*weight
                     totalWeight += weight
                 }
 
-            return {
-                price: totalWeight!=0?price/totalWeight:0,
-                time: d.time
-            }
+            return totalWeight!=0?price/totalWeight:0
         })
 
         return smoothedData
+    }
+
+    function differentiate( arr: number[] ){
+        return arr.map(function(a,i){
+            return i>0 ? a-arr[i-1] : 0
+        })
     }
 
     export class TrendWatcher {
@@ -31,6 +34,7 @@ namespace bot { export namespace helper {
         data: DataEntry[]
         ma1: number[]
         ma2: number[]
+        ma3: number[]
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -46,8 +50,9 @@ namespace bot { export namespace helper {
             readonly smoothItr: number = 0
         ){
             this.data = data
-            this.ma1 = movAvg( this.data, this.smoothItr ).map(a=>a.price)
-            this.ma2 = movAvg( this.data, this.smoothItr*4 ).map(a=>a.price)
+            this.ma1 = movAvg( this.data.map(a=>a.price), this.smoothItr )
+            this.ma2 = movAvg( this.data.map(a=>a.price), this.smoothItr*4 )
+            this.ma3 = movAvg( this.data.map(a=>a.price), Math.floor( this.smoothItr*0.9 ))
         }
     }
 
