@@ -274,6 +274,8 @@ namespace bot { export namespace graph {
                             ma2: 0,
                             time: h.time,
                         }
+                    }).filter(a=>{
+                        return a.time>Date.now()-this.bot.timeInterval
                     }) : [],
                     balance: this.bot.trader.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))
                 })
@@ -301,7 +303,9 @@ namespace bot { export namespace graph {
                             time: b.time
                         }
                     }
-                ))}, [], ${this.bot.timeInterval});
+                ).filter(a=>{
+                    return a.time>Date.now()-this.bot.timeInterval
+                }))}, [], ${this.bot.timeInterval});
             </script>
             <br/><br/>
             </td>
