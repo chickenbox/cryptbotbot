@@ -18,7 +18,7 @@ namespace bot { export namespace helper {
         return v
     }
 
-    function smoothData( data: DataEntry[], iteration: number ){
+    function movAvg( data: DataEntry[], iteration: number ){
 
         const smoothedData = data.map(function(d, idx){
             const start = Math.max(0,idx-iteration+1)
@@ -26,7 +26,7 @@ namespace bot { export namespace helper {
             let totalWeight = 0
             if(idx!=start)
                 for( let i=start; i<=idx; i++ ){
-                    const weight = smoothingCurve((i-start)/(idx-start))
+                    const weight = 1
                     price += data[i].price*weight
                     totalWeight += weight
                 }
@@ -104,11 +104,8 @@ namespace bot { export namespace helper {
     export class TrendWatcher {
 
         data: DataEntry[]
-        smoothedData: DataEntry[]
-        dDataDt: number[]
-        dDataDDt: number[]
-        noisyness: number[]
-        noisynessMean: number[]
+        ma1: DataEntry[]
+        ma2: number[]
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -124,14 +121,9 @@ namespace bot { export namespace helper {
             readonly smoothItr: number = 0
         ){
             this.data = data
-            this.smoothedData = smoothData( this.data, this.smoothItr )
+            this.ma1 = movAvg( this.data, this.smoothItr )
 
-            this.dDataDt = smooth( dDataDT(this.smoothedData.map(d=>d.price)), Math.floor(this.smoothItr))
-            this.dDataDDt = smooth( dDataDT(this.dDataDt), Math.floor(this.smoothItr))
-            // this.noisyness = smooth( noisyness(data.map(d=>d.price)), Math.floor(this.smoothItr))
-            this.noisyness = noisyness(data.map(d=>d.price))
-            this.noisynessMean = mean(this.noisyness,this.smoothItr/2)
-            this.noisyness = maxShift(this.noisyness, this.smoothItr/2)
+            this.ma2 = movAvg( this.data, this.smoothItr*4 ).map(a=>a.price)
         }
 
         isPeak( array: number[], index: number ){
@@ -166,11 +158,11 @@ namespace bot { export namespace helper {
             let endValue = 0
             for( let i = startIndex; i<meanIndex; i++ ){
                 if( i>=0 )
-                    startValue += this.dDataDt[i]
+                    startValue += this.ma2[i]
             }
             for( let i = meanIndex; i<endIndex; i++ ){
                 if( i>=0 )
-                    endValue += this.dDataDt[i]
+                    endValue += this.ma2[i]
             }
 
             return startValue>endValue

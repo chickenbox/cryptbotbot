@@ -196,22 +196,15 @@ namespace bot {
 
             let action: Action = "none"
             
-            if( trendWatcher.dDataDDt[index-1]<0 && trendWatcher.dDataDDt[index]>=0 &&
-                trendWatcher.dDataDt[index]<0
+            if( index>0 && trendWatcher.ma1[index].price>=trendWatcher.ma2[index] &&
+                trendWatcher.ma1[index-1].price<trendWatcher.ma2[index-1]
             ){
                 if( this.allow.buy && this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
-
-                    const downTrend = trendWatcher.isDownTrend(
-                        index,
-                        1000*60*60*24*2.5/this.timeInterval )
-                    if( !downTrend &&
-                        trendWatcher.noisyness[index]<trendWatcher.noisynessMean[index]*2 // prevent trade in when market is noisy
-                    )
                         action = "buy"
                 }
             }else{
                 if(
-                    trendWatcher.dDataDDt[index]<=0
+                    trendWatcher.ma1[index].price<trendWatcher.ma2[index]
                 ){
                     if( this.allow.sell)
                         action = "sell"

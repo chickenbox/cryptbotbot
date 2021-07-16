@@ -8,12 +8,8 @@ namespace bot { export namespace graph {
         canvas: HTMLCanvasElement,
         data: {
             price: number,
-            smoothedPrice: number,
-            dSmoothedPrice: number,
-            ddSmoothedPrice: number,
-            noisyness: number,
-            noisynessMean: number,
-            peak: boolean,
+            ma1: number,
+            ma2: number,
             time: number
         }[],
         tradeRecords: {
@@ -77,9 +73,9 @@ namespace bot { export namespace graph {
         ctx.strokeStyle = "green"
         ctx.lineWidth = 1
         ctx.beginPath()
-        ctx.moveTo( (data[0].time-start)*w/timeRange, h-(data[0].smoothedPrice-min)*h/range )
+        ctx.moveTo( (data[0].time-start)*w/timeRange, h-(data[0].ma1-min)*h/range )
         for( let d of data.slice(1) ){
-            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.smoothedPrice-min)*h/range )
+            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.ma1-min)*h/range )
         }
         ctx.stroke()
 
@@ -92,72 +88,26 @@ namespace bot { export namespace graph {
 
         let curveD = data.map(d=>{
             return {
-                price: d.dSmoothedPrice,
+                price: d.ma2,
                 time: d.time
             }
         })
-        //d
-        max = Number.NEGATIVE_INFINITY
-        min = Number.POSITIVE_INFINITY
+        // //d
+        // max = Number.NEGATIVE_INFINITY
+        // min = Number.POSITIVE_INFINITY
 
-        for( let d of curveD ){
-            if( d.time >= start-step && d.time <= end+step ){
-                max = Math.max(d.price, max)
-                min = Math.min(d.price, min)
-            }
-        }
-        range = max-min
-        if( range==0 ){
-            range = 1
-            max = 0.5
-            min = -0.5
-        }
-
-        ctx.strokeStyle = "#AAB7B8"
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
-        for( let d of curveD.slice(1) ){
-            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
-        }
-        ctx.moveTo( 0, h+min*h/range )
-        ctx.lineTo( w, h+min*h/range )
-        ctx.stroke()
-
-        curveD = data.map(d=>{
-            return {
-                price: d.ddSmoothedPrice,
-                time: d.time
-            }
-        })
-
-        ctx.setLineDash( [3,3] )
-        ctx.beginPath()
-        for( let d of data ){
-            if( d.peak ){
-                ctx.moveTo( (d.time-start)*w/timeRange, 0 )
-                ctx.lineTo( (d.time-start)*w/timeRange, h )
-            }
-        }
-        ctx.stroke()
-        ctx.setLineDash([])
-
-        //dd
-        max = Number.NEGATIVE_INFINITY
-        min = Number.POSITIVE_INFINITY
-
-        for( let d of curveD ){
-            if( d.time >= start-step && d.time <= end+step ){
-                max = Math.max(d.price, max)
-                min = Math.min(d.price, min)
-            }
-        }
-        range = max-min
-        if( range==0 ){
-            range = 1
-            max = 0.5
-            min = -0.5
-        }
+        // for( let d of curveD ){
+        //     if( d.time >= start-step && d.time <= end+step ){
+        //         max = Math.max(d.price, max)
+        //         min = Math.min(d.price, min)
+        //     }
+        // }
+        // range = max-min
+        // if( range==0 ){
+        //     range = 1
+        //     max = 0.5
+        //     min = -0.5
+        // }
 
         ctx.strokeStyle = "orange"
         ctx.lineWidth = 1
@@ -170,57 +120,103 @@ namespace bot { export namespace graph {
         ctx.lineTo( w, h+min*h/range )
         ctx.stroke()
 
-        curveD = data.map(d=>{
-            return {
-                price: d.noisyness,
-                time: d.time
-            }
-        })
-        //noisyness
-        max = Number.NEGATIVE_INFINITY
-        min = Number.POSITIVE_INFINITY
+        // curveD = data.map(d=>{
+        //     return {
+        //         price: d.ddSmoothedPrice,
+        //         time: d.time
+        //     }
+        // })
 
-        for( let d of curveD ){
-            if( d.time >= start-step && d.time <= end+step ){
-                max = Math.max(d.price, max)
-                min = Math.min(d.price, min)
-            }
-        }
-        range = max-min
-        if( range==0 ){
-            range = 1
-            max = 0.5
-            min = -0.5
-        }
+        // ctx.setLineDash( [3,3] )
+        // ctx.beginPath()
+        // for( let d of data ){
+        //     if( d.peak ){
+        //         ctx.moveTo( (d.time-start)*w/timeRange, 0 )
+        //         ctx.lineTo( (d.time-start)*w/timeRange, h )
+        //     }
+        // }
+        // ctx.stroke()
+        // ctx.setLineDash([])
 
-        ctx.strokeStyle = "silver"
-        ctx.lineWidth = 1
-        ctx.setLineDash([6,6])
-        ctx.beginPath()
-        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
-        for( let d of curveD.slice(1) ){
-            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
-        }
-        ctx.stroke()
-        ctx.setLineDash([])
+        // //dd
+        // max = Number.NEGATIVE_INFINITY
+        // min = Number.POSITIVE_INFINITY
 
-        curveD = data.map(d=>{
-            return {
-                price: d.noisynessMean*2,
-                time: d.time
-            }
-        })
-        //noisyness mean
-        ctx.strokeStyle = "silver"
-        ctx.lineWidth = 1
-        ctx.setLineDash([6,6])
-        ctx.beginPath()
-        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
-        for( let d of curveD.slice(1) ){
-            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
-        }
-        ctx.stroke()
-        ctx.setLineDash([])
+        // for( let d of curveD ){
+        //     if( d.time >= start-step && d.time <= end+step ){
+        //         max = Math.max(d.price, max)
+        //         min = Math.min(d.price, min)
+        //     }
+        // }
+        // range = max-min
+        // if( range==0 ){
+        //     range = 1
+        //     max = 0.5
+        //     min = -0.5
+        // }
+
+        // ctx.strokeStyle = "orange"
+        // ctx.lineWidth = 1
+        // ctx.beginPath()
+        // ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        // for( let d of curveD.slice(1) ){
+        //     ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        // }
+        // ctx.moveTo( 0, h+min*h/range )
+        // ctx.lineTo( w, h+min*h/range )
+        // ctx.stroke()
+
+        // curveD = data.map(d=>{
+        //     return {
+        //         price: d.noisyness,
+        //         time: d.time
+        //     }
+        // })
+        // //noisyness
+        // max = Number.NEGATIVE_INFINITY
+        // min = Number.POSITIVE_INFINITY
+
+        // for( let d of curveD ){
+        //     if( d.time >= start-step && d.time <= end+step ){
+        //         max = Math.max(d.price, max)
+        //         min = Math.min(d.price, min)
+        //     }
+        // }
+        // range = max-min
+        // if( range==0 ){
+        //     range = 1
+        //     max = 0.5
+        //     min = -0.5
+        // }
+
+        // ctx.strokeStyle = "silver"
+        // ctx.lineWidth = 1
+        // ctx.setLineDash([6,6])
+        // ctx.beginPath()
+        // ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        // for( let d of curveD.slice(1) ){
+        //     ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        // }
+        // ctx.stroke()
+        // ctx.setLineDash([])
+
+        // curveD = data.map(d=>{
+        //     return {
+        //         price: d.noisynessMean*2,
+        //         time: d.time
+        //     }
+        // })
+        // //noisyness mean
+        // ctx.strokeStyle = "silver"
+        // ctx.lineWidth = 1
+        // ctx.setLineDash([6,6])
+        // ctx.beginPath()
+        // ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        // for( let d of curveD.slice(1) ){
+        //     ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        // }
+        // ctx.stroke()
+        // ctx.setLineDash([])
     }
 
     export class Drawer {
@@ -233,10 +229,8 @@ namespace bot { export namespace graph {
                 asset: string
                 data: {
                     price: number
-                    smoothedPrice: number
-                    ddSmoothedPrice: number
-                    noisyness: number
-                    noisynessMean: number
+                    ma1: number
+                    ma2: number
                     time: number
                 }[]
                 tradeRecords: {
@@ -258,12 +252,8 @@ namespace bot { export namespace graph {
                     data: trendWatcher.data.map((d,i)=>{
                         return {
                             price: d.price,
-                            smoothedPrice: trendWatcher.smoothedData[i].price,
-                            dSmoothedPrice: trendWatcher.dDataDt[i],
-                            ddSmoothedPrice: trendWatcher.dDataDDt[i],
-                            noisyness: trendWatcher.noisyness[i],
-                            noisynessMean: trendWatcher.noisynessMean[i],
-                            peak: trendWatcher.isPeak( trendWatcher.dDataDt, i ),
+                            ma1: trendWatcher.ma1[i].price,
+                            ma2: trendWatcher.ma2[i],
                             time: d.time
                         }
                     }),
@@ -280,15 +270,9 @@ namespace bot { export namespace graph {
                         return {
                             color: color,
                             price: h.actualPrice,
+                            ma1: 0,
+                            ma2: 0,
                             time: h.time,
-
-                            smoothedPrice: 0,
-                            dSmoothedPrice: 0,
-                            ddSmoothedPrice: 0,
-                            noisyness: 0,
-                            noisynessMean: 0,
-                            peak: 0
-
                         }
                     }) : [],
                     balance: this.bot.trader.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))
@@ -312,7 +296,8 @@ namespace bot { export namespace graph {
                     function(b){
                         return {
                             price: b.amount,
-                            smoothedPrice: b.amount,
+                            ma1: 0,
+                            ma2: 0,
                             time: b.time
                         }
                     }
