@@ -4,21 +4,17 @@ namespace bot { export namespace helper {
         readonly time: number
     }
 
-    function movAvg( data: number[], iteration: number ){
+    function ema( data: number[], iteration: number ){
 
-        const smoothedData = data.map(function(d, idx){
-            const start = Math.max(0,idx-iteration+1)
-            let price = 0
-            let totalWeight = 0
-            if(idx!=start)
-                for( let i=start; i<=idx; i++ ){
-                    const weight = 1
-                    price += data[i]*weight
-                    totalWeight += weight
-                }
-
-            return totalWeight!=0?price/totalWeight:0
-        })
+        const smoothedData: number[] = new Array(data.length)
+        for( let i=0; i<smoothedData.length; i++ ){
+            if( i>0 ){
+                const tmp = 2/(1+iteration)
+                smoothedData[i] = data[i]*tmp+smoothedData[i-1]*(1-tmp)
+            }else{
+                smoothedData[i] = data[i]
+            }
+        }
 
         return smoothedData
     }
@@ -50,9 +46,9 @@ namespace bot { export namespace helper {
             readonly smoothItr: number = 0
         ){
             this.data = data
-            this.ma1 = movAvg( this.data.map(a=>a.price), this.smoothItr )
-            this.ma2 = movAvg( this.data.map(a=>a.price), this.smoothItr*4 )
-            this.ma3 = movAvg( this.data.map(a=>a.price), Math.floor( this.smoothItr/2 ))
+            this.ma1 = ema( this.data.map(a=>a.price), this.smoothItr )
+            this.ma2 = ema( this.data.map(a=>a.price), this.smoothItr*2 )
+            this.ma3 = ema( this.data.map(a=>a.price), Math.floor( this.smoothItr/2 ))
         }
     }
 
