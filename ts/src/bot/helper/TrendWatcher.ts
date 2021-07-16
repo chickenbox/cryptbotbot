@@ -52,7 +52,7 @@ namespace bot { export namespace helper {
             this.data = data
             this.ma1 = movAvg( this.data.map(a=>a.price), this.smoothItr )
             this.ma2 = movAvg( this.data.map(a=>a.price), this.smoothItr*4 )
-            this.ma3 = movAvg( this.data.map(a=>a.price), Math.floor( this.smoothItr*0.9 ))
+            this.ma3 = movAvg( this.data.map(a=>a.price), Math.floor( this.smoothItr/2 ))
         }
     }
 

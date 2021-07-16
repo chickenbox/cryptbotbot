@@ -105,23 +105,23 @@ namespace bot { export namespace graph {
         ctx.lineTo( w, h+min*h/range )
         ctx.stroke()
 
-        curveD = data.map(d=>{
-            return {
-                price: d.ma3,
-                time: d.time
-            }
-        })
+        // curveD = data.map(d=>{
+        //     return {
+        //         price: d.ma3,
+        //         time: d.time
+        //     }
+        // })
 
-        ctx.strokeStyle = "blue"
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
-        for( let d of curveD.slice(1) ){
-            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
-        }
-        ctx.moveTo( 0, h+min*h/range )
-        ctx.lineTo( w, h+min*h/range )
-        ctx.stroke()
+        // ctx.strokeStyle = "blue"
+        // ctx.lineWidth = 1
+        // ctx.beginPath()
+        // ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        // for( let d of curveD.slice(1) ){
+        //     ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        // }
+        // ctx.moveTo( 0, h+min*h/range )
+        // ctx.lineTo( w, h+min*h/range )
+        // ctx.stroke()
     }
 
     export class Drawer {
