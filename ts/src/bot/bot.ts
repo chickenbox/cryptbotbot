@@ -204,7 +204,13 @@ namespace bot {
                 }
             }else{
                 if(
-                    trendWatcher.ma1[index]<trendWatcher.ma2[index]
+                    trendWatcher.ma1[index]<trendWatcher.ma2[index] ||
+                    (
+                        index>0 &&
+                        index+1<trendWatcher.ma1.length &&
+                        trendWatcher.ma1[index]>trendWatcher.ma1[index-1] &&
+                        trendWatcher.ma1[index]>trendWatcher.ma1[index+1]
+                    )
                 ){
                     if( this.allow.sell)
                         action = "sell"
