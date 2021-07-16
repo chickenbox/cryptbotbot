@@ -199,7 +199,7 @@ namespace bot {
             if( index>0 && trendWatcher.ma1[index]>=trendWatcher.ma2[index] &&
                 trendWatcher.ma1[index-1]<trendWatcher.ma2[index-1]
             ){
-                if( this.allow.buy && this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
+                if( this.allow.buy ){//&& this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
                         action = "buy"
                 }
             }else{
