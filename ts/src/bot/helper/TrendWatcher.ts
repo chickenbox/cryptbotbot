@@ -80,7 +80,7 @@ namespace bot { export namespace helper {
             this.ma1d = this.data.map( (a,i)=>{
                 return Math.abs( a.price-this.ma1[i] )
             } )
-            this.mama1d = ma(this.ma1d, this.smoothItr*2)
+            this.mama1d = ma(this.ma1d, this.smoothItr*4)
             this.ma1d = thicken(this.ma1d,this.smoothItr/4)
         }
     }

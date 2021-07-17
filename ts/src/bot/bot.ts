@@ -195,13 +195,12 @@ namespace bot {
             const data = trendWatcher.data
 
             let action: Action = "none"
+            let isImpulse = trendWatcher.ma1d[index]>trendWatcher.mama1d[index]*2
             
             if( index>0 &&
                 trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
                 trendWatcher.ma1[index]>=trendWatcher.ma2[index] &&
-                trendWatcher.ma1d[index]<trendWatcher.mama1d[index]*2
-                //  && 
-                // trendWatcher.data[index].price<trendWatcher.ma3[index]
+                !isImpulse
             ){
                 if( this.allow.buy ){//&& this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
                         action = "buy"
