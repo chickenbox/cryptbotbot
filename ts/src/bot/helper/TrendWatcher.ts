@@ -4,6 +4,22 @@ namespace bot { export namespace helper {
         readonly time: number
     }
 
+    function ma( data: number[], iteration: number ){
+
+        const smoothedData: number[] = data.map( function( d, idx ){
+            let price = d
+            let weight = 1 
+            for( let i = Math.max(0,idx-iteration); i<idx; i++ ){
+                price += data[i]
+                weight++
+            }
+
+            return price/weight
+        })
+
+        return smoothedData
+    }
+
     function ema( data: number[], iteration: number ){
 
         const smoothedData: number[] = new Array(data.length)
@@ -19,6 +35,18 @@ namespace bot { export namespace helper {
         return smoothedData
     }
 
+    function thicken( data: number[], iteration: number ){
+        const smoothedData: number[] = data.map( function( d, idx ){
+            let price = d
+            for( let i = Math.max(0,idx-iteration); i<idx; i++ ){
+                price = Math.max(price,data[i])
+            }
+
+            return price
+        })
+        return smoothedData
+    }
+
     function differentiate( arr: number[] ){
         return arr.map(function(a,i){
             return i>0 ? a-arr[i-1] : 0
@@ -30,7 +58,8 @@ namespace bot { export namespace helper {
         data: DataEntry[]
         ma1: number[]
         ma2: number[]
-        ma3: number[]
+        ma1d: number[]
+        mama1d: number[]
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -47,8 +76,12 @@ namespace bot { export namespace helper {
         ){
             this.data = data
             this.ma1 = ema( this.data.map(a=>a.price), this.smoothItr )
-            this.ma2 = ema( this.data.map(a=>a.price), this.smoothItr*2 )
-            this.ma3 = ema( this.data.map(a=>a.price), Math.floor( this.smoothItr/2 ))
+            this.ma2 = ma( this.data.map(a=>a.price), this.smoothItr*2 )
+            this.ma1d = this.data.map( (a,i)=>{
+                return Math.abs( a.price-this.ma1[i] )
+            } )
+            this.mama1d = ma(this.ma1d, this.smoothItr*2)
+            this.ma1d = thicken(this.ma1d,this.smoothItr/4)
         }
     }
 

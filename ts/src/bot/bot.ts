@@ -198,7 +198,8 @@ namespace bot {
             
             if( index>0 &&
                 trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
-                trendWatcher.ma1[index]>=trendWatcher.ma2[index]
+                trendWatcher.ma1[index]>=trendWatcher.ma2[index] &&
+                trendWatcher.ma1d[index]<trendWatcher.mama1d[index]*2
                 //  && 
                 // trendWatcher.data[index].price<trendWatcher.ma3[index]
             ){

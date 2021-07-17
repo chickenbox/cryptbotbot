@@ -10,7 +10,8 @@ namespace bot { export namespace graph {
             price: number,
             ma1: number,
             ma2: number,
-            ma3: number,
+            ma1d: number,
+            mama1d: number,
             time: number
         }[],
         tradeRecords: {
@@ -32,9 +33,69 @@ namespace bot { export namespace graph {
         const end = Date.now()
         const start = end-graphInterval
         const timeRange = end-start
+        let max: number
+        let min: number
+        let range: number
+        let curveD: {price: number, time: number}[]
 
-        let max = Number.NEGATIVE_INFINITY
-        let min = Number.POSITIVE_INFINITY
+
+        //========================================================================
+        max = Number.NEGATIVE_INFINITY
+        min = Number.POSITIVE_INFINITY
+
+        for( let d of data ){
+            if( d.time >= start-step && d.time <= end+step ){
+                max = Math.max(d.ma1d, max)
+                min = Math.min(d.ma1d, min)
+            }
+        }
+        range = max-min
+        if( range==0 ){
+            range = 1
+            max = 0.5
+            min = -0.5
+        }
+        curveD = data.map(function(d){
+            return {
+                price: d.ma1d,
+                time: d.time
+            }
+        })
+
+        ctx.strokeStyle = "#D3D3D3"
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        for( let d of curveD.slice(1) ){
+            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        }
+        ctx.moveTo( 0, h+min*h/range )
+        ctx.lineTo( w, h+min*h/range )
+        ctx.stroke()
+
+        curveD = data.map(function(d){
+            return {
+                price: d.mama1d*2,
+                time: d.time
+            }
+        })
+        ctx.strokeStyle = "#AAB7B8"
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        for( let d of curveD.slice(1) ){
+            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        }
+        ctx.moveTo( 0, h+min*h/range )
+        ctx.lineTo( w, h+min*h/range )
+        ctx.stroke()
+        
+
+        //========================================================================
+        
+
+        max = Number.NEGATIVE_INFINITY
+        min = Number.POSITIVE_INFINITY
 
         for( let d of data ){
             if( d.time >= start-step && d.time <= end+step ){
@@ -42,7 +103,7 @@ namespace bot { export namespace graph {
                 min = Math.min(d.price, min)
             }
         }
-        let range = max-min
+        range = max-min
         if( range==0 ){
             range = 1
             max = 0.5
@@ -87,7 +148,7 @@ namespace bot { export namespace graph {
         ctx.lineTo( w, h+min*h/range )
         ctx.stroke()
 
-        let curveD = data.map(d=>{
+        curveD = data.map(d=>{
             return {
                 price: d.ma2,
                 time: d.time
@@ -105,23 +166,6 @@ namespace bot { export namespace graph {
         ctx.lineTo( w, h+min*h/range )
         ctx.stroke()
 
-        // curveD = data.map(d=>{
-        //     return {
-        //         price: d.ma3,
-        //         time: d.time
-        //     }
-        // })
-
-        // ctx.strokeStyle = "blue"
-        // ctx.lineWidth = 1
-        // ctx.beginPath()
-        // ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
-        // for( let d of curveD.slice(1) ){
-        //     ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
-        // }
-        // ctx.moveTo( 0, h+min*h/range )
-        // ctx.lineTo( w, h+min*h/range )
-        // ctx.stroke()
     }
 
     export class Drawer {
@@ -136,7 +180,8 @@ namespace bot { export namespace graph {
                     price: number
                     ma1: number
                     ma2: number
-                    ma3: number
+                    ma1d: number
+                    mama1d: number
                     time: number
                 }[]
                 tradeRecords: {
@@ -160,7 +205,8 @@ namespace bot { export namespace graph {
                             price: d.price,
                             ma1: trendWatcher.ma1[i],
                             ma2: trendWatcher.ma2[i],
-                            ma3: trendWatcher.ma3[i],
+                            ma1d: trendWatcher.ma1d[i],
+                            mama1d: trendWatcher.mama1d[i],
                             time: d.time
                         }
                     }).filter(a=>{
@@ -181,7 +227,8 @@ namespace bot { export namespace graph {
                             price: h.actualPrice,
                             ma1: 0,
                             ma2: 0,
-                            ma3: 0,
+                            ma1d: 0,
+                            mama1d: 0,
                             time: h.time,
                         }
                     }).filter(a=>{
@@ -210,7 +257,8 @@ namespace bot { export namespace graph {
                             price: b.amount,
                             ma1: 0,
                             ma2: 0,
-                            ma3: 0,
+                            ma1d: 0,
+                            mama1d: 0,
                             time: b.time
                         }
                     }
