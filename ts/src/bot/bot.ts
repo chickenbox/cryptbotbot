@@ -212,7 +212,8 @@ namespace bot {
                 }
             }else{
                 if(
-                    trendWatcher.ma1[index]<=trendWatcher.ma2[index]
+                    trendWatcher.ma1[index]<=trendWatcher.ma2[index] ||
+                    trendWatcher.data[index].price<trendWatcher.ma2[index]*0.95
                 ){
                     if( this.allow.sell)
                         action = "sell"
