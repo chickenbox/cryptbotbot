@@ -10,8 +10,6 @@ namespace bot { export namespace graph {
             price: number,
             ma1: number,
             ma2: number,
-            ma1d: number,
-            mama1d: number,
             time: number
         }[],
         tradeRecords: {
@@ -38,62 +36,6 @@ namespace bot { export namespace graph {
         let range: number
         let curveD: {price: number, time: number}[]
 
-
-        //========================================================================
-        max = Number.NEGATIVE_INFINITY
-        min = Number.POSITIVE_INFINITY
-
-        for( let d of data ){
-            if( d.time >= start-step && d.time <= end+step ){
-                max = Math.max(d.ma1d, max)
-                min = Math.min(d.ma1d, min)
-            }
-        }
-        range = max-min
-        if( range==0 ){
-            range = 1
-            max = 0.5
-            min = -0.5
-        }
-        curveD = data.map(function(d){
-            return {
-                price: d.ma1d,
-                time: d.time
-            }
-        })
-
-        ctx.strokeStyle = "#D3D3D3"
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
-        for( let d of curveD.slice(1) ){
-            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
-        }
-        ctx.moveTo( 0, h+min*h/range )
-        ctx.lineTo( w, h+min*h/range )
-        ctx.stroke()
-
-        curveD = data.map(function(d){
-            return {
-                price: d.mama1d*2,
-                time: d.time
-            }
-        })
-        ctx.strokeStyle = "#AAB7B8"
-        ctx.lineWidth = 1
-        ctx.beginPath()
-        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
-        for( let d of curveD.slice(1) ){
-            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
-        }
-        ctx.moveTo( 0, h+min*h/range )
-        ctx.lineTo( w, h+min*h/range )
-        ctx.stroke()
-        
-
-        //========================================================================
-        
-
         max = Number.NEGATIVE_INFINITY
         min = Number.POSITIVE_INFINITY
 
@@ -104,10 +46,11 @@ namespace bot { export namespace graph {
             }
         }
         range = max-min
-        if( range==0 ){
-            range = 1
-            max = 0.5
-            min = -0.5
+        if( range<0.1 ){
+            range = 0.1
+            const median = (max+min)/2
+            max = median+0.05
+            min = median-0.05
         }
 
         for( let r of tradeRecords ){
@@ -180,8 +123,6 @@ namespace bot { export namespace graph {
                     price: number
                     ma1: number
                     ma2: number
-                    ma1d: number
-                    mama1d: number
                     time: number
                 }[]
                 tradeRecords: {
@@ -205,8 +146,6 @@ namespace bot { export namespace graph {
                             price: d.price,
                             ma1: trendWatcher.ma1[i],
                             ma2: trendWatcher.ma2[i],
-                            ma1d: trendWatcher.ma1d[i],
-                            mama1d: trendWatcher.mama1d[i],
                             time: d.time
                         }
                     }).filter(a=>{
@@ -225,10 +164,6 @@ namespace bot { export namespace graph {
                         return {
                             color: color,
                             price: h.actualPrice,
-                            ma1: 0,
-                            ma2: 0,
-                            ma1d: 0,
-                            mama1d: 0,
                             time: h.time,
                         }
                     }).filter(a=>{
@@ -257,8 +192,6 @@ namespace bot { export namespace graph {
                             price: b.amount,
                             ma1: 0,
                             ma2: 0,
-                            ma1d: 0,
-                            mama1d: 0,
                             time: b.time
                         }
                     }

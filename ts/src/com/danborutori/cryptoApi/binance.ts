@@ -193,7 +193,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
 
     class RateLimiter {
         readonly orderPerSecond = 10
-        readonly requestPerMinute = 1200
+        readonly requestPerMinute = 600
 
         private requestTimestamps: number[] = []
         private orderTimestamps: number[] = []

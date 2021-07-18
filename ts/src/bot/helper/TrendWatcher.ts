@@ -58,8 +58,7 @@ namespace bot { export namespace helper {
         data: DataEntry[]
         ma1: number[]
         ma2: number[]
-        ma1d: number[]
-        mama1d: number[]
+        check1: number[]
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -77,11 +76,20 @@ namespace bot { export namespace helper {
             this.data = data
             this.ma1 = ema( this.data.map(a=>a.price), this.smoothItr )
             this.ma2 = ma( this.data.map(a=>a.price), this.smoothItr*2 )
-            this.ma1d = this.data.map( (a,i)=>{
-                return Math.abs( a.price-this.ma1[i] )
-            } )
-            this.mama1d = ma(this.ma1d, this.smoothItr*4)
-            this.ma1d = thicken(this.ma1d,this.smoothItr/4)
+            this.check1 = data.map( (a,idx)=>{
+                if( idx>=7 ){
+                    const m1 = (data[idx-7].price+
+                        data[idx-6].price+
+                        data[idx-5].price+
+                        data[idx-4].price)
+                    const m2 = (data[idx-3].price+
+                        data[idx-2].price+
+                        data[idx-1].price+
+                        data[idx-0].price)
+                    return (m2-m1)/m1
+                }
+                return 0
+            })
         }
     }
 

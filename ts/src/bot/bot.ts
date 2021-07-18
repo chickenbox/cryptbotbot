@@ -39,7 +39,6 @@ namespace bot {
         readonly trader: trader.Trader
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
-        readonly cooldownHelper = new helper.CoolDownHelper("")
         private logger: helper.Logger
         
         readonly allow = {
@@ -146,7 +145,6 @@ namespace bot {
                 delete history[k]
             }
             this.balanceTracker.balances.length = 0
-            this.cooldownHelper.reset()
 
             let end = 0
             for( let t in this.priceTracker.prices ){
@@ -195,12 +193,17 @@ namespace bot {
             const data = trendWatcher.data
 
             let action: Action = "none"
-            let isImpulse = trendWatcher.ma1d[index]>trendWatcher.mama1d[index]*2
+            // let isImpulse = trendWatcher.ma1d[index]>trendWatcher.mama1d[index]*2
             
-            if( index>0 &&
+            if( index>=3 &&
                 trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
-                trendWatcher.ma1[index]>=trendWatcher.ma2[index] &&
-                !isImpulse
+                trendWatcher.ma1[index]>=trendWatcher.ma2[index] //&&
+                // !isImpulse
+                &&
+                trendWatcher.ma1[index] > trendWatcher.ma1[index-3]*1.00125 &&
+                trendWatcher.ma2[index] > trendWatcher.ma2[index-3]*0.9875
+                &&
+                trendWatcher.data[index].price<trendWatcher.ma1[index]*1.015
             ){
                 if( this.allow.buy ){//&& this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
                         action = "buy"
@@ -334,7 +337,6 @@ namespace bot {
                             const response = await this.trader.sell(decision.symbol, quantity, isMock?decision.price:undefined)
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                             this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
-                            this.cooldownHelper.sell( decision.symbol.symbol, response.price, response.quantity, now.getTime() )
                         }catch(e){
                             this.logger.error(e)
                         }
@@ -376,7 +378,6 @@ namespace bot {
                         const response = await this.trader.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
                         this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                         this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
-                        this.cooldownHelper.buy( decision.symbol.symbol, response.price, response.quantity )
                         if( !isMock )
                             await sleep(0.1)
                     }catch(e){
@@ -391,7 +392,6 @@ namespace bot {
                 await this.logTrader(now.getTime())
                 this.trader.performanceTracker.save()
                 this.tradeHistory.save()
-                this.cooldownHelper.save()
             }
 
             {
