@@ -207,16 +207,11 @@ namespace bot { export namespace graph {
                     return b.balance-a.balance
                 }).map(r=>{
                     const symbol = `${r.asset}${this.bot.homingAsset}`
-                    const cooldown = this.bot.cooldownHelper.getLockBuyTimestamp(symbol)
-                    let coolDownStr = "NA"
-                    if( cooldown>Date.now() )
-                        coolDownStr = new Date(cooldown).toDateString()
                     return `
                     <tr>
                     <th>
                     ${r.asset}<br/>
                     Gain: ${r.balance}<br/>
-                    Cooldown: ${coolDownStr}
                     </th>
                     </tr>
                     <tr>

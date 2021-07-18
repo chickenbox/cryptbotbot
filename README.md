@@ -1,5 +1,5 @@
 # TODO:
-deprecate white list, check order type
+last cross index
 
 # cryptbotbot
 cryptbotbot
