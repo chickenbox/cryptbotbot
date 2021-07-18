@@ -37,12 +37,12 @@ namespace bot { export namespace graph {
         let curveD: {price: number, time: number}[]
 
         max = Number.NEGATIVE_INFINITY
-        min = Number.POSITIVE_INFINITY
+        min = 0//Number.POSITIVE_INFINITY
 
         for( let d of data ){
             if( d.time >= start-step && d.time <= end+step ){
                 max = Math.max(d.price, max)
-                min = Math.min(d.price, min)
+                // min = Math.min(d.price, min)
             }
         }
         range = max-min

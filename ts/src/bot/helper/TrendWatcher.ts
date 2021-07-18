@@ -53,12 +53,16 @@ namespace bot { export namespace helper {
         })
     }
 
+    function sign( n: number ){
+        return n>=0?1:-1
+    }
+
     export class TrendWatcher {
 
         data: DataEntry[]
         ma1: number[]
         ma2: number[]
-        check1: number[]
+        lastCrossIndex: number[]
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -76,19 +80,17 @@ namespace bot { export namespace helper {
             this.data = data
             this.ma1 = ema( this.data.map(a=>a.price), this.smoothItr )
             this.ma2 = ma( this.data.map(a=>a.price), this.smoothItr*2 )
-            this.check1 = data.map( (a,idx)=>{
-                if( idx>=7 ){
-                    const m1 = (data[idx-7].price+
-                        data[idx-6].price+
-                        data[idx-5].price+
-                        data[idx-4].price)
-                    const m2 = (data[idx-3].price+
-                        data[idx-2].price+
-                        data[idx-1].price+
-                        data[idx-0].price)
-                    return (m2-m1)/m1
+            let lastCrossIndex = 0
+            this.lastCrossIndex = data.map((_, idx)=>{
+
+                if(
+                    idx>0 &&
+                    sign(this.ma1[idx-1]-this.ma2[idx-1]) != sign(this.ma1[idx]-this.ma2[idx])
+                ){
+                    lastCrossIndex = idx
                 }
-                return 0
+
+                return lastCrossIndex
             })
         }
     }
