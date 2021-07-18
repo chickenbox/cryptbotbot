@@ -63,6 +63,7 @@ namespace bot { export namespace helper {
         ma1: number[]
         ma2: number[]
         lastCrossIndex: number[]
+        ratio: number[]
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -75,11 +76,11 @@ namespace bot { export namespace helper {
         constructor(
             readonly baseAsset: string,
             data: DataEntry[],
-            readonly smoothItr: number = 0
+            smoothItr: number = 0
         ){
             this.data = data
-            this.ma1 = ema( this.data.map(a=>a.price), this.smoothItr )
-            this.ma2 = ma( this.data.map(a=>a.price), this.smoothItr*2 )
+            this.ma1 = ema( this.data.map(a=>a.price), smoothItr )
+            this.ma2 = ma( this.data.map(a=>a.price), smoothItr*2 )
             let lastCrossIndex = 0
             this.lastCrossIndex = data.map((_, idx)=>{
 
@@ -91,6 +92,17 @@ namespace bot { export namespace helper {
                 }
 
                 return lastCrossIndex
+            })
+            this.ratio = data.map(function(a,idx){
+                let high = a.price
+                let low = a.price
+
+                for( let i=Math.max(0,idx-smoothItr); i<idx; i++ ){
+                    high = Math.max(high,data[i].price)
+                    low = Math.min(low,data[i].price)
+                }
+
+                return high/low
             })
         }
     }

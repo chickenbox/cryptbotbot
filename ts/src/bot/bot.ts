@@ -197,13 +197,14 @@ namespace bot {
             let lastCrossIndex = trendWatcher.lastCrossIndex[index-1]
             
             if( index>=100 && // long enough history
+                trendWatcher.ratio[index] > 1.1 && // filter low profit asset
                 index>0 &&
                 trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
                 trendWatcher.ma1[index]>=trendWatcher.ma2[index]
                 &&
-                trendWatcher.ma1[index] > trendWatcher.ma1[lastCrossIndex]*0.995 &&
-                trendWatcher.ma2[index] > trendWatcher.ma2[lastCrossIndex]*0.995
-                &&
+                trendWatcher.ma1[index] > trendWatcher.ma1[lastCrossIndex] &&
+                // trendWatcher.ma2[index] > trendWatcher.ma2[lastCrossIndex]*0.995
+                // &&
                 trendWatcher.data[index].price<trendWatcher.ma1[index]*1.0625
             ){
                 if( this.allow.buy ){//&& this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
