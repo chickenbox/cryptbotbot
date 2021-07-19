@@ -32,11 +32,11 @@ namespace bot {
         if( index>0 ){
             let lastCrossIndex = trendWatcher.lastCrossIndex[index-1]
 
-            if( trendWatcher.ma1[index] > trendWatcher.ma1[lastCrossIndex] &&
-                trendWatcher.ma2[index] > trendWatcher.ma2[lastCrossIndex] )
+            if( trendWatcher.ma14[index] > trendWatcher.ma14[lastCrossIndex] &&
+                trendWatcher.ma24[index] > trendWatcher.ma24[lastCrossIndex] )
                 trend = "up"
-            else if( trendWatcher.ma1[index] < trendWatcher.ma1[lastCrossIndex] &&
-                trendWatcher.ma2[index] < trendWatcher.ma2[lastCrossIndex] )
+            else if( trendWatcher.ma14[index] < trendWatcher.ma14[lastCrossIndex] &&
+                trendWatcher.ma24[index] < trendWatcher.ma24[lastCrossIndex] )
                 trend = "down"
         }
 
@@ -221,7 +221,7 @@ namespace bot {
                 &&
                 trendWatcher.ratio[index] > 1.1 // filter low profit asset
                 &&
-                trendWatcher.data[index].price<trendWatcher.ma1[index]*1.0625 // filter impulse
+                trendWatcher.data[index].price<trendWatcher.ma14[index]*1.0625 // filter impulse
                 &&
                 this.allow.buy
             ){
@@ -230,8 +230,8 @@ namespace bot {
                     {
                         if(
                             index>0 &&
-                            trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
-                            trendWatcher.ma1[index]>=trendWatcher.ma2[index]
+                            trendWatcher.ma14[index-1]<=trendWatcher.ma24[index-1] &&
+                            trendWatcher.ma14[index]>=trendWatcher.ma24[index]
                         ){
                             action = "buy"
                         }
@@ -242,8 +242,8 @@ namespace bot {
                     {
                         if(
                             index>2 &&
-                            trendWatcher.ma1[index-2]>trendWatcher.ma1[index-1] &&
-                            trendWatcher.ma1[index]>=trendWatcher.ma1[index-1]
+                            trendWatcher.ma14[index-2]>trendWatcher.ma14[index-1] &&
+                            trendWatcher.ma14[index]>=trendWatcher.ma14[index-1]
                         ){
                             // action = "buy"
                         }
@@ -253,7 +253,7 @@ namespace bot {
             }
             
             if(action=="none" && this.allow.sell){
-                if( trendWatcher.data[index].price<trendWatcher.ma2[index]*0.95 ) // drop cutoff
+                if( trendWatcher.data[index].price<trendWatcher.ma24[index]*0.95 ) // drop cutoff
                     action = "sell"
                 else{
 
@@ -262,7 +262,7 @@ namespace bot {
                     case "side":
                         {
                             if(
-                                trendWatcher.ma1[index]<=trendWatcher.ma2[index]
+                                trendWatcher.ma14[index]<=trendWatcher.ma24[index]
                             ){
                                 action = "sell"
                             }
@@ -271,7 +271,7 @@ namespace bot {
                     case "down":
                         {
                             if(
-                                trendWatcher.ma1[index]<=trendWatcher.ma2[index] 
+                                trendWatcher.ma14[index]<=trendWatcher.ma24[index] 
                                 // ||
                                 // (
                                 //     index>0 &&
@@ -329,7 +329,7 @@ namespace bot {
                     trendWatcher = new helper.TrendWatcher(
                         symbol.baseAsset,
                         data,
-                        14*2
+                        this.timeInterval
                     )
                 }
                 this.trendWatchers[symbol.baseAsset] = trendWatcher

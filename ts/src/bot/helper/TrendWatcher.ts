@@ -60,8 +60,8 @@ namespace bot { export namespace helper {
     export class TrendWatcher {
 
         data: DataEntry[]
-        ma1: number[]
-        ma2: number[]
+        ma14: number[]
+        ma24: number[]
         lastCrossIndex: number[]
         ratio: number[]
 
@@ -76,17 +76,18 @@ namespace bot { export namespace helper {
         constructor(
             readonly baseAsset: string,
             data: DataEntry[],
-            smoothItr: number = 0
+            interval: number
         ){
+            const smoothItr14 = 14*24*60*60*1000/interval
             this.data = data
-            this.ma1 = ema( this.data.map(a=>a.price), smoothItr )
-            this.ma2 = ma( this.data.map(a=>a.price), smoothItr*2 )
+            this.ma14 = ema( this.data.map(a=>a.price), smoothItr14 )
+            this.ma24 = ma( this.data.map(a=>a.price), smoothItr14*2 )
             let lastCrossIndex = 0
             this.lastCrossIndex = data.map((_, idx)=>{
 
                 if(
                     idx>0 &&
-                    sign(this.ma1[idx-1]-this.ma2[idx-1]) != sign(this.ma1[idx]-this.ma2[idx])
+                    sign(this.ma14[idx-1]-this.ma24[idx-1]) != sign(this.ma14[idx]-this.ma24[idx])
                 ){
                     lastCrossIndex = idx
                 }
@@ -97,7 +98,7 @@ namespace bot { export namespace helper {
                 let high = a.price
                 let low = a.price
 
-                for( let i=Math.max(0,idx-smoothItr); i<idx; i++ ){
+                for( let i=Math.max(0,idx-smoothItr14); i<idx; i++ ){
                     high = Math.max(high,data[i].price)
                     low = Math.min(low,data[i].price)
                 }
