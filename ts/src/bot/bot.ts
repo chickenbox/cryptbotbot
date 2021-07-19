@@ -241,9 +241,9 @@ namespace bot {
                 case "side":
                     {
                         if(
-                            index>2 &&
-                            trendWatcher.ma14[index-2]>trendWatcher.ma14[index-1] &&
-                            trendWatcher.ma14[index]>=trendWatcher.ma14[index-1]
+                            index>0 &&
+                            trendWatcher.ma2[index-1]>trendWatcher.data[index-1].price &&
+                            trendWatcher.ma2[index]<trendWatcher.data[index].price
                         ){
                             // action = "buy"
                         }
@@ -257,9 +257,8 @@ namespace bot {
                     action = "sell"
                 else{
 
-                    switch( this.tradeRecords[baseAsset]?this.tradeRecords[baseAsset].trend:"side" ){
+                    switch( this.tradeRecords[baseAsset]?this.tradeRecords[baseAsset].trend:"up" ){
                     case "up":
-                    case "side":
                         {
                             if(
                                 trendWatcher.ma14[index]<=trendWatcher.ma24[index]
@@ -268,15 +267,12 @@ namespace bot {
                             }
                         }
                         break
+                    case "side":
                     case "down":
                         {
                             if(
-                                trendWatcher.ma14[index]<=trendWatcher.ma24[index] 
-                                // ||
-                                // (
-                                //     index>0 &&
-                                //     trendWatcher.ma1[index-1]>trendWatcher.ma1[index]
-                                // )
+                                index>0 &&
+                                trendWatcher.ma2[index-1]>=trendWatcher.ma2[index]
                             ){
                                 action = "sell"
                             }

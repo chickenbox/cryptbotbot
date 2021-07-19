@@ -60,7 +60,7 @@ namespace bot { export namespace helper {
     export class TrendWatcher {
 
         data: DataEntry[]
-        ma7: number[]
+        ma2: number[]
         ma14: number[]
         ma24: number[]
         lastCrossIndex: number[]
@@ -81,7 +81,7 @@ namespace bot { export namespace helper {
         ){
             const smoothItr14 = 14*24*60*60*1000/interval
             this.data = data
-            this.ma7 = ema( this.data.map(a=>a.price), smoothItr14/2 )
+            this.ma2 = ma( this.data.map(a=>a.price), smoothItr14*2/14 )
             this.ma14 = ema( this.data.map(a=>a.price), smoothItr14 )
             this.ma24 = ma( this.data.map(a=>a.price), smoothItr14*2 )
             let lastCrossIndex = 0

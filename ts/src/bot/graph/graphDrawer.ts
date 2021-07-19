@@ -164,7 +164,7 @@ namespace bot { export namespace graph {
                     data: trendWatcher.data.map((d,i)=>{
                         return {
                             price: d.price,
-                            ma0: trendWatcher.ma7[i],
+                            ma0: trendWatcher.ma2[i],
                             ma1: trendWatcher.ma14[i],
                             ma2: trendWatcher.ma24[i],
                             time: d.time
