@@ -63,7 +63,8 @@ namespace bot { export namespace helper {
         ma2: number[]
         ma14: number[]
         ma24: number[]
-        lastCrossIndex: number[]
+        lastCrossIndex2_14: number[]
+        lastCrossIndex14_24: number[]
         ratio: number[]
 
         get high(){
@@ -85,11 +86,23 @@ namespace bot { export namespace helper {
             this.ma14 = ema( this.data.map(a=>a.price), smoothItr14 )
             this.ma24 = ma( this.data.map(a=>a.price), smoothItr14*2 )
             let lastCrossIndex = 0
-            this.lastCrossIndex = data.map((_, idx)=>{
+            this.lastCrossIndex14_24 = data.map((_, idx)=>{
 
                 if(
                     idx>0 &&
                     sign(this.ma14[idx-1]-this.ma24[idx-1]) != sign(this.ma14[idx]-this.ma24[idx])
+                ){
+                    lastCrossIndex = idx
+                }
+
+                return lastCrossIndex
+            })
+            lastCrossIndex = 0
+            this.lastCrossIndex2_14 = data.map((_, idx)=>{
+
+                if(
+                    idx>0 &&
+                    sign(this.ma2[idx-1]-this.ma14[idx-1]) != sign(this.ma2[idx]-this.ma14[idx])
                 ){
                     lastCrossIndex = idx
                 }
