@@ -211,8 +211,6 @@ namespace bot {
 
             let action: Action = "none"
 
-            let lastCrossIndex = trendWatcher.lastCrossIndex[index-1]
-
             let trend = getTrend(trendWatcher,index)
 
             if(
@@ -252,29 +250,29 @@ namespace bot {
             }
             
             if(action=="none" && this.allow.sell){
-                switch(trend){
-                case "up":
-                    {
+                // switch(trend){
+                // case "up":
+                //     {
                         if(
                             trendWatcher.ma1[index]<=trendWatcher.ma2[index] ||
                             trendWatcher.data[index].price<trendWatcher.ma2[index]*0.95
                         ){
                             action = "sell"
                         }
-                    }
-                    break
-                case "down":
-                case "side":
-                    {
-                        if(
-                            index>0 &&
-                            trendWatcher.ma1[index-1]>trendWatcher.ma1[index]
-                        ){
-                            action = "sell"
-                        }
-                    }
-                    break
-                }
+                //     }
+                //     break
+                // case "down":
+                // case "side":
+                //     {
+                //         if(
+                //             index>0 &&
+                //             trendWatcher.ma1[index-1]>trendWatcher.ma1[index]
+                //         ){
+                //             action = "sell"
+                //         }
+                //     }
+                //     break
+                // }
             }
             return action
         }
