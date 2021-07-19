@@ -24,6 +24,23 @@ namespace bot {
         }
     }
 
+    function getTrend( trendWatcher: helper.TrendWatcher, index: number ){
+        let trend: "up" | "side" | "down" = "side"
+
+        if( index>0 ){
+            let lastCrossIndex = trendWatcher.lastCrossIndex[index-1]
+
+            if( trendWatcher.ma1[index] > trendWatcher.ma1[lastCrossIndex] &&
+                trendWatcher.ma2[index] > trendWatcher.ma2[lastCrossIndex] )
+                trend = "up"
+            else if( trendWatcher.ma1[index] < trendWatcher.ma1[lastCrossIndex] &&
+                trendWatcher.ma2[index] < trendWatcher.ma2[lastCrossIndex] )
+                trend = "down"
+        }
+
+        return trend
+    }
+
     export class Bot {
         private binance: com.danborutori.cryptoApi.Binance
         readonly homingAsset: string
@@ -196,29 +213,28 @@ namespace bot {
 
             let lastCrossIndex = trendWatcher.lastCrossIndex[index-1]
 
-            let trend: "up" | "side" | "down" = "side"
+            let trend = getTrend(trendWatcher,index)
 
-            if( trendWatcher.ma1[index] > trendWatcher.ma1[lastCrossIndex] &&
-                trendWatcher.ma2[index] > trendWatcher.ma2[lastCrossIndex] )
-                trend = "up"
-            else if( trendWatcher.ma1[index] < trendWatcher.ma1[lastCrossIndex] &&
-                trendWatcher.ma2[index] < trendWatcher.ma2[lastCrossIndex] )
-                trend = "down"
-            
-            if( index>=100 && // long enough history
-                trendWatcher.ratio[index] > 1.1 && // filter low profit asset
-                index>0 &&
-                trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
-                trendWatcher.ma1[index]>=trendWatcher.ma2[index]
-                &&
-                trend == "up"
-                &&
-                trendWatcher.data[index].price<trendWatcher.ma1[index]*1.0625
-            ){
-                if( this.allow.buy ){//&& this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
-                        action = "buy"
+            switch(trend){
+            case "up":
+                {
+                    if( index>=100 && // long enough history
+                        trendWatcher.ratio[index] > 1.1 && // filter low profit asset
+                        index>0 &&
+                        trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
+                        trendWatcher.ma1[index]>=trendWatcher.ma2[index]
+                        &&
+                        trendWatcher.data[index].price<trendWatcher.ma1[index]*1.0625
+                    ){
+                        if( this.allow.buy ){//&& this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
+                                action = "buy"
+                        }
+                    }
                 }
-            }else{
+                break
+            }
+            
+            if(action=="none"){
                 if(
                     trendWatcher.ma1[index]<=trendWatcher.ma2[index] ||
                     trendWatcher.data[index].price<trendWatcher.ma2[index]*0.95
