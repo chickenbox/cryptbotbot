@@ -215,32 +215,64 @@ namespace bot {
 
             let trend = getTrend(trendWatcher,index)
 
-            switch(trend){
-            case "up":
-                {
-                    if( index>=100 && // long enough history
-                        trendWatcher.ratio[index] > 1.1 && // filter low profit asset
-                        index>0 &&
-                        trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
-                        trendWatcher.ma1[index]>=trendWatcher.ma2[index]
-                        &&
-                        trendWatcher.data[index].price<trendWatcher.ma1[index]*1.0625
-                    ){
-                        if( this.allow.buy ){//&& this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
-                                action = "buy" 
+            if(
+                index>=100 // long enough history
+                &&
+                trendWatcher.data[index].price<trendWatcher.ma1[index]*1.0625 // filter impulse
+                &&
+                this.allow.buy
+            ){
+                switch(trend){
+                case "up":
+                    {
+                        if(
+                            trendWatcher.ratio[index] > 1.1 && // filter low profit asset
+                            index>0 &&
+                            trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
+                            trendWatcher.ma1[index]>=trendWatcher.ma2[index]
+                        ){
+                            action = "buy"
                         }
                     }
+                    break
+                case "down":
+                case "side":
+                    {
+                        if(
+                            index>2 &&
+                            trendWatcher.ma1[index-2]>trendWatcher.ma1[index-1] &&
+                            trendWatcher.ma1[index]>=trendWatcher.ma1[index-1]
+                        ){
+                            action = "buy"
+                        }
+                    }
+                    break
                 }
-                break
             }
             
-            if(action=="none"){
-                if(
-                    trendWatcher.ma1[index]<=trendWatcher.ma2[index] ||
-                    trendWatcher.data[index].price<trendWatcher.ma2[index]*0.95
-                ){
-                    if( this.allow.sell)
-                        action = "sell"
+            if(action=="none" && this.allow.sell){
+                switch(trend){
+                case "up":
+                    {
+                        if(
+                            trendWatcher.ma1[index]<=trendWatcher.ma2[index] ||
+                            trendWatcher.data[index].price<trendWatcher.ma2[index]*0.95
+                        ){
+                            action = "sell"
+                        }
+                    }
+                    break
+                case "down":
+                case "side":
+                    {
+                        if(
+                            index>0 &&
+                            trendWatcher.ma1[index-1]>trendWatcher.ma1[index]
+                        ){
+                            action = "sell"
+                        }
+                    }
+                    break
                 }
             }
             return action
