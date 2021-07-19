@@ -9,7 +9,7 @@ namespace bot {
     }
 
     type Action = "buy" | "sell" | "none"
-    type Trend = "up" | "side" | "down"
+    type Trend = "up" | "side" | "down" | "up2"
 
     interface Decision {
         symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol
@@ -31,13 +31,21 @@ namespace bot {
 
         if( index>0 ){
             let lastCrossIndex = trendWatcher.lastCrossIndex14_24[index-1]
+            let lastCrossIndex2 = trendWatcher.lastCrossIndex2_14[index-1]
 
             if( trendWatcher.ma14[index] > trendWatcher.ma14[lastCrossIndex] &&
-                trendWatcher.ma24[index] > trendWatcher.ma24[lastCrossIndex] )
+                trendWatcher.ma24[index] > trendWatcher.ma24[lastCrossIndex] ){
                 trend = "up"
-            else if( trendWatcher.ma14[index] < trendWatcher.ma14[lastCrossIndex] &&
-                trendWatcher.ma24[index] < trendWatcher.ma24[lastCrossIndex] )
-                trend = "down"
+            }else if( trendWatcher.ma14[index] < trendWatcher.ma14[lastCrossIndex] &&
+                trendWatcher.ma24[index] < trendWatcher.ma24[lastCrossIndex] ){
+
+                if( trendWatcher.ma2[index] > trendWatcher.ma2[lastCrossIndex2] &&
+                    trendWatcher.ma14[index] > trendWatcher.ma14[lastCrossIndex2] ){
+                    trend = "up2"
+                }else{
+                    trend = "down"
+                }
+            }
         }
 
         return trend
@@ -206,7 +214,7 @@ namespace bot {
         }
 
         private tradeRecords: { [baseAsset: string]: {
-            trend: "up" | "side" | "down"
+            trend: Trend
         }} = {}
 
         getAction( baseAsset: string, trendWatcher: helper.TrendWatcher, index: number ): [Action, Trend]{
