@@ -8,6 +8,7 @@ namespace bot { export namespace graph {
         canvas: HTMLCanvasElement,
         data: {
             price: number,
+            ma0: number,
             ma1: number,
             ma2: number,
             time: number
@@ -109,6 +110,24 @@ namespace bot { export namespace graph {
         ctx.lineTo( w, h+min*h/range )
         ctx.stroke()
 
+        curveD = data.map(d=>{
+            return {
+                price: d.ma0,
+                time: d.time
+            }
+        })
+
+        ctx.strokeStyle = "blue"
+        ctx.lineWidth = 1
+        ctx.beginPath()
+        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        for( let d of curveD.slice(1) ){
+            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        }
+        ctx.moveTo( 0, h+min*h/range )
+        ctx.lineTo( w, h+min*h/range )
+        ctx.stroke()
+
     }
 
     export class Drawer {
@@ -121,6 +140,7 @@ namespace bot { export namespace graph {
                 asset: string
                 data: {
                     price: number
+                    ma0: number
                     ma1: number
                     ma2: number
                     time: number
@@ -144,6 +164,7 @@ namespace bot { export namespace graph {
                     data: trendWatcher.data.map((d,i)=>{
                         return {
                             price: d.price,
+                            ma0: trendWatcher.ma7[i],
                             ma1: trendWatcher.ma14[i],
                             ma2: trendWatcher.ma24[i],
                             time: d.time
@@ -190,6 +211,7 @@ namespace bot { export namespace graph {
                     function(b){
                         return {
                             price: b.amount,
+                            ma0: 0,
                             ma1: 0,
                             ma2: 0,
                             time: b.time
