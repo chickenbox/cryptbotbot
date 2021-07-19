@@ -9,11 +9,13 @@ namespace bot {
     }
 
     type Action = "buy" | "sell" | "none"
+    type Trend = "up" | "side" | "down"
 
     interface Decision {
         symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol
         price: number
         action: Action
+        trend: Trend
         score: number
     }
 
@@ -25,7 +27,7 @@ namespace bot {
     }
 
     function getTrend( trendWatcher: helper.TrendWatcher, index: number ){
-        let trend: "up" | "side" | "down" = "side"
+        let trend: Trend = "side"
 
         if( index>0 ){
             let lastCrossIndex = trendWatcher.lastCrossIndex[index-1]
@@ -206,7 +208,11 @@ namespace bot {
             }, timeout)
         }
 
-        getAction( baseAsset: string, trendWatcher: helper.TrendWatcher, index: number ): Action{
+        private tradeRecords: { [baseAsset: string]: {
+            trend: "up" | "side" | "down"
+        }} = {}
+
+        getAction( baseAsset: string, trendWatcher: helper.TrendWatcher, index: number ): [Action, Trend]{
             const data = trendWatcher.data
 
             let action: Action = "none"
@@ -254,33 +260,35 @@ namespace bot {
                     action = "sell"
                 else{
 
-                    // switch(trend){
-                    // case "up":
-                    //     {
+                    switch( this.tradeRecords[baseAsset]?this.tradeRecords[baseAsset].trend:"side" ){
+                    case "up":
+                    case "side":
+                        {
                             if(
                                 trendWatcher.ma1[index]<=trendWatcher.ma2[index]
                             ){
                                 action = "sell"
                             }
-                    //     }
-                    //     break
-                    // case "down":
-                    // case "side":
-                    //     {
-                    //         if(
-                    //             trendWatcher.ma1[index]<=trendWatcher.ma2[index] ||
-                    //             trendWatcher.data[index].price<trendWatcher.ma2[index]*0.95 ||
-                    //             (index>0 &&
-                    //             trendWatcher.ma1[index-1]>trendWatcher.ma1[index])
-                    //         ){
-                    //             action = "sell"
-                    //         }
-                    //     }
-                    //     break
-                    // }
+                        }
+                        break
+                    case "down":
+                        {
+                            if(
+                                trendWatcher.ma1[index]<=trendWatcher.ma2[index] 
+                                // ||
+                                // (
+                                //     index>0 &&
+                                //     trendWatcher.ma1[index-1]>trendWatcher.ma1[index]
+                                // )
+                            ){
+                                action = "sell"
+                            }
+                        }
+                        break
+                    }
                 }
             }
-            return action
+            return [action, trend]
         }
 
         private scoreDecision( trendWatcher: helper.TrendWatcher, lastIdx: number, balance: number ){
@@ -315,6 +323,7 @@ namespace bot {
                     return {
                         symbol: symbol,
                         action: "sell",
+                        trend: "side",
                         score: 0
                     } as Decision
                 }
@@ -341,17 +350,19 @@ namespace bot {
                     return {
                         symbol: symbol,
                         action: "sell",
+                        trend: "side",
                         score: 0
                     } as Decision
 
 
                 if( trendWatcher.data.length>2 ){
-                    let action = this.getAction(symbol.baseAsset, trendWatcher, index)
+                    let [action, trend] = this.getAction(symbol.baseAsset, trendWatcher, index)
 
                     return {
                         symbol: symbol,
                         price: trendWatcher.data[index].price,
                         action: action,
+                        trend: trend,
                         score: this.scoreDecision( trendWatcher, index, trader.performanceTracker.balance(symbol.symbol, this.getRecentPrice(symbol.symbol, time)) )
                     } as Decision
                 }
@@ -401,6 +412,7 @@ namespace bot {
                             const response = await this.trader.sell(decision.symbol, quantity, isMock?decision.price:undefined)
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                             this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
+                            delete this.tradeRecords[decision.symbol.baseAsset]
                         }catch(e){
                             this.logger.error(e)
                         }
@@ -442,6 +454,9 @@ namespace bot {
                         const response = await this.trader.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
                         this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                         this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
+                        this.tradeRecords[decision.symbol.baseAsset] = {
+                            trend: decision.trend
+                        }
                         if( !isMock )
                             await sleep(0.1)
                     }catch(e){
