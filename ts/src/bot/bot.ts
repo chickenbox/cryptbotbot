@@ -218,6 +218,8 @@ namespace bot {
             if(
                 index>=100 // long enough history
                 &&
+                trendWatcher.ratio[index] > 1.1 // filter low profit asset
+                &&
                 trendWatcher.data[index].price<trendWatcher.ma1[index]*1.0625 // filter impulse
                 &&
                 this.allow.buy
@@ -226,7 +228,6 @@ namespace bot {
                 case "up":
                     {
                         if(
-                            trendWatcher.ratio[index] > 1.1 && // filter low profit asset
                             index>0 &&
                             trendWatcher.ma1[index-1]<=trendWatcher.ma2[index-1] &&
                             trendWatcher.ma1[index]>=trendWatcher.ma2[index]
@@ -243,7 +244,7 @@ namespace bot {
                             trendWatcher.ma1[index-2]>trendWatcher.ma1[index-1] &&
                             trendWatcher.ma1[index]>=trendWatcher.ma1[index-1]
                         ){
-                            action = "buy"
+                            // action = "buy"
                         }
                     }
                     break
