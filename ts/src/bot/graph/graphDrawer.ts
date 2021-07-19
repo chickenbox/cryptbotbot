@@ -37,12 +37,12 @@ namespace bot { export namespace graph {
         const timeRange = end-start
 
         let max = Number.NEGATIVE_INFINITY
-        let min = Number.POSITIVE_INFINITY
+        let min = 0
 
         for( let d of data ){
             if( d.time >= start-step && d.time <= end+step ){
                 max = Math.max(d.price, max)
-                min = Math.min(d.price, min)
+                // min = Math.min(d.price, min)
             }
         }
         let range = max-min

@@ -109,14 +109,8 @@ namespace bot { export namespace helper {
         dDataDDt: number[]
         noisyness: number[]
         noisynessMean: number[]
-
-        get high(){
-            return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
-        }
-
-        get low(){
-            return this.data.reduce((a,b)=>Math.min(a,b.price), Number.MAX_VALUE)
-        }
+        high: number[]
+        low: number[]
 
         constructor(
             readonly baseAsset: string,
@@ -132,6 +126,20 @@ namespace bot { export namespace helper {
             this.noisyness = noisyness(data.map(d=>d.price))
             this.noisynessMean = mean(this.noisyness,this.smoothItr/2)
             this.noisyness = maxShift(this.noisyness, this.smoothItr/2)
+            this.high = data.map(function(d,idx){
+                let v = d.price
+                for( let i=Math.max(0,idx-smoothItr); i<idx; i++ ){
+                    v = Math.max(v,data[i].price)
+                }
+                return v
+            })
+            this.low = data.map(function(d,idx){
+                let v = d.price
+                for( let i=Math.max(0,idx-smoothItr); i<idx; i++ ){
+                    v = Math.min(v,data[i].price)
+                }
+                return v
+            })
         }
 
         isPeak( array: number[], index: number ){

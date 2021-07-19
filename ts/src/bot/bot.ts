@@ -197,7 +197,8 @@ namespace bot {
             let action: Action = "none"
             
             if( trendWatcher.dDataDDt[index-1]<0 && trendWatcher.dDataDDt[index]>=0 &&
-                trendWatcher.dDataDt[index]<0
+                trendWatcher.dDataDt[index]<0 &&
+                trendWatcher.high[index]/trendWatcher.low[index]>1.1
             ){
                 if( this.allow.buy && this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
 
@@ -211,7 +212,8 @@ namespace bot {
                 }
             }else{
                 if(
-                    trendWatcher.dDataDDt[index]<=0
+                    trendWatcher.dDataDDt[index]<=0 ||
+                    trendWatcher.data[index].price<trendWatcher.smoothedData[index].price*0.99 // drop cutoff
                 ){
                     if( this.allow.sell)
                         action = "sell"
