@@ -227,7 +227,7 @@ namespace bot {
                         trendWatcher.data[index].price<trendWatcher.ma1[index]*1.0625
                     ){
                         if( this.allow.buy ){//&& this.cooldownHelper.canBuy(`${baseAsset}${this.homingAsset}`, trendWatcher.data[index].time)){
-                                action = "buy"
+                                action = "buy" 
                         }
                     }
                 }
