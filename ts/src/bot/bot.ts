@@ -47,7 +47,6 @@ namespace bot {
         private binance: com.danborutori.cryptoApi.Binance
         readonly homingAsset: string
         private interval: com.danborutori.cryptoApi.Interval
-        private smoothAmount: number
         private maxAllocation: number
         private holdingBalance: number
         private minimumOrderQuantity: number // in homingAsset
@@ -116,7 +115,6 @@ namespace bot {
             config: {
                 homingAsset: string
                 interval: com.danborutori.cryptoApi.Interval
-                smoothAmount: number
                 maxAllocation: number
                 logLength: number
                 holdingBalance: number
@@ -141,7 +139,6 @@ namespace bot {
             this.balanceTracker = new helper.BalanceTracker()
             this.homingAsset = config.homingAsset
             this.interval = config.interval
-            this.smoothAmount = config.smoothAmount
             this.maxAllocation = config.maxAllocation
             this.holdingBalance = config.holdingBalance
             this.minimumOrderQuantity = config.minimumOrderQuantity
@@ -332,7 +329,7 @@ namespace bot {
                     trendWatcher = new helper.TrendWatcher(
                         symbol.baseAsset,
                         data,
-                        this.smoothAmount
+                        14*2
                     )
                 }
                 this.trendWatchers[symbol.baseAsset] = trendWatcher
