@@ -142,29 +142,6 @@ namespace bot { export namespace helper {
             })
         }
 
-        isPeak( array: number[], index: number ){
-            if( index>=0 && index<array.length){
-                if( index-1>=0 && array[index-1]>array[index] )
-                    return false
-                if( index+1<array.length && array[index+1]>array[index] )
-                    return false
-                return true
-            }
-            return false
-        }
-
-        // getLastPeak( index: number, endIndex: number ){
-        //     let isPeak = false
-        //     for( let i=index-1; i>=Math.max(0,endIndex); i-- ){
-        //         if( this.isPeak(this.dDataDt,i) ){
-        //             return {
-        //                 index: i,
-        //                 value: this.dDataDt[i]
-        //             }
-        //         }
-        //     }
-        // }
-
         isDownTrend( index: number, range: number ){
             const startIndex = index-range
             const endIndex = index

@@ -13,7 +13,6 @@ namespace bot { export namespace graph {
             ddSmoothedPrice: number,
             noisyness: number,
             noisynessMean: number,
-            peak: boolean,
             time: number
         }[],
         tradeRecords: {
@@ -130,17 +129,6 @@ namespace bot { export namespace graph {
                 time: d.time
             }
         })
-
-        ctx.setLineDash( [3,3] )
-        ctx.beginPath()
-        for( let d of data ){
-            if( d.peak ){
-                ctx.moveTo( (d.time-start)*w/timeRange, 0 )
-                ctx.lineTo( (d.time-start)*w/timeRange, h )
-            }
-        }
-        ctx.stroke()
-        ctx.setLineDash([])
 
         //dd
         max = Number.NEGATIVE_INFINITY
@@ -263,7 +251,6 @@ namespace bot { export namespace graph {
                             ddSmoothedPrice: trendWatcher.dDataDDt[i],
                             noisyness: trendWatcher.noisyness[i],
                             noisynessMean: trendWatcher.noisynessMean[i],
-                            peak: trendWatcher.isPeak( trendWatcher.dDataDt, i ),
                             time: d.time
                         }
                     }),
@@ -286,9 +273,7 @@ namespace bot { export namespace graph {
                             dSmoothedPrice: 0,
                             ddSmoothedPrice: 0,
                             noisyness: 0,
-                            noisynessMean: 0,
-                            peak: 0
-
+                            noisynessMean: 0
                         }
                     }) : [],
                     balance: this.bot.trader.performanceTracker.balance(symbol, this.bot.getRecentPrice(symbol, Date.now()))
