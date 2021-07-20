@@ -9,7 +9,7 @@ namespace bot {
     }
 
     type Action = "buy" | "sell" | "none"
-    type Trend = "up" | "side" | "down" | "up2"
+    type Trend = "up" | "side" | "down"
 
     interface Decision {
         symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol
@@ -30,21 +30,14 @@ namespace bot {
         let trend: Trend = "side"
 
         if( index>0 ){
-            let lastCrossIndex = trendWatcher.lastCrossIndex14_24[index-1]
-            let lastCrossIndex2 = trendWatcher.lastCrossIndex2_14[index-1]
+            let lastCrossIndex = trendWatcher.lastCrossIndex[index-1]
 
             if( trendWatcher.ma14[index] > trendWatcher.ma14[lastCrossIndex] &&
                 trendWatcher.ma24[index] > trendWatcher.ma24[lastCrossIndex] ){
                 trend = "up"
             }else if( trendWatcher.ma14[index] < trendWatcher.ma14[lastCrossIndex] &&
                 trendWatcher.ma24[index] < trendWatcher.ma24[lastCrossIndex] ){
-
-                if( trendWatcher.ma2[index] > trendWatcher.ma2[lastCrossIndex2] &&
-                    trendWatcher.ma14[index] > trendWatcher.ma14[lastCrossIndex2] ){
-                    trend = "up2"
-                }else{
-                    trend = "down"
-                }
+                trend = "down"
             }
         }
 
@@ -245,18 +238,6 @@ namespace bot {
                         }
                     }
                     break
-                case "down":
-                case "side":
-                    {
-                        if(
-                            index>0 &&
-                            trendWatcher.ma2[index-1]>trendWatcher.data[index-1].price &&
-                            trendWatcher.ma2[index]<trendWatcher.data[index].price
-                        ){
-                            // action = "buy"
-                        }
-                    }
-                    break
                 }
             }
             
@@ -265,28 +246,11 @@ namespace bot {
                     action = "sell"
                 else{
 
-                    switch( this.tradeRecords[baseAsset]?this.tradeRecords[baseAsset].trend:"up" ){
-                    case "up":
-                        {
-                            if(
-                                trendWatcher.ma14[index]<=trendWatcher.ma24[index]
-                            ){
-                                action = "sell"
-                            }
-                        }
-                        break
-                    case "side":
-                    case "down":
-                        {
-                            if(
-                                index>0 &&
-                                trendWatcher.ma2[index-1]>=trendWatcher.ma2[index]
-                            ){
-                                action = "sell"
-                            }
-                        }
-                        break
-                    }
+                    if(
+                        trendWatcher.ma14[index]<=trendWatcher.ma24[index]
+                    ){
+                        action = "sell"
+                    }                        
                 }
             }
             return [action, trend]
