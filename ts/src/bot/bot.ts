@@ -33,8 +33,8 @@ namespace bot {
             let lastCrossIndex = trendWatcher.lastCrossIndex14_24[index-1]
             let lastCrossIndex2 = trendWatcher.lastCrossIndex2_14[index-1]
 
-            if( trendWatcher.ma14[index] > trendWatcher.ma14[lastCrossIndex] &&
-                trendWatcher.ma24[index] > trendWatcher.ma24[lastCrossIndex] ){
+            if( trendWatcher.ma14[index] > trendWatcher.ma14[lastCrossIndex]*1.01 &&
+                trendWatcher.ma24[index] > trendWatcher.ma24[lastCrossIndex]*1.01 ){
                 trend = "up"
             }else if( trendWatcher.ma14[index] < trendWatcher.ma14[lastCrossIndex] &&
                 trendWatcher.ma24[index] < trendWatcher.ma24[lastCrossIndex] ){
@@ -261,7 +261,7 @@ namespace bot {
             }
             
             if(action=="none" && this.allow.sell){
-                if( trendWatcher.data[index].price<trendWatcher.ma24[index]*0.95 ) // drop cutoff
+                if( trendWatcher.data[index].price<trendWatcher.ma24[index] ) // drop cutoff
                     action = "sell"
                 else{
 
