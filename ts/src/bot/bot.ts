@@ -30,10 +30,13 @@ namespace bot {
         let trend: Trend = "side"
 
         if( index>0 ){
-            let lastCrossIndex = trendWatcher.lastCrossIndex[index-1]
+            const lastCrossIndex = trendWatcher.lastCrossIndex[index-1]
 
-            if( trendWatcher.ma14[index] > trendWatcher.ma14[lastCrossIndex] &&
-                trendWatcher.ma24[index] > trendWatcher.ma24[lastCrossIndex] ){
+            const upRate = 0.0001
+            const s = 1+(index-lastCrossIndex)*upRate
+
+            if( trendWatcher.ma14[index] > trendWatcher.ma14[lastCrossIndex]*s &&
+                trendWatcher.ma24[index] > trendWatcher.ma24[lastCrossIndex]*s ){
                 trend = "up"
             }else if( trendWatcher.ma14[index] < trendWatcher.ma14[lastCrossIndex] &&
                 trendWatcher.ma24[index] < trendWatcher.ma24[lastCrossIndex] ){
