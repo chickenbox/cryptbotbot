@@ -231,7 +231,7 @@ namespace bot {
                     {
                         if(
                             index>0 &&
-                            trendWatcher.ma14[index-1]<=trendWatcher.ma24[index-1] &&
+                            trendWatcher.ma14[index-1]<trendWatcher.ma24[index-1] &&
                             trendWatcher.ma14[index]>=trendWatcher.ma24[index]
                         ){
                             action = "buy"
