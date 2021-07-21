@@ -209,10 +209,6 @@ namespace bot {
             }, timeout)
         }
 
-        private tradeRecords: { [baseAsset: string]: {
-            trend: Trend
-        }} = {}
-
         getAction( baseAsset: string, trendWatcher: helper.TrendWatcher, index: number ): [Action, Trend]{
             const data = trendWatcher.data
 
@@ -380,7 +376,6 @@ namespace bot {
                             const response = await this.trader.sell(decision.symbol, quantity, isMock?decision.price:undefined)
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                             this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
-                            delete this.tradeRecords[decision.symbol.baseAsset]
                         }catch(e){
                             this.logger.error(e)
                         }
@@ -422,9 +417,6 @@ namespace bot {
                         const response = await this.trader.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
                         this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                         this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
-                        this.tradeRecords[decision.symbol.baseAsset] = {
-                            trend: decision.trend
-                        }
                         if( !isMock )
                             await sleep(0.1)
                     }catch(e){
