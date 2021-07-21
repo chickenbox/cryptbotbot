@@ -48,7 +48,7 @@ namespace bot {
     }
 
     export class Bot {
-        private binance: com.danborutori.cryptoApi.Binance
+        readonly binance: com.danborutori.cryptoApi.Binance
         readonly homingAsset: string
         private interval: com.danborutori.cryptoApi.Interval
         private maxAllocation: number
@@ -61,7 +61,7 @@ namespace bot {
         readonly trader: trader.Trader
         readonly tradeHistory = new trader.History()
         readonly trendWatchers: {[asset: string]: helper.TrendWatcher} = {}
-        private logger: helper.Logger
+        readonly logger: helper.Logger
         
         readonly allow = {
             buy: true,

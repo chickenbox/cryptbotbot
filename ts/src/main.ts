@@ -5,8 +5,9 @@ interface BotConfig {
     mock: boolean
     trader: "BINANCE" | "MOCK"
     holdingBalance: number
-    blackList: string[],
+    blackList: string[]
     password: string
+    testBinanceTrader: boolean
 }
 
 const fs = require("fs")
@@ -35,6 +36,11 @@ fs.readFile(process.argv[2], "utf8", async function (err,data) {
             3333,
             config.password
         )
+
+        if(config.testBinanceTrader){
+            const tester = new bot.helper.TestBinanceTrader()
+            await tester.test(b.binance, b.logger)
+        }
 
         if(config.mock){
             await b.mock()
