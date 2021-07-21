@@ -24,7 +24,7 @@ namespace bot { export namespace trader {
         }
 
         async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number ){
-            const price = mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price)
+            const price = (mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price))*1.1
 
             const netQty = quantity*(1-commissionRate)
 
@@ -42,7 +42,7 @@ namespace bot { export namespace trader {
         }
 
         async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, mockPrice?: number ){
-            const price = mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price)
+            const price = (mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price))*0.9
 
             const netQty = quantity*(1-commissionRate)
 
