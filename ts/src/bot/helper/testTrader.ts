@@ -3,7 +3,7 @@ namespace bot { export namespace helper {
     export class TestBinanceTrader {
 
         async test( binance: com.danborutori.cryptoApi.Binance, logger: Logger ) {
-            const testTradeAmount = 10
+            const testTradeAmount = 15
             const baseAsset = "BNB"
             const quoteAsset = "USDT"
 
@@ -18,13 +18,12 @@ namespace bot { export namespace helper {
                 const sym = exchangeInfo.symbols.find(s=>s.symbol==`${baseAsset}${quoteAsset}`)
 
                 if( sym ){
-                    logger.log(`Try to buy ${testTradeAmount} ${baseAsset}`)
-
                     const priceResponse = await binance.getSymbolPriceTicker(sym.symbol)
 
+                    logger.log(`Try to buy ${testTradeAmount/parseFloat(priceResponse.price)} ${baseAsset}`)
                     logger.log(`current price ${priceResponse.price}`)
 
-                    const buyResponse = await t.buy(sym, testTradeAmount, testTradeAmount*parseFloat(priceResponse.price) )
+                    const buyResponse = await t.buy(sym, testTradeAmount/parseFloat(priceResponse.price), testTradeAmount )
 
                     logger.log(`buy ${buyResponse.quantity} at price ${buyResponse.price}`)
 

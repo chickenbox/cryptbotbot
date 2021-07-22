@@ -2,6 +2,7 @@ namespace bot { export namespace trader {
 
     const balancesLocalStorageKey = "MockTrader.balances"
     const commissionRate = 0.001
+    const marketPriceDiff = 0.05
 
     export class MockTrader extends Trader {
         private balances: {[key: string]: number} = function(){
@@ -24,7 +25,7 @@ namespace bot { export namespace trader {
         }
 
         async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number ){
-            const price = (mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price))*1.1
+            const price = (mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price))*(1+marketPriceDiff)
 
             const netQty = quantity*(1-commissionRate)
 
@@ -42,7 +43,7 @@ namespace bot { export namespace trader {
         }
 
         async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, mockPrice?: number ){
-            const price = (mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price))*0.9
+            const price = (mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price))*(1-marketPriceDiff)
 
             const netQty = quantity*(1-commissionRate)
 
