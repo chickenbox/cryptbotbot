@@ -54,7 +54,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     }
 
     interface Filter {
-        filterType: "LOT_SIZE"
+        filterType: "LOT_SIZE" | "MIN_NOTIONAL"
     }
 
     export interface FilterLotSize {
@@ -62,6 +62,13 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         minQty: string
         maxQty: string
         stepSize: string
+    }
+
+    export interface FilterMinNotional {
+        filterType: "MIN_NOTIONAL"
+        minNotional: string
+        applyToMarket: boolean
+        avgPriceMins: number
     }
 
     export interface ExchangeInfoSymbol {

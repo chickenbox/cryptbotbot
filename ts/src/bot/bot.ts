@@ -366,6 +366,8 @@ namespace bot {
                 return this.makeDecision(this.trader, symbol, now.getTime(), isMock)
             }).filter(a=>a)
 
+            const tradeHelper = new helper.TradeHelper(this.trader, this.binance)
+
             const balances = await this.trader.getBalances()
             await Promise.all(decisions.map(async decision=>{
                 switch(decision.action){
@@ -373,7 +375,7 @@ namespace bot {
                     const quantity = balances[decision.symbol.baseAsset] || 0
                     if( quantity>0 )
                         try{
-                            const response = await this.trader.sell(decision.symbol, quantity, isMock?decision.price:undefined)
+                            const response = await tradeHelper.sell(decision.symbol, quantity, isMock?decision.price:undefined)
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                             this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
                         }catch(e){
@@ -403,7 +405,7 @@ namespace bot {
             }
             const averageHomingAsset = Math.min(availableHomingAsset/buyDecisions.length, maxAllocation)
 
-            for( let decision of buyDecisions ){
+            await Promise.all( buyDecisions.map(async decision=>{
                 let quantity = averageHomingAsset/decision.price
                 const newAmount = ((balances[decision.symbol.baseAsset] || 0)+quantity)*decision.price                
                 const minQuantity =  (getMinQty(decision.symbol) || this.minimumOrderQuantity)
@@ -414,7 +416,7 @@ namespace bot {
 
                 if( quantity>minQuantity )
                     try{
-                        const response = await this.trader.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
+                        const response = await tradeHelper.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
                         this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                         this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
                         if( !isMock )
@@ -425,7 +427,7 @@ namespace bot {
                 else{
                     this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, now )
                 }
-            }
+            }))
 
             if( !isMock ){
                 await this.logTrader(now.getTime())

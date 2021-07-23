@@ -1,6 +1,6 @@
 namespace bot { export namespace trader {
 
-    interface TradeResponse {
+    export interface TradeResponse {
         price: number
         quantity: number
     }

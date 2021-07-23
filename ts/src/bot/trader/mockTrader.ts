@@ -2,7 +2,7 @@ namespace bot { export namespace trader {
 
     const balancesLocalStorageKey = "MockTrader.balances"
     const commissionRate = 0.001
-    const marketPriceDiff = 0.05
+    export const marketPriceDiff = 0.05
 
     export class MockTrader extends Trader {
         private balances: {[key: string]: number} = function(){
