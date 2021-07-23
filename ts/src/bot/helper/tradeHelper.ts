@@ -8,6 +8,24 @@ namespace bot { export namespace helper {
         return 0
     }
 
+    function getMarketLotSize( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol ){
+        const filter = symbol.filters.find(f=>f.filterType=="MARKET_LOT_SIZE") as com.danborutori.cryptoApi.FilterMarketLotSize
+        if( filter ){
+            return {
+                minQty: parseFloat( filter.minQty ),
+                maxQty: parseFloat( filter.maxQty )
+            }
+        }
+        return {
+            minQty: Number.NEGATIVE_INFINITY,
+            maxQty: Number.POSITIVE_INFINITY
+        }
+    }
+
+    function clamp( n: number, min: number, max: number ){
+        return Math.min( Math.max( n, min ), max )
+    }
+
     export class TradeHelper {
 
         constructor(
@@ -16,41 +34,18 @@ namespace bot { export namespace helper {
             readonly maxRetry: number = 3
         ){}
 
-        async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number  ): Promise<trader.TradeResponse> {
-            const price = (mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price))*(1+trader.marketPriceDiff)
+        async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, price: number, quantity: number, mockPrice?: number  ): Promise<trader.TradeResponse> {
+            const marketLotSize = getMarketLotSize(symbol)
 
             const response = {
                 quantity: 0,
                 price: 0
             }
             let remainQuantity = quantity
-            let remainQuoteQuantity = quoteAssetQuantity
-            for( let i=0; i<this.maxRetry; i++ ){
-                const intermedia = await this.trader.buy(symbol, remainQuantity, remainQuoteQuantity, mockPrice)
-                response.price = response.quantity*response.price+intermedia.quantity*intermedia.price
-                response.quantity += intermedia.quantity
-                if( response.quantity!=0 ) response.price /= response.quantity
+            for( let i=0; i<this.maxRetry;){
+                const tradeQuantity = clamp( remainQuantity, marketLotSize.minQty, marketLotSize.maxQty )
 
-                remainQuantity -= intermedia.quantity
-                remainQuoteQuantity = remainQuantity*price
-
-                const minNotional = getMinNotional(symbol)
-                if( remainQuoteQuantity*0.9<=minNotional )
-                    break
-            }
-            return response
-        }
-
-        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, mockPrice?: number ): Promise<trader.TradeResponse> {
-            const price = (mockPrice!==undefined?mockPrice:parseFloat((await this.binance.getSymbolPriceTicker(symbol.symbol)).price))*(1-trader.marketPriceDiff)
-
-            const response = {
-                quantity: 0,
-                price: 0
-            }
-            let remainQuantity = quantity
-            for( let i=0; i<this.maxRetry; i++ ){
-                const intermedia = await this.trader.sell(symbol, remainQuantity, mockPrice)
+                const intermedia = await this.trader.buy(symbol, tradeQuantity, tradeQuantity*price, mockPrice)
                 response.price = response.quantity*response.price+intermedia.quantity*intermedia.price
                 response.quantity += intermedia.quantity
                 if( response.quantity!=0 ) response.price /= response.quantity
@@ -60,6 +55,35 @@ namespace bot { export namespace helper {
                 const minNotional = getMinNotional(symbol)
                 if( remainQuantity*price*0.9<=minNotional )
                     break
+
+                if( intermedia.quantity==0 ) i++
+            }
+            return response
+        }
+
+        async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, price: number, quantity: number, mockPrice?: number ): Promise<trader.TradeResponse> {
+            const marketLotSize = getMarketLotSize(symbol)
+
+            const response = {
+                quantity: 0,
+                price: 0
+            }
+            let remainQuantity = quantity
+            for( let i=0; i<this.maxRetry;){
+                const tradeQuantity = clamp( remainQuantity, marketLotSize.minQty, marketLotSize.maxQty )
+
+                const intermedia = await this.trader.sell(symbol, tradeQuantity, mockPrice)
+                response.price = response.quantity*response.price+intermedia.quantity*intermedia.price
+                response.quantity += intermedia.quantity
+                if( response.quantity!=0 ) response.price /= response.quantity
+
+                remainQuantity -= intermedia.quantity
+
+                const minNotional = getMinNotional(symbol)
+                if( remainQuantity*price*0.9<=minNotional )
+                    break
+
+                if( intermedia.quantity==0 ) i++
             }
             return response
         }

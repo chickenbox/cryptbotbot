@@ -375,7 +375,7 @@ namespace bot {
                     const quantity = balances[decision.symbol.baseAsset] || 0
                     if( quantity>0 )
                         try{
-                            const response = await tradeHelper.sell(decision.symbol, quantity, isMock?decision.price:undefined)
+                            const response = await tradeHelper.sell(decision.symbol, decision.price, quantity, isMock?decision.price:undefined)
                             this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                             this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
                         }catch(e){
@@ -416,7 +416,7 @@ namespace bot {
 
                 if( quantity>minQuantity )
                     try{
-                        const response = await tradeHelper.buy(decision.symbol, quantity, quantity*decision.price, isMock?decision.price:undefined )
+                        const response = await tradeHelper.buy(decision.symbol, decision.price,  quantity, isMock?decision.price:undefined )
                         this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                         this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
                         if( !isMock )

@@ -54,7 +54,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     }
 
     interface Filter {
-        filterType: "LOT_SIZE" | "MIN_NOTIONAL"
+        filterType: "LOT_SIZE" | "MIN_NOTIONAL" | "MARKET_LOT_SIZE"
     }
 
     export interface FilterLotSize {
@@ -69,6 +69,13 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         minNotional: string
         applyToMarket: boolean
         avgPriceMins: number
+    }
+
+    export interface FilterMarketLotSize {
+        filterType: "MARKET_LOT_SIZE"
+        minQty: string
+        maxQty: string
+        stepSize: string
     }
 
     export interface ExchangeInfoSymbol {
@@ -199,7 +206,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     export type Environment = "PRODUCTION" | "SPOT"
 
     class RateLimiter {
-        readonly orderPerSecond = 10
+        readonly orderPerSecond = 5
         readonly requestPerMinute = 600
 
         private requestTimestamps: number[] = []
@@ -214,7 +221,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 }
 
                 if( this.requestTimestamps.length>=this.requestPerMinute ){
-                    await sleep( 1000*60-(now-this.requestTimestamps[0]) )
+                    await sleep( 60-(now-this.requestTimestamps[0])/1000 )
                 }else
                     break
             }
@@ -231,7 +238,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 }
 
                 if( this.orderTimestamps.length>=this.orderPerSecond ){
-                    await sleep( 1000-(now-this.orderTimestamps[0]) )
+                    await sleep( 1-(now-this.orderTimestamps[0])/1000 )
                 }else
                     break
             }
