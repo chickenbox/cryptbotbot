@@ -12,7 +12,7 @@ namespace bot { export namespace helper {
 
             try{
 
-                const t = new trader.BinanceTrader(binance)
+                const t = new trader.BinanceTrader(binance, logger)
 
                 const exchangeInfo = await binance.getExchangeInfo()
                 const sym = exchangeInfo.symbols.find(s=>s.symbol==`${baseAsset}${quoteAsset}`)

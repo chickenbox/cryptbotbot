@@ -22,7 +22,8 @@ namespace bot { export namespace trader {
 
     export class BinanceTrader extends Trader {
         constructor(
-            readonly binance: com.danborutori.cryptoApi.Binance
+            readonly binance: com.danborutori.cryptoApi.Binance,
+            readonly logger?: helper.Logger
         ){
             super()
         }
@@ -38,9 +39,11 @@ namespace bot { export namespace trader {
         async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number ) {
             try{
                 const response = await this.binance.newOrder( symbol.symbol, "BUY", undefined, fixPrecision( quoteAssetQuantity, symbol.quoteAssetPrecision))
+                this.logger && this.logger.log(`buy response:\n${JSON.stringify(response,null,2)}`)
                 return convertResponse(response)
             }catch(e){
                 console.error(e)
+                this.logger && this.logger.error(e)
             }
             return {
                 price: 0,
@@ -51,9 +54,11 @@ namespace bot { export namespace trader {
         async sell( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, mockPrice?: number ) {
             try{
                 const response = await this.binance.newOrder( symbol.symbol, "SELL", fixPrecision( quantity, symbol.baseAssetPrecision ))
+                this.logger && this.logger.log(`sell response:\n${JSON.stringify(response,null,2)}`)
                 return convertResponse(response)
             }catch(e){
                 console.error(e)
+                this.logger && this.logger.error(e)
             }
             return {
                 price: 0,
