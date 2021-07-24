@@ -22,10 +22,6 @@ namespace bot { export namespace helper {
         }
     }
 
-    function clamp( n: number, min: number, max: number ){
-        return Math.min( Math.max( n, min ), max )
-    }
-
     export class TradeHelper {
 
         constructor(
@@ -43,7 +39,9 @@ namespace bot { export namespace helper {
             }
             let remainQuantity = quantity
             for( let i=0; i<this.maxRetry;){
-                const tradeQuantity = clamp( remainQuantity, marketLotSize.minQty, marketLotSize.maxQty )
+                const tradeQuantity = Math.min( remainQuantity, marketLotSize.maxQty )
+                if( tradeQuantity<marketLotSize.minQty )
+                    break
 
                 const intermedia = await this.trader.buy(symbol, tradeQuantity, tradeQuantity*price, mockPrice)
                 response.price = response.quantity*response.price+intermedia.quantity*intermedia.price
@@ -70,7 +68,9 @@ namespace bot { export namespace helper {
             }
             let remainQuantity = quantity
             for( let i=0; i<this.maxRetry;){
-                const tradeQuantity = clamp( remainQuantity, marketLotSize.minQty, marketLotSize.maxQty )
+                const tradeQuantity = Math.min( remainQuantity, marketLotSize.maxQty )
+                if( tradeQuantity<marketLotSize.minQty )
+                    break
 
                 const intermedia = await this.trader.sell(symbol, tradeQuantity, mockPrice)
                 response.price = response.quantity*response.price+intermedia.quantity*intermedia.price
