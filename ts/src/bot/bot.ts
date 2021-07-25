@@ -52,6 +52,7 @@ namespace bot {
         readonly homingAsset: string
         private interval: com.danborutori.cryptoApi.Interval
         private maxAllocation: number
+        private maxAbsoluteAllocation: number
         private holdingBalance: number
         private minimumOrderQuantity: number // in homingAsset
         private whiteList: Set<string>
@@ -120,6 +121,7 @@ namespace bot {
                 homingAsset: string
                 interval: com.danborutori.cryptoApi.Interval
                 maxAllocation: number
+                maxAbsoluteAllocation: number
                 logLength: number
                 holdingBalance: number
                 minimumOrderQuantity: number
@@ -144,6 +146,7 @@ namespace bot {
             this.homingAsset = config.homingAsset
             this.interval = config.interval
             this.maxAllocation = config.maxAllocation
+            this.maxAbsoluteAllocation = config.maxAbsoluteAllocation
             this.holdingBalance = config.holdingBalance
             this.minimumOrderQuantity = config.minimumOrderQuantity
             this.logger = new  helper.Logger(config.logLength)
@@ -394,7 +397,10 @@ namespace bot {
                     return Math.random() //shuffle
             })
             const availableHomingAsset = Math.max(0,((await this.trader.getBalances())[this.homingAsset] || 0)-this.holdingBalance)
-            const maxAllocation = (homingTotal-this.holdingBalance)*this.maxAllocation
+            const maxAllocation = Math.min(
+                (homingTotal-this.holdingBalance)*this.maxAllocation,
+                this.maxAbsoluteAllocation
+            )
             const maxOrder = Math.max(0,Math.floor(maxAllocation/this.minimumOrderQuantity))
             if( buyDecisions.length>maxOrder ){
                 for( let i=maxOrder; i<buyDecisions.length; i++ ){

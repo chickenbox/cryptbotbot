@@ -21,6 +21,7 @@ fs.readFile(process.argv[2], "utf8", async function (err,data) {
             homingAsset: "USDT",
             interval: "12h",
             maxAllocation: 1/10,
+            maxAbsoluteAllocation: 2000,
             logLength: 10000,
             holdingBalance: config.holdingBalance,
             minimumOrderQuantity: 10,
