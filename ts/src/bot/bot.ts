@@ -379,8 +379,10 @@ namespace bot {
                     if( quantity>0 )
                         try{
                             const response = await tradeHelper.sell(decision.symbol, decision.price, quantity, isMock?decision.price:undefined)
-                            this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
-                            this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
+                            if( response.quantity!=0 ){
+                                this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
+                                this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
+                            }
                         }catch(e){
                             this.logger.error(e)
                         }
@@ -423,10 +425,10 @@ namespace bot {
                 if( quantity>minQuantity )
                     try{
                         const response = await tradeHelper.buy(decision.symbol, decision.price,  quantity, isMock?decision.price:undefined )
-                        this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
-                        this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
-                        if( !isMock )
-                            await sleep(0.1)
+                        if( response.quantity!=0 ){
+                            this.tradeHistory.buy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
+                            this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
+                        }
                     }catch(e){
                         this.logger.error(e)
                     }
