@@ -135,7 +135,7 @@ namespace bot {
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure, config.environment)
             switch( config.trader ){
             case "BINANCE":
-                this.trader = new trader.BinanceTrader(this.binance)
+                this.trader = new trader.BinanceTrader(this.binance, this.logger)
                 break
             default:
                 this.trader = new trader.MockTrader(this.binance)
