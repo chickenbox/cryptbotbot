@@ -83,7 +83,7 @@ namespace bot { export namespace helper {
                     const priceA = prices[idxA]
                     const priceB = prices[idxB]
                     const td = priceB.time-priceA.time
-                    const mix = td!=0 ? (priceA.time-rt)/td : 0
+                    const mix = td!=0 ? (rt-priceA.time)/td : 0
                     const price = priceA.price*(1-mix)+priceB.price*mix
 
                     result[i] = {
