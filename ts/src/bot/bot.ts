@@ -382,6 +382,8 @@ namespace bot {
                             if( response.quantity!=0 ){
                                 this.tradeHistory.sell(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, response.price, response.quantity, now )
                                 this.trader.performanceTracker.sell( `${decision.symbol.baseAsset}${this.homingAsset}`, response.price, response.quantity )
+                            }else{
+                                this.logger.warn(new Error(`zero quality selling ${decision.symbol.baseAsset} at ${decision.price} quality ${quantity} fail. time ${now.toString()}`))
                             }
                         }catch(e){
                             this.logger.error(e)

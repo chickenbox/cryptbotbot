@@ -57,6 +57,11 @@ namespace bot { export namespace helper {
             }
         }
 
+        warn( message: any ){
+            console.warn(message)
+            this.writeLog( message,"w")
+        }
+
         error( e: Error ){
             console.error(e)
             this.writeLog( e,"e")
