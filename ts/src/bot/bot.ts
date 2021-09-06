@@ -307,7 +307,7 @@ namespace bot {
 
                 // missing candle
                 const timeDiff = (time-data[index].time)
-                if( timeDiff>5*60*1000 ){
+                if( timeDiff>this.timeInterval*1.1 ){
                     return undefined
                 }
 
@@ -371,20 +371,9 @@ namespace bot {
                 return this.makeDecision(this.trader, symbol, now.getTime(), isMock)
             }).filter(a=>a)
 
-            this.logger.log("decision")
             const tradeHelper = new helper.TradeHelper(this.trader, this.binance)
 
             const balances = await this.trader.getBalances()
-            this.logger.log(decisions.map(d=>{
-                const watcher = this.trendWatchers[d.symbol.baseAsset]
-                return {
-                    symbol: d.symbol.baseAsset,
-                    m14: watcher && watcher.ma14[d.index],
-                    m24: watcher && watcher.ma24[d.index],
-                    balances: balances[d.symbol.baseAsset],
-                    action: d.action
-                }
-            }))
             await Promise.all(decisions.map(async decision=>{
                 switch(decision.action){
                 case "sell":
