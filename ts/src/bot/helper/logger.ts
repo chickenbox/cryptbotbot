@@ -47,23 +47,23 @@ namespace bot { export namespace helper {
 
         log( message: any ){
             if( typeof(message) == "string" ) {
-                console.log( message )
+                // console.log( message )
 
                 this.writeLog(message, "v")
             }else{
-                console.log( JSON.stringify( message, null, 2 ) )
+                // console.log( JSON.stringify( message, null, 2 ) )
 
                 this.writeLog(message, "v")
             }
         }
 
         warn( message: any ){
-            console.warn(message)
+            console.log(message)
             this.writeLog( message,"w")
         }
 
         error( e: Error ){
-            console.error(e)
+            console.log(e)
             this.writeLog( e,"e")
         }
     }

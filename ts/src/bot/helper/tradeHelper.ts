@@ -8,17 +8,36 @@ namespace bot { export namespace helper {
         return 0
     }
 
-    function getMarketLotSize( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol ){
-        const filter = symbol.filters.find(f=>f.filterType=="MARKET_LOT_SIZE") as com.danborutori.cryptoApi.FilterMarketLotSize
+    export function getLotSize( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol ){
+        const filter = symbol.filters.find(f=>f.filterType=="LOT_SIZE") as com.danborutori.cryptoApi.FilterMarketLotSize
         if( filter ){
             return {
                 minQty: parseFloat( filter.minQty ),
-                maxQty: parseFloat( filter.maxQty )
+                maxQty: parseFloat( filter.maxQty ),
+                stepSize: parseFloat( filter.stepSize )
             }
         }
         return {
             minQty: Number.NEGATIVE_INFINITY,
-            maxQty: Number.POSITIVE_INFINITY
+            maxQty: Number.POSITIVE_INFINITY,
+            stepSize: Number.MIN_VALUE
+        }
+    }
+
+
+    export function getMarketLotSize( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol ){
+        const filter = symbol.filters.find(f=>f.filterType=="MARKET_LOT_SIZE") as com.danborutori.cryptoApi.FilterMarketLotSize
+        if( filter ){
+            return {
+                minQty: parseFloat( filter.minQty ),
+                maxQty: parseFloat( filter.maxQty ),
+                stepSize: parseFloat( filter.stepSize )
+            }
+        }
+        return {
+            minQty: Number.NEGATIVE_INFINITY,
+            maxQty: Number.POSITIVE_INFINITY,
+            stepSize: Number.MIN_VALUE
         }
     }
 
