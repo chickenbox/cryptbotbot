@@ -14,6 +14,7 @@ namespace bot {
     interface Decision {
         symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol
         price: number
+        index: number
         action: Action
         trend: Trend
         score: number
@@ -162,7 +163,7 @@ namespace bot {
             for( let k in balances ){
                 delete balances[k]
             }
-            balances[this.homingAsset] = 11000
+            balances[this.homingAsset] = 10000
             const history = await this.tradeHistory.history
             for( let k in history ){
                 delete history[k]
@@ -224,7 +225,7 @@ namespace bot {
                 &&
                 trendWatcher.ratio[index] > 1.1 // filter low profit asset
                 &&
-                trendWatcher.data[index].price<trendWatcher.ma14[index]*1.0625 // filter impulse
+                trendWatcher.data[index].price<trendWatcher.ma14[index]*1.1 // filter impulse
                 &&
                 this.allow.buy
             ){
@@ -328,6 +329,7 @@ namespace bot {
                     return {
                         symbol: symbol,
                         price: trendWatcher.data[index].price,
+                        index: index,
                         action: action,
                         trend: trend,
                         score: this.scoreDecision( trendWatcher, index, trader.performanceTracker.balance(symbol.symbol, this.getRecentPrice(symbol.symbol, time)) )
@@ -369,9 +371,20 @@ namespace bot {
                 return this.makeDecision(this.trader, symbol, now.getTime(), isMock)
             }).filter(a=>a)
 
+            this.logger.log("decision")
             const tradeHelper = new helper.TradeHelper(this.trader, this.binance)
 
             const balances = await this.trader.getBalances()
+            this.logger.log(decisions.map(d=>{
+                const watcher = this.trendWatchers[d.symbol.baseAsset]
+                return {
+                    symbol: d.symbol.baseAsset,
+                    m14: watcher && watcher.ma14[d.index],
+                    m24: watcher && watcher.ma24[d.index],
+                    balances: balances[d.symbol.baseAsset],
+                    action: d.action
+                }
+            }))
             await Promise.all(decisions.map(async decision=>{
                 switch(decision.action){
                 case "sell":
@@ -468,7 +481,7 @@ namespace bot {
                 this.logger.log(symbol)
                 const rs = this.tradeHistory.history[symbol]
                 for( let r of rs ){
-                    this.logger.log( `${r.side} price: ${r.price}(${r.actualPrice}) quantity: ${r.quantity}(${r.actualQuantity}) at ${r.time.toString()}` )
+                    this.logger.log( `${r.side} price: ${r.price}(${r.actualPrice}) quantity: ${r.quantity}(${r.actualQuantity}) at ${new Date(r.time).toString()}` )
                 }
                 this.logger.log("======")
             }
