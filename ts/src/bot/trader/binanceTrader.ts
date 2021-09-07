@@ -40,7 +40,7 @@ namespace bot { export namespace trader {
 
         async buy( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol, quantity: number, quoteAssetQuantity: number, mockPrice?: number ) {
             try{
-                const response = await this.binance.newOrder( symbol.symbol, "BUY", undefined, fixPrecision( quoteAssetQuantity, symbol.quoteAssetPrecision, helper.getLotSize(symbol).stepSize ))
+                const response = await this.binance.newOrder( symbol.symbol, "BUY", undefined, fixPrecision( quoteAssetQuantity, symbol.quoteAssetPrecision, 0 ))
                 this.logger && this.logger.log(`buy response:\n${JSON.stringify(response,null,2)}`)
                 return convertResponse(response)
             }catch(e){
