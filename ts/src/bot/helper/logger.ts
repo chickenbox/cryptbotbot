@@ -25,11 +25,12 @@ namespace bot { export namespace helper {
 
         writeLog( message: any, tag: string ){
 
-            this.logs.push({
+            const entry = {
                 time: new Date().toString(),
                 tag: tag,
                 message: message
-            })
+            }
+            this.logs.push(entry)
 
             if( this.logs.length>this.logLength ){
                 this.logs = this.logs.slice(this.logs.length-this.logLength)
@@ -47,24 +48,24 @@ namespace bot { export namespace helper {
 
         log( message: any ){
             if( typeof(message) == "string" ) {
-                // console.log( message )
+                console.log( message )
 
                 this.writeLog(message, "v")
             }else{
-                // console.log( JSON.stringify( message, null, 2 ) )
+                console.log( JSON.stringify( message, null, 2 ) )
 
                 this.writeLog(message, "v")
             }
         }
 
         warn( message: any ){
-            console.log(message)
+            console.warn(message)
             this.writeLog( message,"w")
         }
 
         error( e: Error ){
-            console.log(e)
-            this.writeLog( e,"e")
+            console.error(e)
+            this.writeLog( e.stack || e.message, "e")
         }
     }
 }}

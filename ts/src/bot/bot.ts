@@ -134,6 +134,7 @@ namespace bot {
             }
         ){
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure, config.environment)
+            this.logger = new  helper.Logger(config.logLength)
             switch( config.trader ){
             case "BINANCE":
                 this.trader = new trader.BinanceTrader(this.binance, this.logger)
@@ -150,7 +151,6 @@ namespace bot {
             this.maxAbsoluteAllocation = config.maxAbsoluteAllocation
             this.holdingBalance = config.holdingBalance
             this.minimumOrderQuantity = config.minimumOrderQuantity
-            this.logger = new  helper.Logger(config.logLength)
             this.whiteList = new Set()
             this.blackList = new Set(config.blackList)
         }
@@ -453,9 +453,10 @@ namespace bot {
             }))
 
             if( !isMock ){
-                await this.logTrader(now.getTime())
                 this.trader.performanceTracker.save()
                 this.tradeHistory.save()
+            }else{
+                this.logTrader(now.getTime())
             }
 
             {
@@ -472,7 +473,7 @@ namespace bot {
             this.logger.log("=================================")
         }
 
-        async logTrader( time: number ){
+        logTrader( time: number ){
             this.logger.log("*****")
             this.logger.log( "Log" )
             this.logger.log("*****")
