@@ -237,7 +237,16 @@ namespace bot {
                             trendWatcher.ma14[index-1]<trendWatcher.ma24[index-1] &&
                             trendWatcher.ma14[index]>=trendWatcher.ma24[index]
                         ){
-                            action = "buy"
+
+                            const lastCIdx = trendWatcher.lastCrossIndex[index-1]
+                            if(lastCIdx>=1){
+                                const lastlastCIdx = trendWatcher.lastCrossIndex[lastCIdx-1]
+                                const trendSlope0 = (trendWatcher.ma14[index]-trendWatcher.ma14[lastCIdx])/(index-lastCIdx)
+                                const trendSlope1 = (trendWatcher.ma14[lastCIdx]-trendWatcher.ma14[lastlastCIdx])/(lastCIdx-lastlastCIdx)
+
+                                if(trendSlope0>trendSlope1*0.8)
+                                    action = "buy"
+                            }
                         }
                     }
                     break
