@@ -245,7 +245,9 @@ namespace bot {
             }
             
             if(action=="none" && this.allow.sell){
-                if( trendWatcher.data[index].price<trendWatcher.ma24[index]*0.95 ) // drop cutoff
+                if(index>=2 && trendWatcher.data[index].price/trendWatcher.data[index-2].price > 1.5){  // raise cutoff
+                    action = "sell"
+                }else if( trendWatcher.data[index].price<trendWatcher.ma24[index]*0.95 ) // drop cutoff
                     action = "sell"
                 else{
 
