@@ -80,6 +80,10 @@ namespace bot {
 
         async init(){
             const exchangeInfo = await this.binance.getExchangeInfo()
+            this.updateWhiteList(exchangeInfo)
+        }
+
+        private updateWhiteList(exchangeInfo: com.danborutori.cryptoApi.ExchangeInfoResponse){
             const filteredSymbols =  exchangeInfo.symbols.filter(s=>{
                 return s.quoteAsset==this.homingAsset &&
                     s.status=="TRADING" &&
@@ -363,14 +367,15 @@ namespace bot {
             this.logger.log(`delta: ${(now.getTime()-helper.snapTime(now.getTime(),this.timeInterval))/1000}s`)
             this.logger.log("=================================")
 
+            const exchangeInfo = isMock && this.exchangeInfoCache ? this.exchangeInfoCache : await this.binance.getExchangeInfo()
+            this.exchangeInfoCache = exchangeInfo
+            if( !isMock )
+                this.updateWhiteList(exchangeInfo)
+
             const whiteSymbols = new Set(Array.from(this.whiteList).map(asset=>`${asset}${this.homingAsset}`))
 
-            const [exchangeInfo, _] = await Promise.all( [
-                isMock && this.exchangeInfoCache ? this.exchangeInfoCache : this.binance.getExchangeInfo(),
-                !isMock ? this.priceTracker.update(this.interval, whiteSymbols) : undefined
-            ])
+            isMock || await this.priceTracker.update(this.interval, whiteSymbols)
 
-            this.exchangeInfoCache = exchangeInfo
             
             let symbols = exchangeInfo.symbols
             symbols = symbols.filter(s=>{
@@ -473,7 +478,7 @@ namespace bot {
             this.logger.log("=================================")
         }
 
-        logTrader( time: number ){
+        private logTrader( time: number ){
             this.logger.log("*****")
             this.logger.log( "Log" )
             this.logger.log("*****")
