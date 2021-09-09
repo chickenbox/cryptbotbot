@@ -58,14 +58,14 @@ namespace bot { export namespace helper {
             }
         }
 
-        warn( message: any ){
-            console.warn(message)
-            this.writeLog( message,"w")
+        warn( e: Error ){
+            console.warn(e)
+            this.writeLog( e.stack || e.message || JSON.stringify(e), "w")
         }
 
         error( e: Error ){
             console.error(e)
-            this.writeLog( e.stack || e.message, "e")
+            this.writeLog( e.stack || e.message || JSON.stringify(e), "e")
         }
     }
 }}
