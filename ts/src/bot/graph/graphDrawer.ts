@@ -172,6 +172,8 @@ namespace bot { export namespace graph {
                 })
             }
 
+            const investHelper = new helper.InvestmentHistoryHelper()
+
             return `
             <script>
             const graphInterval = ${graphInterval};
@@ -186,10 +188,10 @@ namespace bot { export namespace graph {
             <canvas id="graphCanvasBalance" width="${graphWidth}" height="${graphHeight}" style="width: ${graphWidth}px; height: ${graphHeight}px;"></canvas>
             <script>
                 drawGraph(graphCanvasBalance, ${JSON.stringify(this.bot.balanceTracker.balances.map(
-                    function(b){
+                    (b)=>{
                         return {
                             price: b.amount,
-                            ma1: 0,
+                            ma1: investHelper.getAccumulativeInvestment( this.bot.homingAsset, b.time ),
                             ma2: 0,
                             time: b.time
                         }
