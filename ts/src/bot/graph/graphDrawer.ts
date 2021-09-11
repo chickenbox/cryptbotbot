@@ -43,6 +43,7 @@ namespace bot { export namespace graph {
             if( d.time >= start-step && d.time <= end+step ){
                 max = Math.max(d.price, max)
                 // min = Math.min(d.price, min)
+                min = Math.min(d.ma2, min)
             }
         }
         range = max-min
@@ -189,10 +190,13 @@ namespace bot { export namespace graph {
             <script>
                 drawGraph(graphCanvasBalance, ${JSON.stringify(this.bot.balanceTracker.balances.map(
                     (b)=>{
+                        const iv = investHelper.getAccumulativeInvestment( this.bot.homingAsset, b.time )
+                        const gain = b.amount-iv
+
                         return {
                             price: b.amount,
-                            ma1: investHelper.getAccumulativeInvestment( this.bot.homingAsset, b.time ),
-                            ma2: 0,
+                            ma1: iv,
+                            ma2: gain,
                             time: b.time
                         }
                     }
