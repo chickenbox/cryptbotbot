@@ -14,7 +14,7 @@ namespace bot { export namespace shop {
             } ))
         }
 
-        async markTradeRecord( symbols: com.danborutori.cryptoApi.ExchangeInfoSymbol[], performanceTracker: helper.PerformanceTracker, tradeHistory: trader.History, now: Date ){
+        async markTradeRecord( symbols: com.danborutori.cryptoApi.ExchangeInfoSymbol[], performanceTracker: helper.PerformanceTracker, tradeHistory: trader.History ){
             await Promise.all( symbols.map( async s=>{
                 let lastOrderId = tradeHistory.getLastOrderId( s.symbol )
                 const orders = await this.binance.getAllOrders(s.symbol, lastOrderId)
@@ -25,7 +25,7 @@ namespace bot { export namespace shop {
                             case "FILLED":
                             case "PARTIALLY_FILLED":
                                 performanceTracker.sell(s.symbol, Number.parseFloat(o.price), Number.parseFloat(o.executedQty))
-                                tradeHistory.sell(s.baseAsset, s.quoteAsset, Number.parseFloat(o.price), Number.parseFloat(o.origQty), Number.parseFloat(o.stopPrice), Number.parseFloat( o.executedQty ), now, o.orderId )
+                                tradeHistory.sell(s.baseAsset, s.quoteAsset, Number.parseFloat(o.price), Number.parseFloat(o.origQty), Number.parseFloat(o.stopPrice), Number.parseFloat( o.executedQty ), new Date(o.time), o.orderId )
                                 break
                         }
                     }

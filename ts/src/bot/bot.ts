@@ -385,8 +385,7 @@ namespace bot {
                 await this.shop.markTradeRecord(
                     exchangeInfo.symbols.filter(s=>whiteSymbols.has(s.symbol)),
                     this.trader.performanceTracker,
-                    this.tradeHistory,
-                    now
+                    this.tradeHistory
                 )
             }
             
