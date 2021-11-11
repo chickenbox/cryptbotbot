@@ -212,7 +212,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         private requestTimestamps: number[] = []
         private orderTimestamps: number[] = []
 
-        async request(){
+        async request( weight: number = 1 ){
             let now: number
             while(true){
                 now = Date.now()
@@ -226,7 +226,8 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                     break
             }
 
-            this.requestTimestamps.push(now)
+            for( let i=0; i<weight; i++ )
+                this.requestTimestamps.push(now)
         }
 
         async order(){
@@ -359,7 +360,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET"): Promise<NewOrderFullResponse> {
+        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET", stopPrice?: number): Promise<NewOrderFullResponse> {
             await this.rateLimiter.order()
 
             const params = new URLSearchParams({
@@ -375,6 +376,9 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             }
             if( quoteQuantity!==undefined ){
                 params.append("quoteOrderQty", quoteQuantity.toString())
+            }
+            if( stopPrice!==undefined ){
+                params.append("stopPrice", stopPrice.toString())
             }
 
             const response = await autoRetryFetch( this.fullUrl("/order"), {
@@ -462,5 +466,25 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
          
             return response.json()
         }
+
+        async getAllOrders( symbol: string, orderId: number ): Promise<CurrentOpenOrder[]>{
+
+            await this.rateLimiter.request(10)
+
+            const params = new URLSearchParams({
+                symbol: symbol,
+                orderId: orderId.toString(),
+                timestamp: await this.getServerTime()
+            })
+
+            const response = await autoRetryFetch( this.fullUrl("/allOrders")+"?"+this.sign(params), {
+                method: "GET",
+                headers: {
+                    "X-MBX-APIKEY": this.apiKey
+                }
+            } )
+         
+            return response.json()
+        }        
     }
 }}}

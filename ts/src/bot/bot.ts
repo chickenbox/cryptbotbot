@@ -59,6 +59,7 @@ namespace bot {
         private whiteList: Set<string>
         private blackList: Set<string>
         private priceTracker: helper.PriceTracker
+        private shop: shop.Shop
         readonly balanceTracker: helper.BalanceTracker
         readonly trader: trader.Trader
         readonly tradeHistory = new trader.History()
@@ -134,7 +135,8 @@ namespace bot {
                 apiKey: string
                 apiSecure: string
                 environment: com.danborutori.cryptoApi.Environment
-                trader: "BINANCE" | "MOCK"
+                trader: "BINANCE" | "MOCK",
+                markup: number
             }
         ){
             this.binance = new com.danborutori.cryptoApi.Binance(config.apiKey, config.apiSecure, config.environment)
@@ -148,6 +150,7 @@ namespace bot {
                 break
             }
             this.priceTracker = new helper.PriceTracker(this.binance)
+            this.shop = new shop.Shop(this.binance, config.markup)
             this.balanceTracker = new helper.BalanceTracker()
             this.homingAsset = config.homingAsset
             this.interval = config.interval
@@ -376,6 +379,16 @@ namespace bot {
 
             isMock || await this.priceTracker.update(this.interval, whiteSymbols)
 
+            if( !isMock ){
+                const symbols = Array.from(whiteSymbols)
+                await this.shop.cancelAllOrder( symbols )
+                await this.shop.markTradeRecord(
+                    exchangeInfo.symbols.filter(s=>whiteSymbols.has(s.symbol)),
+                    this.trader.performanceTracker,
+                    this.tradeHistory,
+                    now
+                )
+            }
             
             let symbols = exchangeInfo.symbols
             symbols = symbols.filter(s=>{
@@ -457,15 +470,25 @@ namespace bot {
                 }
             }))
 
-            if( !isMock ){
-                this.trader.performanceTracker.save()
-                this.tradeHistory.save()
-            }else{
-                this.logTrader(now.getTime())
-            }
-
             {
                 const balances = await this.trader.getBalances()
+
+                if( !isMock ){
+                    await this.shop.placeOrders(
+                        balances,
+                        exchangeInfo.symbols.filter(s=>whiteSymbols.has(s.symbol)),
+                        this.tradeHistory,
+                        this.priceTracker
+                    )
+                }
+
+                if( !isMock ){
+                    this.trader.performanceTracker.save()
+                    this.tradeHistory.save()
+                }else{
+                    this.logTrader(now.getTime())
+                }
+
                 this.logger.log(`balance: ${JSON.stringify(balances, null, 2)}`)
 
                 const homingTotal = this.getHomingTotal(balances, now.getTime())

@@ -10,7 +10,8 @@ namespace bot { export namespace trader {
             actualPrice: number
             actualQuantity: number
             side: "buy" | "sell" | "want to buy"
-            time: number
+            time: number,
+            orderId?: number
         }[]} = {}
 
         get history(){
@@ -19,6 +20,32 @@ namespace bot { export namespace trader {
 
         constructor(){
             this.load()
+        }
+
+        getLastOrderId( symbol: string ){
+            
+            const hs = this._history[symbol]
+            if( hs ){
+                for( let i=hs.length-1; i>=0; i++ ){
+                    const h = hs[i]
+                    if( h.orderId!==undefined )
+                        return h.orderId
+                }
+            }
+
+            return 0
+        }
+
+        getLastTradeInPrice( symbol: string ): number | undefined{
+            const hs = this._history[symbol]
+            if( hs ){
+                for( let i=hs.length-1; i>=0; i++ ){
+                    const h = hs[i]
+                    if( h.side=="buy"){
+                        return h.actualPrice
+                    }
+                }
+            }
         }
 
         buy( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time: Date ){
@@ -36,7 +63,7 @@ namespace bot { export namespace trader {
                 this.history[symbol] = h.slice(h.length-recordLimit)
         }
 
-        sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time: Date ){
+        sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time: Date, orderId?: number ){
             const symbol = `${baseAsset}${quoteAsset}`
             const h = this.history[symbol] || (this.history[symbol] = []) 
             h.push({
@@ -45,7 +72,8 @@ namespace bot { export namespace trader {
                 actualPrice: actualPrice,
                 actualQuantity: actualQuantity,
                 side: "sell",
-                time: time?time.getTime():Date.now()
+                time: time?time.getTime():Date.now(),
+                orderId: orderId
             })
             if(h.length>recordLimit)
                 this.history[symbol] = h.slice(h.length-recordLimit)

@@ -29,7 +29,8 @@ fs.readFile(process.argv[2], "utf8", async function (err,data) {
             apiSecure: config.apiSecret,
             environment: config.env,
             trader: config.trader,
-            blackList: config.blackList
+            blackList: config.blackList,
+            markup: 0.5
         })
         await b.init()
         const httpHelper = new bot.helper.HttpHelper(
