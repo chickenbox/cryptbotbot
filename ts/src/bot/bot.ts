@@ -21,10 +21,7 @@ namespace bot {
     }
 
     function getMinQty( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol ): number | undefined {
-        const f = symbol.filters.find(function(f){return f.filterType=="LOT_SIZE"}) as com.danborutori.cryptoApi.FilterLotSize
-        if( f ){
-            return parseFloat( f.minQty )
-        }
+        return Math.max( helper.getLotSize(symbol).minQty, helper.getMarketLotSize(symbol).minQty )
     }
 
     function getTrend( trendWatcher: helper.TrendWatcher, index: number ){
