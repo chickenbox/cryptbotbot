@@ -12,7 +12,7 @@ namespace bot { export namespace helper {
         }[]
 
         constructor(){
-            this.histories = JSON.parse( localStorage.getItem("InvestmentHistory") )
+            this.histories = JSON.parse( localStorage.getItem("InvestmentHistory") ) || []
         }
 
         getAccumulativeInvestment( asset: string, time: number ){
