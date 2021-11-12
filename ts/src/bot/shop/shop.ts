@@ -8,9 +8,8 @@ namespace bot { export namespace shop {
         ){
         }
 
-        async cancelAllOrder( symbols: string[] ){
-            await Promise.all( symbols.map( async s=>{
-                const resp = await this.binance.cancelAllOpenOrder()
+        async cancelAllOrder(){
+            const resp = await this.binance.cancelAllOpenOrder()
             } ))
         }
 
