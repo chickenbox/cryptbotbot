@@ -57,6 +57,26 @@ namespace bot { export namespace helper {
         }
     } 
 
+    export function getExchangeMaxNumOrdersFilter( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol ){
+        const filter = symbol.filters.find(f=>f.filterType=="MAX_NUM_ORDERS") as com.danborutori.cryptoApi.FilterMaxNumOrders
+        if( filter ){
+            return filter
+        }
+        return {
+            maxNumOrders: Number.POSITIVE_INFINITY
+        }
+    }
+
+    export function getExchangeMaxNumAlgoOrdersFilter( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol ){
+        const filter = symbol.filters.find(f=>f.filterType=="MAX_NUM_ALGO_ORDERS") as com.danborutori.cryptoApi.FilterMaxNumAlgoOrders
+        if( filter ){
+            return filter
+        }
+        return {
+            maxNumAlgoOrders: Number.POSITIVE_INFINITY
+        }
+    }
+
     export class TradeHelper {
 
         constructor(

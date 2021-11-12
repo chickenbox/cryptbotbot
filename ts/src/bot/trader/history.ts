@@ -14,6 +14,8 @@ namespace bot { export namespace trader {
             orderId?: number
         }[]} = {}
 
+        private lastOrderId: {[symbol: string]: number} = {}
+
         get history(){
             return this._history
         }
@@ -23,17 +25,11 @@ namespace bot { export namespace trader {
         }
 
         getLastOrderId( symbol: string ){
-            
-            const hs = this._history[symbol]
-            if( hs ){
-                for( let i=hs.length-1; i>=0; i-- ){
-                    const h = hs[i]
-                    if( h.orderId!==undefined )
-                        return h.orderId
-                }
-            }
+            return this.lastOrderId[symbol] || 0
+        }
 
-            return 0
+        setLastOrderId( symbol: string, id: number ){
+            this.lastOrderId[symbol] = id
         }
 
         getLastTradeInPrice( symbol: string ): number | undefined{
@@ -95,14 +91,19 @@ namespace bot { export namespace trader {
         }
 
         private load(){
-            const s = localStorage.getItem(localStorageKey)
+            let s = localStorage.getItem(localStorageKey)
             if( s ){
                 this._history = JSON.parse(s)
+            }
+            s = localStorage.getItem(localStorageKey+".lastOrderId")
+            if( s ){
+                this.lastOrderId = JSON.parse(s) || {}
             }
         }
 
         save(){
             localStorage.setItem( localStorageKey, JSON.stringify(this._history,null,2) )
+            localStorage.setItem( localStorageKey+".lastOrderId", JSON.stringify(this.lastOrderId,null,2) )
         }
     }
 

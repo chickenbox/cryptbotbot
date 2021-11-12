@@ -85,6 +85,16 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         tickSize: string
     }
 
+    export interface FilterMaxNumOrders {
+        filterType: "MAX_NUM_ORDERS"
+        maxNumOrders: number
+    }
+
+    export interface FilterMaxNumAlgoOrders {
+        filterType: "MAX_NUM_ALGO_ORDERS"
+        maxNumAlgoOrders: number
+    }
+
     export interface ExchangeInfoSymbol {
         symbol: string
         status: SymbolStatus
@@ -101,7 +111,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         quoteOrderQtyMarketAllowed: boolean
         isSpotTradingAllowed: boolean
         isMarginTradingAllowed: boolean
-        filters: Filter[]
+        filters: (Filter | FilterMaxNumOrders | FilterMaxNumAlgoOrders)[]
             //These are defined in the Filters section.
             //All filters are optional
         permissions: Permission[]
@@ -118,10 +128,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             limit: number
         }[]
 
-        exchangeFilters: {
-            filterType: "EXCHANGE_MAX_NUM_ORDERS" | "EXCHANGE_MAX_NUM_ALGO_ORDERS"
-            maxNumAlgoOrders: number
-        }[]
+        exchangeFilters: (FilterMaxNumOrders | FilterMaxNumAlgoOrders) []
 
         symbols: ExchangeInfoSymbol[]
     }
@@ -457,7 +464,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async cancelAllOpenOrder(): Promise<Order[]> {
+        async cancelAllOpenOrders(): Promise<Order[]> {
             const openOrders = await this.getOpenOrders()
 
             const cancelledOrders: Order[] = []
@@ -508,15 +515,18 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async getAllOrders( symbol: string, orderId: number ): Promise<CurrentOpenOrder[]>{
+        async getAllOrders( symbol: string, startTime?: number ): Promise<CurrentOpenOrder[]>{
 
             await this.rateLimiter.request(10)
 
             const params = new URLSearchParams({
                 symbol: symbol,
-                orderId: orderId.toString(),
                 timestamp: await this.getServerTime()
             })
+
+            if( startTime!==undefined ){
+                params.set("startTime", startTime.toString() )
+            }
 
             const response = await autoRetryFetch( this.fullUrl("/allOrders")+"?"+this.sign(params), {
                 method: "GET",

@@ -147,7 +147,7 @@ namespace bot {
                 break
             }
             this.priceTracker = new helper.PriceTracker(this.binance)
-            this.shop = new shop.Shop(this.binance, config.markup)
+            this.shop = new shop.Shop(this.binance, config.markup, this.logger)
             this.balanceTracker = new helper.BalanceTracker()
             this.homingAsset = config.homingAsset
             this.interval = config.interval
@@ -377,12 +377,12 @@ namespace bot {
             isMock || await this.priceTracker.update(this.interval, whiteSymbols)
 
             if( !isMock ){
-                await this.shop.cancelAllOrder()
                 await this.shop.markTradeRecord(
                     exchangeInfo.symbols.filter(s=>whiteSymbols.has(s.symbol)),
                     this.trader.performanceTracker,
                     this.tradeHistory
                 )
+                await this.shop.cancelAllOrder()
             }
             
             let symbols = exchangeInfo.symbols
@@ -468,6 +468,7 @@ namespace bot {
 
             {
                 const balances = await this.trader.getBalances()
+
 
                 if( !isMock ){
                     await this.shop.placeOrders(
