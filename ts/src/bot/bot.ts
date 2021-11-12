@@ -402,7 +402,8 @@ namespace bot {
                 switch(decision.action){
                 case "sell":
                     const quantity = balances[decision.symbol.baseAsset] || 0
-                    if( quantity>0 )
+                    const minQty = getMinQty(decision.symbol)
+                    if( quantity>=minQty )
                         try{
                             const response = await tradeHelper.sell(decision.symbol, decision.price, quantity, isMock?decision.price:undefined)
                             if( response.quantity!=0 ){
