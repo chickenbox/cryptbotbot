@@ -21,7 +21,7 @@ namespace bot { export namespace shop {
 
         async markTradeRecord( symbols: com.danborutori.cryptoApi.ExchangeInfoSymbol[], performanceTracker: helper.PerformanceTracker, tradeHistory: trader.History ){
             let numTradeRecords = 0
-            const startTime = Date.now()-1000*60*24*2
+            const startTime = Date.now()-1000*60*60*24*2
 
             await Promise.all( symbols.map( async s=>{
                 let lastOrderId = tradeHistory.getLastOrderId( s.symbol )
