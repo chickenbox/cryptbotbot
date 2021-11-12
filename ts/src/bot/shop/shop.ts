@@ -27,7 +27,7 @@ namespace bot { export namespace shop {
                 let lastOrderId = tradeHistory.getLastOrderId( s.symbol )
                 const orders = await this.binance.getAllOrders(s.symbol, startTime)
 
-                const largestOrderId = orders.reduce((a,b)=>{return Math.max(a,b.orderId)}, -1)
+                const largestOrderId = orders.reduce((a,b)=>{return Math.max(a,b.orderId)}, 0)
 
                 for( let o of orders ){
                     if( o.type=="TAKE_PROFIT_LIMIT" && o.orderId>lastOrderId ){
