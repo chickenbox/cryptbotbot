@@ -342,8 +342,7 @@ var bot;
                 const whiteSymbols = new Set(Array.from(this.whiteList).map(asset => `${asset}${this.homingAsset}`));
                 isMock || (yield this.priceTracker.update(this.interval, whiteSymbols));
                 if (!isMock) {
-                    yield this.shop.markTradeRecord(exchangeInfo.symbols.filter(s => whiteSymbols.has(s.symbol)), this.trader.performanceTracker, this.tradeHistory);
-                    yield this.shop.cancelAllOrder();
+                    yield this.shop.checkOpenedOrders(exchangeInfo.symbols, this.trader.performanceTracker, this.tradeHistory);
                 }
                 let symbols = exchangeInfo.symbols;
                 symbols = symbols.filter(s => {
@@ -1333,45 +1332,31 @@ var bot;
                 this.markUp = markUp;
                 this.logger = logger;
             }
-            cancelAllOrder() {
-                return __awaiter(this, void 0, void 0, function* () {
-                    try {
-                        const resp = yield this.binance.cancelAllOpenOrders();
-                        this.logger.log(`Cancel ${resp.length} orders`);
-                    }
-                    catch (e) {
-                        this.logger.error(new Error("error occur while cancelAllOrder"));
-                        this.logger.error(e);
-                    }
-                });
-            }
-            markTradeRecord(symbols, performanceTracker, tradeHistory) {
+            checkOpenedOrders(symbols, performanceTracker, tradeHistory) {
                 return __awaiter(this, void 0, void 0, function* () {
                     let numTradeRecords = 0;
-                    const startTime = Date.now() - 1000 * 60 * 60 * 24 * 2;
-                    yield Promise.all(symbols.map((s) => __awaiter(this, void 0, void 0, function* () {
-                        let lastOrderId = tradeHistory.getLastOrderId(s.symbol);
-                        const orders = yield this.binance.getAllOrders(s.symbol, startTime);
-                        const largestOrderId = orders.reduce((a, b) => { return Math.max(a, b.orderId); }, 0);
-                        for (let o of orders) {
-                            if (o.type == "TAKE_PROFIT_LIMIT" && o.orderId > lastOrderId) {
-                                switch (o.status) {
-                                    case "FILLED":
-                                    case "PARTIALLY_FILLED":
-                                        performanceTracker.sell(s.symbol, Number.parseFloat(o.price), Number.parseFloat(o.executedQty));
-                                        tradeHistory.sell(s.baseAsset, s.quoteAsset, Number.parseFloat(o.price), Number.parseFloat(o.origQty), Number.parseFloat(o.stopPrice), Number.parseFloat(o.executedQty), new Date(o.updateTime), o.orderId);
-                                        numTradeRecords++;
-                                        break;
-                                }
-                            }
+                    this.logger.log("Checking Opened Orders");
+                    tradeHistory.openedOrderIds.map((o) => __awaiter(this, void 0, void 0, function* () {
+                        const order = yield this.binance.queryOrder(o.symbol, o.orderId);
+                        switch (order.status) {
+                            case "FILLED":
+                            case "PARTIALLY_FILLED":
+                                const sym = symbols.find(s => { return s.symbol == order.symbol; });
+                                performanceTracker.sell(order.symbol, parseFloat(order.price), parseFloat(order.executedQty));
+                                tradeHistory.sell(sym.baseAsset, sym.quoteAsset, parseFloat(order.price), parseFloat(order.origQty), parseFloat(order.price), parseFloat(order.executedQty), new Date(order.updateTime));
+                                numTradeRecords++;
+                                break;
                         }
-                        tradeHistory.setLastOrderId(s.symbol, largestOrderId);
-                    })));
+                    }));
+                    const cancelledOrders = yield this.binance.cancelAllOpenOrders();
                     this.logger.log(`created ${numTradeRecords} new records from latest orders.`);
+                    this.logger.log(`Cancel ${cancelledOrders.length} orders`);
+                    this.logger.log("Checking Opened Orders completed");
                 });
             }
             placeOrders(balances, symbols, tradeHistory, priceTracker) {
                 return __awaiter(this, void 0, void 0, function* () {
+                    this.logger.log("placing orders");
                     let numOrders = 0;
                     yield Promise.all(symbols.map((s) => __awaiter(this, void 0, void 0, function* () {
                         if (s.orderTypes.indexOf("TAKE_PROFIT_LIMIT") >= 0) {
@@ -1399,6 +1384,10 @@ var bot;
                                     orderQty = parseFloat(orderQty.toPrecision(s.baseAssetPrecision));
                                     try {
                                         const resp = yield this.binance.newOrder(s.symbol, "SELL", orderQty, undefined, "TAKE_PROFIT_LIMIT", price);
+                                        tradeHistory.openedOrderIds.push({
+                                            symbol: resp.symbol,
+                                            orderId: resp.orderId
+                                        });
                                         algoNum++;
                                         numOrders++;
                                     }
@@ -1505,17 +1494,11 @@ var bot;
         class History {
             constructor() {
                 this._history = {};
-                this.lastOrderId = {};
+                this.openedOrderIds = [];
                 this.load();
             }
             get history() {
                 return this._history;
-            }
-            getLastOrderId(symbol) {
-                return this.lastOrderId[symbol] || 0;
-            }
-            setLastOrderId(symbol, id) {
-                this.lastOrderId[symbol] = id;
             }
             getLastTradeInPrice(symbol) {
                 const hs = this._history[symbol];
@@ -1542,7 +1525,7 @@ var bot;
                 if (h.length > recordLimit)
                     this.history[symbol] = h.slice(h.length - recordLimit);
             }
-            sell(baseAsset, quoteAsset, closePrice, quantity, actualPrice, actualQuantity, time, orderId) {
+            sell(baseAsset, quoteAsset, closePrice, quantity, actualPrice, actualQuantity, time) {
                 const symbol = `${baseAsset}${quoteAsset}`;
                 const h = this.history[symbol] || (this.history[symbol] = []);
                 h.push({
@@ -1551,8 +1534,7 @@ var bot;
                     actualPrice: actualPrice,
                     actualQuantity: actualQuantity,
                     side: "sell",
-                    time: time ? time.getTime() : Date.now(),
-                    orderId: orderId
+                    time: time ? time.getTime() : Date.now()
                 });
                 if (h.length > recordLimit)
                     this.history[symbol] = h.slice(h.length - recordLimit);
@@ -1576,14 +1558,16 @@ var bot;
                 if (s) {
                     this._history = JSON.parse(s);
                 }
-                s = localStorage.getItem(localStorageKey + ".lastOrderId");
+                s = localStorage.getItem(localStorageKey + ".openedOrderIds");
                 if (s) {
-                    this.lastOrderId = JSON.parse(s) || {};
+                    this.openedOrderIds.length = 0;
+                    for (let id of JSON.parse(s) || [])
+                        this.openedOrderIds.push(id);
                 }
             }
             save() {
                 localStorage.setItem(localStorageKey, JSON.stringify(this._history, null, 2));
-                localStorage.setItem(localStorageKey + ".lastOrderId", JSON.stringify(this.lastOrderId, null, 2));
+                localStorage.setItem(localStorageKey + ".openedOrderIds", JSON.stringify(this.openedOrderIds, null, 2));
             }
         }
         trader.History = History;
@@ -1924,6 +1908,40 @@ var com;
                         }
                     });
                 }
+                queryOrder(symbol, orderId) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        yield this.rateLimiter.request();
+                        const params = new URLSearchParams({
+                            symbol: symbol,
+                            orderId: orderId.toString(),
+                            timestamp: yield this.getServerTime()
+                        });
+                        const response = yield autoRetryFetch(this.fullUrl("/order") + "?" + this.sign(params), {
+                            method: "GET",
+                            headers: {
+                                "X-MBX-APIKEY": this.apiKey
+                            }
+                        });
+                        return response.json();
+                    });
+                }
+                cancelOrder(symbol, orderId) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        yield this.rateLimiter.request();
+                        const params = new URLSearchParams({
+                            symbol: symbol,
+                            orderId: orderId.toString(),
+                            timestamp: yield this.getServerTime()
+                        });
+                        const response = yield autoRetryFetch(this.fullUrl("/order") + "?" + this.sign(params), {
+                            method: "DELETE",
+                            headers: {
+                                "X-MBX-APIKEY": this.apiKey
+                            }
+                        });
+                        return response.json();
+                    });
+                }
                 getOpenOrders(symbol) {
                     return __awaiter(this, void 0, void 0, function* () {
                         yield this.rateLimiter.request(symbol ? 3 : 40);
@@ -1983,13 +2001,16 @@ var com;
                         return response.json();
                     });
                 }
-                getAllOrders(symbol, startTime) {
+                getAllOrders(symbol, startTime, orderId) {
                     return __awaiter(this, void 0, void 0, function* () {
                         yield this.rateLimiter.request(10);
                         const params = new URLSearchParams({
                             symbol: symbol,
                             timestamp: yield this.getServerTime()
                         });
+                        if (orderId !== undefined) {
+                            params.set("orderId", orderId.toString());
+                        }
                         if (startTime !== undefined) {
                             params.set("startTime", startTime.toString());
                         }
