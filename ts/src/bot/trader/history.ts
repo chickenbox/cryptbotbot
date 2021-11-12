@@ -26,7 +26,7 @@ namespace bot { export namespace trader {
             
             const hs = this._history[symbol]
             if( hs ){
-                for( let i=hs.length-1; i>=0; i++ ){
+                for( let i=hs.length-1; i>=0; i-- ){
                     const h = hs[i]
                     if( h.orderId!==undefined )
                         return h.orderId
@@ -39,7 +39,7 @@ namespace bot { export namespace trader {
         getLastTradeInPrice( symbol: string ): number | undefined{
             const hs = this._history[symbol]
             if( hs ){
-                for( let i=hs.length-1; i>=0; i++ ){
+                for( let i=hs.length-1; i>=0; i-- ){
                     const h = hs[i]
                     if( h.side=="buy"){
                         return h.actualPrice

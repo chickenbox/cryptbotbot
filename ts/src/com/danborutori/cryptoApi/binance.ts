@@ -429,23 +429,55 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             }
         }
 
-        async cancelAllOpenOrder( symbol: string ): Promise<Order[]> {
-            await this.rateLimiter.request()
+        async getOpenOrders( symbol?: string ): Promise<Order[]> {
+            await this.rateLimiter.request( symbol?3:40 )
 
             const params = new URLSearchParams({
-                symbol: symbol,
                 timestamp: await this.getServerTime()
             })
+            if( symbol )
+            params.set("symbol", symbol)
 
-            const response = await autoRetryFetch( this.fullUrl("/openOrders"), {
-                method: "DELETE",
+            const response = await autoRetryFetch( this.fullUrl("/openOrders")+"?"+this.sign(params), {
+                method: "GET",
                 headers: {
                     "X-MBX-APIKEY": this.apiKey
-                },
-                body: this.sign(params)
+                }
             } )
          
             return response.json()
+        }
+
+        async cancelAllOpenOrder(): Promise<Order[]> {
+            const openOrders = await this.getOpenOrders()
+
+            const cancelledOrders: Order[] = []
+
+            await Promise.all( openOrders.map( async order=>{
+                switch (order.status) {
+                    case "NEW":
+                        await this.rateLimiter.request()
+
+                        const params = new URLSearchParams({
+                            symbol: order.symbol,
+                            orderId: order.orderId.toString(),
+                            timestamp: await this.getServerTime()
+                        })
+            
+                        const response = await autoRetryFetch( this.fullUrl("/order")+"?"+this.sign(params), {
+                            method: "DELETE",
+                            headers: {
+                                "X-MBX-APIKEY": this.apiKey
+                            }
+                        } )
+
+                        cancelledOrders.push(await response.json())
+                        break
+                }
+            }))
+
+         
+            return cancelledOrders
         }
 
         async getCurrentOpenOrders( symbol?: string ): Promise<CurrentOpenOrder[]>{

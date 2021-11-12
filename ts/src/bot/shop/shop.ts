@@ -9,8 +9,8 @@ namespace bot { export namespace shop {
         }
 
         async cancelAllOrder( symbols: string[] ){
-            await Promise.all( symbols.map( s=>{
-                return this.binance.cancelAllOpenOrder(s)
+            await Promise.all( symbols.map( async s=>{
+                const resp = await this.binance.cancelAllOpenOrder()
             } ))
         }
 
@@ -24,8 +24,10 @@ namespace bot { export namespace shop {
                         switch (o.status) {
                             case "FILLED":
                             case "PARTIALLY_FILLED":
+                                console.log("markTradeRecord")
+                                console.log(o)
                                 performanceTracker.sell(s.symbol, Number.parseFloat(o.price), Number.parseFloat(o.executedQty))
-                                tradeHistory.sell(s.baseAsset, s.quoteAsset, Number.parseFloat(o.price), Number.parseFloat(o.origQty), Number.parseFloat(o.stopPrice), Number.parseFloat( o.executedQty ), new Date(o.time), o.orderId )
+                                tradeHistory.sell(s.baseAsset, s.quoteAsset, Number.parseFloat(o.price), Number.parseFloat(o.origQty), Number.parseFloat(o.stopPrice), Number.parseFloat( o.executedQty ), new Date(o.updateTime), o.orderId )
                                 break
                         }
                     }
@@ -46,13 +48,20 @@ namespace bot { export namespace shop {
                 const latestPrice = prices && prices.length>0 ? prices[prices.length-1].price : undefined
                 const tradeInPrice = tradeHistory.getLastTradeInPrice(s.symbol) || latestPrice                
                 const freeQuantity = balances[s.baseAsset]
+
+                console.log({
+                    latestPrice: latestPrice,
+                    tradeInPrice: tradeInPrice,
+                    freeQuantity: freeQuantity
+                })
+
                 if( latestPrice!==undefined && tradeInPrice!==undefined && freeQuantity!==undefined ){
                     const lotSize = helper.getLotSize(s)
                     const marketLotSize = helper.getMarketLotSize(s)
                     const quantity = Math.floor(freeQuantity/lotSize.stepSize)*lotSize.stepSize
                     if( quantity > Math.max(lotSize.minQty, marketLotSize.minQty) ){
                         const price = Math.max(tradeInPrice, latestPrice)*(1+this.markUp)
-                        await this.binance.newOrder(s.symbol, "SELL", quantity, undefined, "TAKE_PROFIT", price )
+                        const resp = await this.binance.newOrder(s.symbol, "SELL", quantity, undefined, "TAKE_PROFIT", price )
                     }
                 }
             }))
