@@ -54,7 +54,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
     }
 
     interface Filter {
-        filterType: "LOT_SIZE" | "MIN_NOTIONAL" | "MARKET_LOT_SIZE"
+        filterType: "LOT_SIZE" | "MIN_NOTIONAL" | "MARKET_LOT_SIZE" | "PRICE_FILTER"
     }
 
     export interface FilterLotSize {
@@ -76,6 +76,13 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
         minQty: string
         maxQty: string
         stepSize: string
+    }
+
+    export interface FilterPrice {
+        filterType: "PRICE_FILTER"
+        minPrice: string
+        maxPrice: string
+        tickSize: string
     }
 
     export interface ExchangeInfoSymbol {
@@ -360,7 +367,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET", stopPrice?: number): Promise<NewOrderFullResponse> {
+        async newOrder(symbol: string, side: Side, quantity?: number, quoteQuantity?: number, type: OrderType = "MARKET", price?: number ): Promise<NewOrderFullResponse> {
             await this.rateLimiter.order()
 
             const params = new URLSearchParams({
@@ -377,8 +384,10 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             if( quoteQuantity!==undefined ){
                 params.append("quoteOrderQty", quoteQuantity.toString())
             }
-            if( stopPrice!==undefined ){
-                params.append("stopPrice", stopPrice.toString())
+            if( price!==undefined ){
+                params.append("price", price.toString())
+                params.append("stopPrice", price.toString())
+                params.append("timeInForce", "GTC")
             }
 
             const response = await autoRetryFetch( this.fullUrl("/order"), {

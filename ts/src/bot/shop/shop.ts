@@ -10,7 +10,6 @@ namespace bot { export namespace shop {
 
         async cancelAllOrder(){
             const resp = await this.binance.cancelAllOpenOrder()
-            } ))
         }
 
         async markTradeRecord( symbols: com.danborutori.cryptoApi.ExchangeInfoSymbol[], performanceTracker: helper.PerformanceTracker, tradeHistory: trader.History ){
@@ -42,25 +41,25 @@ namespace bot { export namespace shop {
             priceTracker: helper.PriceTracker
         ){
 
-            await Promise.all( symbols.map( async s=>{                
-                const prices = priceTracker.prices[s.symbol]
-                const latestPrice = prices && prices.length>0 ? prices[prices.length-1].price : undefined
-                const tradeInPrice = tradeHistory.getLastTradeInPrice(s.symbol) || latestPrice                
-                const freeQuantity = balances[s.baseAsset]
+            await Promise.all( symbols.map( async s=>{     
+                if( s.orderTypes.indexOf("TAKE_PROFIT_LIMIT")>=0 ){
+                    const prices = priceTracker.prices[s.symbol]
+                    const latestPrice = prices && prices.length>0 ? prices[prices.length-1].price : undefined
+                    const tradeInPrice = tradeHistory.getLastTradeInPrice(s.symbol) || latestPrice                
+                    const freeQuantity = balances[s.baseAsset]
 
-                console.log({
-                    latestPrice: latestPrice,
-                    tradeInPrice: tradeInPrice,
-                    freeQuantity: freeQuantity
-                })
-
-                if( latestPrice!==undefined && tradeInPrice!==undefined && freeQuantity!==undefined ){
-                    const lotSize = helper.getLotSize(s)
-                    const marketLotSize = helper.getMarketLotSize(s)
-                    const quantity = Math.floor(freeQuantity/lotSize.stepSize)*lotSize.stepSize
-                    if( quantity > Math.max(lotSize.minQty, marketLotSize.minQty) ){
-                        const price = Math.max(tradeInPrice, latestPrice)*(1+this.markUp)
-                        const resp = await this.binance.newOrder(s.symbol, "SELL", quantity, undefined, "TAKE_PROFIT", price )
+                    if( latestPrice!==undefined && tradeInPrice!==undefined && freeQuantity!==undefined ){
+                        const lotSize = helper.getLotSize(s)
+                        const marketLotSize = helper.getMarketLotSize(s)
+                        const quantity = Math.floor(freeQuantity/lotSize.stepSize)*lotSize.stepSize
+                        if( quantity > Math.max(lotSize.minQty, marketLotSize.minQty) ){
+                            const priceFilter = helper.getPriceFilter(s)
+                            let price = Math.max(tradeInPrice, latestPrice)*(1+this.markUp)
+                            price = Math.max(priceFilter.minPrice, Math.min(priceFilter.maxPrice, price))
+                            price = Math.floor(price/priceFilter.tickSize)*priceFilter.tickSize
+                            price = Number.parseFloat(price.toPrecision(s.baseAssetPrecision))
+                            const resp = await this.binance.newOrder(s.symbol, "SELL", quantity, undefined, "TAKE_PROFIT_LIMIT", price )
+                        }
                     }
                 }
             }))

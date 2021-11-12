@@ -41,6 +41,22 @@ namespace bot { export namespace helper {
         }
     }
 
+    export function getPriceFilter( symbol: com.danborutori.cryptoApi.ExchangeInfoSymbol ){
+        const filter = symbol.filters.find(f=>f.filterType=="PRICE_FILTER") as com.danborutori.cryptoApi.FilterPrice
+        if( filter ){
+            return {
+                minPrice: parseFloat( filter.minPrice ),
+                maxPrice: parseFloat( filter.maxPrice ),
+                tickSize: parseFloat( filter.tickSize )
+            }
+        }
+        return {
+            minPrice: Number.NEGATIVE_INFINITY,
+            maxPrice: Number.POSITIVE_INFINITY,
+            tickSize: Number.MIN_VALUE
+        }
+    } 
+
     export class TradeHelper {
 
         constructor(
