@@ -10,11 +10,10 @@ namespace bot { export namespace trader {
             actualPrice: number
             actualQuantity: number
             side: "buy" | "sell" | "want to buy"
-            time: number,
-            orderId?: number
+            time: number
         }[]} = {}
 
-        private lastOrderId: {[symbol: string]: number} = {}
+        readonly openedOrderIds: {symbol: string, orderId: number}[] = []
 
         get history(){
             return this._history
@@ -22,14 +21,6 @@ namespace bot { export namespace trader {
 
         constructor(){
             this.load()
-        }
-
-        getLastOrderId( symbol: string ){
-            return this.lastOrderId[symbol] || 0
-        }
-
-        setLastOrderId( symbol: string, id: number ){
-            this.lastOrderId[symbol] = id
         }
 
         getLastTradeInPrice( symbol: string ): number | undefined{
@@ -59,7 +50,7 @@ namespace bot { export namespace trader {
                 this.history[symbol] = h.slice(h.length-recordLimit)
         }
 
-        sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time: Date, orderId?: number ){
+        sell( baseAsset: string, quoteAsset: string, closePrice: number, quantity: number, actualPrice: number, actualQuantity: number, time: Date ){
             const symbol = `${baseAsset}${quoteAsset}`
             const h = this.history[symbol] || (this.history[symbol] = []) 
             h.push({
@@ -68,8 +59,7 @@ namespace bot { export namespace trader {
                 actualPrice: actualPrice,
                 actualQuantity: actualQuantity,
                 side: "sell",
-                time: time?time.getTime():Date.now(),
-                orderId: orderId
+                time: time?time.getTime():Date.now()
             })
             if(h.length>recordLimit)
                 this.history[symbol] = h.slice(h.length-recordLimit)
@@ -95,15 +85,17 @@ namespace bot { export namespace trader {
             if( s ){
                 this._history = JSON.parse(s)
             }
-            s = localStorage.getItem(localStorageKey+".lastOrderId")
+            s = localStorage.getItem(localStorageKey+".openedOrderIds")
             if( s ){
-                this.lastOrderId = JSON.parse(s) || {}
+                this.openedOrderIds.length = 0
+                for( let id of JSON.parse(s) as [] || [])
+                    this.openedOrderIds.push(id)
             }
         }
 
         save(){
             localStorage.setItem( localStorageKey, JSON.stringify(this._history,null,2) )
-            localStorage.setItem( localStorageKey+".lastOrderId", JSON.stringify(this.lastOrderId,null,2) )
+            localStorage.setItem( localStorageKey+".openedOrderIds", JSON.stringify(this.openedOrderIds,null,2) )
         }
     }
 

@@ -445,6 +445,44 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             }
         }
 
+        async queryOrder( symbol: string, orderId: number ): Promise<CurrentOpenOrder>{
+            await this.rateLimiter.request()
+
+            const params = new URLSearchParams({
+                symbol: symbol,
+                orderId: orderId.toString(),
+                timestamp: await this.getServerTime()
+            })
+
+            const response = await autoRetryFetch( this.fullUrl("/order")+"?"+this.sign(params), {
+                method: "GET",
+                headers: {
+                    "X-MBX-APIKEY": this.apiKey
+                }
+            } )
+
+            return response.json()
+        }
+
+        async cancelOrder( symbol: string, orderId: number ): Promise<Order>{
+            await this.rateLimiter.request()
+
+            const params = new URLSearchParams({
+                symbol: symbol,
+                orderId: orderId.toString(),
+                timestamp: await this.getServerTime()
+            })
+
+            const response = await autoRetryFetch( this.fullUrl("/order")+"?"+this.sign(params), {
+                method: "DELETE",
+                headers: {
+                    "X-MBX-APIKEY": this.apiKey
+                }
+            } )
+
+            return response.json()
+        }
+
         async getOpenOrders( symbol?: string ): Promise<Order[]> {
             await this.rateLimiter.request( symbol?3:40 )
 
@@ -491,7 +529,6 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                         break
                 }
             }))
-
          
             return cancelledOrders
         }
@@ -515,7 +552,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             return response.json()
         }
 
-        async getAllOrders( symbol: string, startTime?: number ): Promise<CurrentOpenOrder[]>{
+        async getAllOrders( symbol: string, startTime?: number, orderId?: number ): Promise<CurrentOpenOrder[]>{
 
             await this.rateLimiter.request(10)
 
@@ -523,6 +560,10 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
                 symbol: symbol,
                 timestamp: await this.getServerTime()
             })
+
+            if( orderId!==undefined ){
+                params.set("orderId", orderId.toString() )
+            }
 
             if( startTime!==undefined ){
                 params.set("startTime", startTime.toString() )

@@ -377,12 +377,11 @@ namespace bot {
             isMock || await this.priceTracker.update(this.interval, whiteSymbols)
 
             if( !isMock ){
-                await this.shop.markTradeRecord(
-                    exchangeInfo.symbols.filter(s=>whiteSymbols.has(s.symbol)),
+                await this.shop.checkOpenedOrders(
+                    exchangeInfo.symbols,
                     this.trader.performanceTracker,
                     this.tradeHistory
                 )
-                await this.shop.cancelAllOrder()
             }
             
             let symbols = exchangeInfo.symbols
