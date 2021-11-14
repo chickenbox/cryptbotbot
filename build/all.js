@@ -62,7 +62,7 @@ fs.readFile(process.argv[2], "utf8", function (err, data) {
         }
     });
 });
-const version = "1.0.1";
+const version = "1.0.2";
 var bot;
 (function (bot) {
     function sleep(second) {
@@ -180,6 +180,7 @@ var bot;
                     delete history[k];
                 }
                 this.balanceTracker.balances.length = 0;
+                this.shop = undefined;
                 let end = 0;
                 for (let t in this.priceTracker.prices) {
                     const p = this.priceTracker.prices[t];
@@ -244,7 +245,7 @@ var bot;
                                     const lastlastCIdx = trendWatcher.lastCrossIndex[lastCIdx - 1];
                                     const trendSlope0 = (trendWatcher.ma14[index] - trendWatcher.ma14[lastCIdx]) / (index - lastCIdx);
                                     const trendSlope1 = (trendWatcher.ma14[lastCIdx] - trendWatcher.ma14[lastlastCIdx]) / (lastCIdx - lastlastCIdx);
-                                    if (trendSlope0 > trendSlope1 * 0.8)
+                                    if (trendSlope0 > trendSlope1 * 1.25)
                                         action = "buy";
                                 }
                             }
@@ -341,7 +342,7 @@ var bot;
                     this.updateWhiteList(exchangeInfo);
                 const whiteSymbols = new Set(Array.from(this.whiteList).map(asset => `${asset}${this.homingAsset}`));
                 isMock || (yield this.priceTracker.update(this.interval, whiteSymbols));
-                if (!isMock) {
+                if (!isMock && this.shop) {
                     yield this.shop.checkOpenedOrders(exchangeInfo.symbols, this.trader.performanceTracker, this.tradeHistory);
                 }
                 let symbols = exchangeInfo.symbols;
@@ -419,7 +420,7 @@ var bot;
                 })));
                 {
                     const balances = yield this.trader.getBalances();
-                    if (!isMock) {
+                    if (!isMock && this.shop) {
                         yield this.shop.placeOrders(balances, exchangeInfo.symbols.filter(s => whiteSymbols.has(s.symbol)), this.tradeHistory, this.priceTracker);
                     }
                     if (!isMock) {
