@@ -249,7 +249,7 @@ namespace bot {
                                 const trendSlope0 = (trendWatcher.ma14[index]-trendWatcher.ma14[lastCIdx])/(index-lastCIdx)
                                 const trendSlope1 = (trendWatcher.ma14[lastCIdx]-trendWatcher.ma14[lastlastCIdx])/(lastCIdx-lastlastCIdx)
 
-                                if(trendSlope0>trendSlope1*0.8)
+                                if(trendSlope0>trendSlope1*1.25)
                                     action = "buy"
                             }
                         }
