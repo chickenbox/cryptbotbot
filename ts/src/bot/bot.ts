@@ -56,7 +56,7 @@ namespace bot {
         private whiteList: Set<string>
         private blackList: Set<string>
         private priceTracker: helper.PriceTracker
-        private shop: shop.Shop
+        private shop?: shop.Shop
         readonly balanceTracker: helper.BalanceTracker
         readonly trader: trader.Trader
         readonly tradeHistory = new trader.History()
@@ -173,6 +173,7 @@ namespace bot {
                 delete history[k]
             }
             this.balanceTracker.balances.length = 0
+            this.shop = undefined
 
             let end = 0
             for( let t in this.priceTracker.prices ){
@@ -376,7 +377,7 @@ namespace bot {
 
             isMock || await this.priceTracker.update(this.interval, whiteSymbols)
 
-            if( !isMock ){
+            if( !isMock && this.shop ){
                 await this.shop.checkOpenedOrders(
                     exchangeInfo.symbols,
                     this.trader.performanceTracker,
@@ -469,7 +470,7 @@ namespace bot {
                 const balances = await this.trader.getBalances()
 
 
-                if( !isMock ){
+                if( !isMock && this.shop ){
                     await this.shop.placeOrders(
                         balances,
                         exchangeInfo.symbols.filter(s=>whiteSymbols.has(s.symbol)),
