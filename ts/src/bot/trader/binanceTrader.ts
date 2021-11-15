@@ -45,7 +45,10 @@ namespace bot { export namespace trader {
                 return convertResponse(response)
             }catch(e){
                 console.error(e)
-                this.logger && this.logger.error(e)
+                if( this.logger ){
+                    this.logger.error(new Error(`error buy ${symbol.symbol} ${quantity}`))  
+                    this.logger.error(e)
+                } 
             }
             return {
                 price: 0,
@@ -60,7 +63,10 @@ namespace bot { export namespace trader {
                 return convertResponse(response)
             }catch(e){
                 console.error(e)
-                this.logger && this.logger.error(e)
+                if( this.logger ){
+                    this.logger.error(new Error(`error sell ${symbol.symbol} ${quantity}`))  
+                    this.logger.error(e)  
+                } 
             }
             return {
                 price: 0,

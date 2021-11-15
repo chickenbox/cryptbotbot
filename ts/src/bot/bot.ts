@@ -413,6 +413,7 @@ namespace bot {
                                 this.logger.warn(new Error(`zero quality selling ${decision.symbol.baseAsset} at ${decision.price} quality ${quantity} fail. time ${now.toString()}`))
                             }
                         }catch(e){
+                            this.logger.error(new Error(`sell error ${decision.symbol.baseAsset} price ${decision.price} quantity ${quantity}`))
                             this.logger.error(e)
                         }
                     break
@@ -459,6 +460,7 @@ namespace bot {
                             this.trader.performanceTracker.buy( decision.symbol.symbol, response.price, response.quantity )
                         }
                     }catch(e){
+                        this.logger.error(new Error(`buy error ${decision.symbol.baseAsset} price ${decision.price} quantity ${quantity}`))
                         this.logger.error(e)
                     }
                 else{
