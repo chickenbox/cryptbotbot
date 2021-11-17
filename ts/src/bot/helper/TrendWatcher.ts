@@ -62,6 +62,7 @@ namespace bot { export namespace helper {
         data: DataEntry[]
         ma14: number[]
         ma24: number[]
+        ma84: number[]
         lastCrossIndex: number[]
         ratio: number[]
 
@@ -82,6 +83,7 @@ namespace bot { export namespace helper {
             this.data = data
             this.ma14 = ema( this.data.map(a=>a.price), smoothItr14 )
             this.ma24 = ma( this.data.map(a=>a.price), smoothItr14*2 )
+            this.ma84 = ma( this.data.map(a=>a.price), smoothItr14*6 )
             let lastCrossIndex = 0
             this.lastCrossIndex = data.map((_, idx)=>{
 

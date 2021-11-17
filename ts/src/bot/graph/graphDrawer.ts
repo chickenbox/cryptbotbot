@@ -10,6 +10,7 @@ namespace bot { export namespace graph {
             price: number,
             ma1: number,
             ma2: number,
+            ma3: number,
             time: number
         }[],
         tradeRecords: {
@@ -109,6 +110,26 @@ namespace bot { export namespace graph {
         ctx.moveTo( 0, h+min*h/range )
         ctx.lineTo( w, h+min*h/range )
         ctx.stroke()
+
+        curveD = data.map(d=>{
+            return {
+                price: d.ma3,
+                time: d.time
+            }
+        })
+
+        ctx.strokeStyle = "purple"
+        ctx.lineWidth = 1
+        ctx.setLineDash([2,2])
+        ctx.beginPath()
+        ctx.moveTo( (curveD[0].time-start)*w/timeRange, h-(curveD[0].price-min)*h/range )
+        for( let d of curveD.slice(1) ){
+            ctx.lineTo( (d.time-start)*w/timeRange, h-(d.price-min)*h/range )
+        }
+        ctx.moveTo( 0, h+min*h/range )
+        ctx.lineTo( w, h+min*h/range )
+        ctx.stroke()
+        ctx.setLineDash([])
     }
 
     export class Drawer {
@@ -123,6 +144,7 @@ namespace bot { export namespace graph {
                     price: number
                     ma1: number
                     ma2: number
+                    ma3: number
                     time: number
                 }[]
                 tradeRecords: {
@@ -146,6 +168,7 @@ namespace bot { export namespace graph {
                             price: d.price,
                             ma1: trendWatcher.ma14[i],
                             ma2: trendWatcher.ma24[i],
+                            ma3: trendWatcher.ma84[i],
                             time: d.time
                         }
                     }).filter(a=>{

@@ -232,6 +232,8 @@ namespace bot {
                 &&
                 trendWatcher.data[index].price<trendWatcher.ma14[index]*1.1 // filter impulse
                 &&
+                trendWatcher.data[index].price<=trendWatcher.ma84[index]  // filter long term avg
+                &&
                 this.allow.buy
             ){
                 switch(trend){
