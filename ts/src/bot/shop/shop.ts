@@ -33,6 +33,7 @@ namespace bot { export namespace shop {
             })
 
             const cancelledOrders = await this.binance.cancelAllOpenOrders()
+            tradeHistory.openedOrderIds.length = 0
 
             this.logger.log( `created ${numTradeRecords} new records from latest orders.` )            
             this.logger.log(`Cancel ${cancelledOrders.length} orders`)
