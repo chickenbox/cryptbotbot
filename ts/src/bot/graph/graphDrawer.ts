@@ -18,7 +18,7 @@ namespace bot { export namespace graph {
             timeEnd: number
             high: number
             low: number
-            trend: "up" | "down"
+            trend: "up" | "side" | "down"
         }[],
         tradeRecords: {
             color: string,
@@ -69,6 +69,9 @@ namespace bot { export namespace graph {
             switch( candle.trend ){
             case "up":
                 ctx.strokeStyle = "#BEFFCE"
+                break
+            case "side":
+                ctx.strokeStyle = "white"
                 break
             case "down":
                 ctx.strokeStyle = "#FFADAD"

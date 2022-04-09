@@ -13,7 +13,7 @@ namespace bot { export namespace helper {
         timeEnd: number
         high: number
         low: number
-        trend: "up" | "down"
+        trend: "up" | "side" | "down"
     }
 
     function ma( data: number[], iteration: number ){
@@ -122,6 +122,7 @@ namespace bot { export namespace helper {
                 return high/low
             })
 
+            let prevCandle: Candle | undefined
             for( let i=0; i<data.length; i+=candleSample){                        
                 const startIdx = i
                 const endIdx = Math.min(i+candleSample,data.length)
@@ -132,13 +133,21 @@ namespace bot { export namespace helper {
                     high = Math.max( high, data[j].high)
                     low = Math.min( low, data[j].low)
                 }
-                this.candles.push({
+                const candle: Candle = {
                     timeStart: data[startIdx].time,
                     timeEnd: data[lastIdx].time,
                     high: high,
                     low: low,
-                    trend: data[startIdx].price<data[lastIdx].price?"up":"down"
-                })
+                    trend: "side"
+                }
+                if( prevCandle ){
+                    if( candle.low>prevCandle.low && candle.high>prevCandle.high )
+                        candle.trend = "up"
+                    else if( candle.low<prevCandle.low && candle.high<prevCandle.high )
+                        candle.trend = "down"
+                }
+                this.candles.push(candle)
+                prevCandle = candle
             }
         }
     }
