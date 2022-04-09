@@ -75,7 +75,7 @@ namespace bot { export namespace graph {
                     low = Math.min( low, data[i+j].low)
                 }
                 candles.push({
-                    time: (data[i].time+data[i+candleSample-1].time)/2,
+                    time: (data[i].time+data[i+candleSample].time)/2,
                     width: (data[i+candleSample].time-data[i].time)*w/timeRange,
                     high: high,
                     low: low,
