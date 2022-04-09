@@ -1,6 +1,8 @@
 namespace bot { export namespace helper {
     interface DataEntry {
         readonly price: number
+        readonly high: number
+        readonly low: number
         readonly time: number
     }
 

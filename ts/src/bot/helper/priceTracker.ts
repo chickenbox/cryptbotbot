@@ -5,7 +5,13 @@ namespace bot { export namespace helper {
 
     export class PriceTracker {
 
-        readonly prices: {[symbol: string]: {time: number, price: number}[]} = function(){
+        readonly prices: {[symbol: string]: {
+                                                time: number,
+                                                price: number
+                                                high: number,
+                                                low: number
+                                            }[]
+        } = function(){
             const s = localStorage.getItem(pricesLocalStorageKey)
             if( s ){
                 return JSON.parse(s)
@@ -40,15 +46,19 @@ namespace bot { export namespace helper {
                         for( let d of data ){
                             records.push( {
                                 price: d.close,
+                                high: d.high,
+                                low: d.low,
                                 time: d.closeTime.getTime()
                             } )
                         }
                     }
 
-                    records.push({
-                        time: time,
-                        price: parseFloat(price.price)
-                    })
+                    // records.push({
+                    //     time: time,
+                    //     high: price.,
+                    //     low: ,
+                    //     price: parseFloat(price.price)
+                    // })
 
                     if(records.length>recordLimit){
                         records.splice(0, records.length-recordLimit)
@@ -72,7 +82,7 @@ namespace bot { export namespace helper {
 
                 const recordLen = (endTime-startTime)/interval+1
 
-                const result: {time: number, price: number}[] = new Array(recordLen)
+                const result: {time: number, price: number, high: number, low: number}[] = new Array(recordLen)
                 for( let i=0; i<result.length; i++ ){
 
                     const rt = startTime+i*interval
@@ -85,9 +95,13 @@ namespace bot { export namespace helper {
                     const td = priceB.time-priceA.time
                     const mix = td!=0 ? (rt-priceA.time)/td : 0
                     const price = priceA.price*(1-mix)+priceB.price*mix
+                    const high = priceA.high*(1-mix)+priceB.high*mix
+                    const low = priceA.low*(1-mix)+priceB.low*mix
 
                     result[i] = {
                         price: price,
+                        high: high,
+                        low: low,
                         time: rt
                     }
                 }
