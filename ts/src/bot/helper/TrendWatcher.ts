@@ -1,9 +1,19 @@
 namespace bot { export namespace helper {
+    const candleSample = 4
+
     interface DataEntry {
         readonly price: number
         readonly high: number
         readonly low: number
         readonly time: number
+    }
+
+    export interface Candle {
+        timeStart: number
+        timeEnd: number
+        high: number
+        low: number
+        trend: "up" | "down"
     }
 
     function ma( data: number[], iteration: number ){
@@ -67,6 +77,7 @@ namespace bot { export namespace helper {
         ma84: number[]
         lastCrossIndex: number[]
         ratio: number[]
+        candles: Candle[] = []
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -110,6 +121,25 @@ namespace bot { export namespace helper {
 
                 return high/low
             })
+
+            for( let i=0; i<data.length; i+=candleSample){                        
+                const startIdx = i
+                const endIdx = Math.min(i+candleSample,data.length)
+                const lastIdx = Math.min(endIdx,data.length-1)
+                let high = data[startIdx].high
+                let low = data[startIdx].low
+                for( let j=startIdx+1; j<endIdx; j++ ){
+                    high = Math.max( high, data[j].high)
+                    low = Math.min( low, data[j].low)
+                }
+                this.candles.push({
+                    timeStart: data[startIdx].time,
+                    timeEnd: data[lastIdx].time,
+                    high: high,
+                    low: low,
+                    trend: data[startIdx].price<data[lastIdx].price?"up":"down"
+                })
+            }
         }
     }
 

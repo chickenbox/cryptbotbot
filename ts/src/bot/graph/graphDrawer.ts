@@ -8,12 +8,17 @@ namespace bot { export namespace graph {
         canvas: HTMLCanvasElement,
         data: {
             price: number,
-            high: number,
-            low: number,
             ma1: number,
             ma2: number,
             ma3: number,
             time: number
+        }[],
+        candles: {
+            timeStart: number
+            timeEnd: number
+            high: number
+            low: number
+            trend: "up" | "down"
         }[],
         tradeRecords: {
             color: string,
@@ -58,39 +63,22 @@ namespace bot { export namespace graph {
         }
 
         //draw candle begin
-        const candleSample = 4
-        const candles: {
-            time: number
-            width: number
-            high: number
-            low: number
-            color: string
-        }[] = []
-        for( let i=0; i+candleSample<data.length; i+=candleSample){                        
-            if( data[i].high!==undefined && data[i].low!==undefined ){                
-                let high = data[i].high
-                let low = data[i].low
-                for( let j=1; j<candleSample; j++ ){
-                    high = Math.max( high, data[i+j].high)
-                    low = Math.min( low, data[i+j].low)
-                }
-                candles.push({
-                    time: (data[i].time+data[i+candleSample].time)/2,
-                    width: (data[i+candleSample].time-data[i].time)*w/timeRange,
-                    high: high,
-                    low: low,
-                    color: data[i].price<data[i+candleSample].price?"#BEFFCE":"#FFADAD"
-                })
-            }
-        }
         ctx.lineWidth = w/timeRange
         ctx.lineCap = "square"
         for( let candle of candles ){
-            ctx.strokeStyle = candle.color
-            ctx.lineWidth = candle.width
+            switch( candle.trend ){
+            case "up":
+                ctx.strokeStyle = "#BEFFCE"
+                break
+            case "down":
+                ctx.strokeStyle = "#FFADAD"
+                break
+            }
+            ctx.lineWidth = (candle.timeEnd-candle.timeStart)*w/timeRange
             ctx.beginPath()
-            ctx.moveTo( (candle.time-start)*w/timeRange, h-(candle.high-min)*h/range )
-            ctx.lineTo( (candle.time-start)*w/timeRange, h-(candle.low-min)*h/range )
+            const t = (candle.timeEnd+candle.timeStart)/2
+            ctx.moveTo( (t-start)*w/timeRange, h-(candle.high-min)*h/range )
+            ctx.lineTo( (t-start)*w/timeRange, h-(candle.low-min)*h/range )
             ctx.stroke()
         }
         //draw candle end
@@ -182,18 +170,17 @@ namespace bot { export namespace graph {
                 asset: string
                 data: {
                     price: number
-                    high: number,
-                    low: number,
                     ma1: number
                     ma2: number
                     ma3: number
                     time: number
                 }[]
+                candles: helper.Candle[]
                 tradeRecords: {
                     color: string
-                    price: number,
+                    price: number
                     time: number
-                }[],
+                }[]
                 balance: number
             }[] = []
 
@@ -208,8 +195,6 @@ namespace bot { export namespace graph {
                     data: trendWatcher.data.map((d,i)=>{
                         return {
                             price: d.price,
-                            high: d.high,
-                            low: d.low,
                             ma1: trendWatcher.ma14[i],
                             ma2: trendWatcher.ma24[i],
                             ma3: trendWatcher.ma84[i],
@@ -218,6 +203,7 @@ namespace bot { export namespace graph {
                     }).filter(a=>{
                         return a.time>Date.now()-graphInterval-this.bot.timeInterval
                     }),
+                    candles: trendWatcher.candles,
                     tradeRecords: history ? history.map(h=>{
                         let color = "purple"
                         switch( h.side ){
@@ -269,7 +255,7 @@ namespace bot { export namespace graph {
                     }
                 ).filter(a=>{
                     return a.time>Date.now()-graphInterval-this.bot.timeInterval
-                }))}, [], ${this.bot.timeInterval});
+                }))}, [], [], ${this.bot.timeInterval});
             </script>
             <br/><br/>
             </td>
@@ -290,7 +276,7 @@ namespace bot { export namespace graph {
                     <td>
                     <canvas id="graphCanvas${r.asset}" width="${graphWidth}" height="${graphHeight}" style="width: ${graphWidth}px; height: ${graphHeight}px;"></canvas>
                     <script>
-                        drawGraph(graphCanvas${r.asset}, ${JSON.stringify(r.data)}, ${JSON.stringify(r.tradeRecords)}, ${this.bot.timeInterval});
+                        drawGraph(graphCanvas${r.asset}, ${JSON.stringify(r.data)}, ${JSON.stringify(r.candles)}, ${JSON.stringify(r.tradeRecords)}, ${this.bot.timeInterval});
                     </script>
                     <br/><br/>
                     </td>
