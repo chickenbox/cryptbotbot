@@ -510,6 +510,7 @@ namespace com { export namespace danborutori { export namespace cryptoApi {
             await Promise.all( openOrders.map( async order=>{
                 switch (order.status) {
                     case "NEW":
+                    case "PARTIALLY_FILLED":
                         await this.rateLimiter.request()
 
                         const params = new URLSearchParams({
