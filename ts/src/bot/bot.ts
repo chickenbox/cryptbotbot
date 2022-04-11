@@ -223,7 +223,7 @@ namespace bot {
 
             let action: Action = "none"
 
-            let trend = getTrend(trendWatcher,index)
+            const trend = getTrend(trendWatcher,index)
 
             if(
                 index>=100 // long enough history
@@ -261,7 +261,11 @@ namespace bot {
             }
             
             if(action=="none" && this.allow.sell){
-                if((trendWatcher.ma14[index]-trendWatcher.ma24[index])*4 <
+                const tradeInPrice = this.tradeHistory.getLastTradeInPrice(`${baseAsset}${this.homingAsset}`)
+
+                if( trendWatcher.data[index].price>tradeInPrice*2){ // don't be too greedy
+                    action = "sell"
+                }else if((trendWatcher.ma14[index]-trendWatcher.ma24[index])*4 <
                     trendWatcher.ma24[index]-trendWatcher.ma84[index] &&
                     trendWatcher.data[index].price > trendWatcher.ma24[index]
                 ){
