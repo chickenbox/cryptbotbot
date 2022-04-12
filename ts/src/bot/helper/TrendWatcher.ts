@@ -1,5 +1,5 @@
 namespace bot { export namespace helper {
-    const candleSample = 4
+    const candleSample = 14
 
     interface DataEntry {
         readonly price: number
@@ -13,6 +13,8 @@ namespace bot { export namespace helper {
         timeEnd: number
         high: number
         low: number
+        open: number
+        close: number
         trend: "up" | "side" | "down"
     }
 
@@ -78,6 +80,7 @@ namespace bot { export namespace helper {
         lastCrossIndex: number[]
         ratio: number[]
         candles: Candle[] = []
+        dataCandles: { candle: Candle }[] = []
 
         get high(){
             return this.data.reduce((a,b)=>Math.max(a,b.price), Number.MIN_VALUE)
@@ -122,6 +125,7 @@ namespace bot { export namespace helper {
                 return high/low
             })
 
+            this.dataCandles.length = data.length
             let prevCandle: Candle | undefined
             for( let i=0; i<data.length; i+=candleSample){                        
                 const startIdx = i
@@ -138,6 +142,8 @@ namespace bot { export namespace helper {
                     timeEnd: data[lastIdx].time,
                     high: high,
                     low: low,
+                    open: data[startIdx].price,
+                    close: data[lastIdx].price,
                     trend: "side"
                 }
                 if( prevCandle ){
@@ -147,6 +153,11 @@ namespace bot { export namespace helper {
                         candle.trend = "down"
                 }
                 this.candles.push(candle)
+                for( let j=startIdx; j<endIdx; j++ ){
+                    this.dataCandles[j] = {
+                        candle: prevCandle || candle
+                    }
+                }
                 prevCandle = candle
             }
         }

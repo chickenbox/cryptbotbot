@@ -230,57 +230,26 @@ namespace bot {
                 &&
                 trendWatcher.ratio[index] > 1.1 // filter low profit asset
                 &&
-                trendWatcher.data[index].price<trendWatcher.ma14[index]*1.1 // filter impulse
-                &&
-                trendWatcher.data[index].price<=trendWatcher.ma84[index]  // filter long term avg
-                &&
                 this.allow.buy
             ){
-                switch(trend){
-                case "up":
-                    {
-                        if(
-                            index>0 &&
-                            trendWatcher.ma14[index-1]<trendWatcher.ma24[index-1] &&
-                            trendWatcher.ma14[index]>=trendWatcher.ma24[index]
-                        ){
-
-                            const lastCIdx = trendWatcher.lastCrossIndex[index-1]
-                            if(lastCIdx>=1){
-                                const lastlastCIdx = trendWatcher.lastCrossIndex[lastCIdx-1]
-                                const trendSlope0 = (trendWatcher.ma14[index]-trendWatcher.ma14[lastCIdx])/(index-lastCIdx)
-                                const trendSlope1 = (trendWatcher.ma14[lastCIdx]-trendWatcher.ma14[lastlastCIdx])/(lastCIdx-lastlastCIdx)
-
-                                if(trendSlope0>trendSlope1*1.25)
-                                    action = "buy"
-                            }
-                        }
-                    }
-                    break
+                const candle = trendWatcher.dataCandles[index].candle
+                const buyPrice = candle.low+(candle.high-candle.low)*0.1
+                if( candle.trend=="side" &&
+                trendWatcher.data[index].price<buyPrice &&
+                trendWatcher.data[index].price<trendWatcher.ma84[index]*0.5 &&
+                trendWatcher.data[index].price>candle.close*0.9 // prevent buying rapidly dropping asset
+                ){
+                    action = "buy"
                 }
             }
             
             if(action=="none" && this.allow.sell){
                 const tradeInPrice = this.tradeHistory.getLastTradeInPrice(`${baseAsset}${this.homingAsset}`)
 
-                if( trendWatcher.data[index].price>tradeInPrice*2){ // don't be too greedy
+                if( trendWatcher.data[index].price>tradeInPrice*1.3){ // don't be too greedy
                     action = "sell"
-                }else if((trendWatcher.ma14[index]-trendWatcher.ma24[index])*4 <
-                    trendWatcher.ma24[index]-trendWatcher.ma84[index] &&
-                    trendWatcher.data[index].price > trendWatcher.ma24[index]
-                ){
+                }else if( trendWatcher.data[index].price<tradeInPrice*0.9){ // drop cutoff
                     action = "sell"
-                }else if(index>=2 && trendWatcher.data[index].price/trendWatcher.data[index-2].price > 1.5){  // raise cutoff
-                    action = "sell"
-                }else if( trendWatcher.data[index].price<trendWatcher.ma24[index]*0.95 ) // drop cutoff
-                    action = "sell"
-                else{
-
-                    if(
-                        trendWatcher.ma14[index]<=trendWatcher.ma24[index]
-                    ){
-                        action = "sell"
-                    }                        
                 }
             }
             return [action, trend]
@@ -475,7 +444,7 @@ namespace bot {
                         this.logger.error(e)
                     }
                 else{
-                    this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, now )
+                    // this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, quantity, now )
                 }
             }))
 

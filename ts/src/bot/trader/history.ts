@@ -26,12 +26,18 @@ namespace bot { export namespace trader {
         getLastTradeInPrice( symbol: string ): number | undefined{
             const hs = this._history[symbol]
             if( hs ){
+                let price = 0
+                let qty = 0
                 for( let i=hs.length-1; i>=0; i-- ){
                     const h = hs[i]
                     if( h.side=="buy"){
-                        return h.actualPrice
+                        price += h.actualPrice*h.actualQuantity
+                        qty += h.actualQuantity
+                    }else if(h.side=="sell"){
+                        break
                     }
                 }
+                return price/qty
             }
         }
 

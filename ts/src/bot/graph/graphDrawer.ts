@@ -64,7 +64,7 @@ namespace bot { export namespace graph {
 
         //draw candle begin
         ctx.lineWidth = w/timeRange
-        ctx.lineCap = "square"
+        ctx.lineCap = "butt"
         for( let candle of candles ){
             switch( candle.trend ){
             case "up":
