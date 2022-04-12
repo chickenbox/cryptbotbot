@@ -16,6 +16,7 @@ namespace bot { export namespace helper {
         open: number
         close: number
         trend: "up" | "side" | "down"
+        prevTrend: "up" | "side" | "down"
     }
 
     function ma( data: number[], iteration: number ){
@@ -125,26 +126,30 @@ namespace bot { export namespace helper {
                 return high/low
             })
 
+            // generate candle
+            const offset = Math.floor(this.data[0].time/interval)%candleSample  //snap to grid
             this.dataCandles.length = data.length
             let prevCandle: Candle | undefined
             for( let i=0; i<data.length; i+=candleSample){                        
-                const startIdx = i
-                const endIdx = Math.min(i+candleSample,data.length)
+                const startIdx = i-offset
+                const endIdx = Math.min(startIdx+candleSample,data.length)
+                const firstIdx = Math.max(0,startIdx)
                 const lastIdx = Math.min(endIdx,data.length-1)
-                let high = data[startIdx].high
-                let low = data[startIdx].low
-                for( let j=startIdx+1; j<endIdx; j++ ){
+                let high = data[firstIdx].high
+                let low = data[firstIdx].low
+                for( let j=firstIdx+1; j<endIdx; j++ ){
                     high = Math.max( high, data[j].high)
                     low = Math.min( low, data[j].low)
                 }
                 const candle: Candle = {
-                    timeStart: data[startIdx].time,
+                    timeStart: data[firstIdx].time,
                     timeEnd: data[lastIdx].time,
                     high: high,
                     low: low,
-                    open: data[startIdx].price,
+                    open: data[firstIdx].price,
                     close: data[lastIdx].price,
-                    trend: "side"
+                    trend: "side",
+                    prevTrend: prevCandle?prevCandle.trend:"side"
                 }
                 if( prevCandle ){
                     if( candle.low>prevCandle.low && candle.high>prevCandle.high )
@@ -153,14 +158,22 @@ namespace bot { export namespace helper {
                         candle.trend = "down"
                 }
                 this.candles.push(candle)
-                for( let j=startIdx; j<endIdx; j++ ){
+                for( let j=firstIdx; j<endIdx; j++ ){
                     this.dataCandles[j] = {
                         candle: prevCandle || candle
                     }
                 }
                 prevCandle = candle
             }
-        }
+            for( let j=this.dataCandles.length-1; j>=0; j-- ){
+                if(!this.dataCandles[j])
+                    this.dataCandles[j] = {
+                        candle: prevCandle
+                    }
+                else
+                    break
+            }
+    }
     }
 
 }}

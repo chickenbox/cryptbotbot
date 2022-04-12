@@ -237,7 +237,7 @@ namespace bot {
                 if( candle.trend=="side" &&
                 trendWatcher.data[index].price<buyPrice &&
                 trendWatcher.data[index].price<trendWatcher.ma84[index]*0.5 &&
-                trendWatcher.data[index].price>candle.close*0.9 // prevent buying rapidly dropping asset
+                    trendWatcher.data[index].price>candle.low
                 ){
                     action = "buy"
                 }
