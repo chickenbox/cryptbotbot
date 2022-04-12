@@ -13,10 +13,11 @@ namespace bot { export namespace helper {
         timeEnd: number
         high: number
         low: number
+        readonly height: number
         open: number
         close: number
         trend: "up" | "side" | "down"
-        prevTrend: "up" | "side" | "down"
+        index: number
     }
 
     function ma( data: number[], iteration: number ){
@@ -146,10 +147,13 @@ namespace bot { export namespace helper {
                     timeEnd: data[lastIdx].time,
                     high: high,
                     low: low,
+                    get height(){
+                        return this.high-this.low
+                    },
                     open: data[firstIdx].price,
                     close: data[lastIdx].price,
                     trend: "side",
-                    prevTrend: prevCandle?prevCandle.trend:"side"
+                    index: this.candles.length
                 }
                 if( prevCandle ){
                     if( candle.low>prevCandle.low && candle.high>prevCandle.high )

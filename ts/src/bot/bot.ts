@@ -224,6 +224,7 @@ namespace bot {
             let action: Action = "none"
 
             const trend = getTrend(trendWatcher,index)
+            const candle = trendWatcher.dataCandles[index].candle
 
             if(
                 index>=100 // long enough history
@@ -232,11 +233,10 @@ namespace bot {
                 &&
                 this.allow.buy
             ){
-                const candle = trendWatcher.dataCandles[index].candle
-                const buyPrice = candle.low+(candle.high-candle.low)*0.1
-                if( candle.trend=="side" &&
-                trendWatcher.data[index].price<buyPrice &&
-                trendWatcher.data[index].price<trendWatcher.ma84[index]*0.5 &&
+                const buyPrice = candle.low+candle.height*0.5
+                if( candle.trend=="down" && candle.height>candle.open*0.5 &&
+                    trendWatcher.data[index].price<trendWatcher.ma84[index]*0.5 && 
+                    trendWatcher.data[index].price<buyPrice &&
                     trendWatcher.data[index].price>candle.low
                 ){
                     action = "buy"
@@ -244,12 +244,27 @@ namespace bot {
             }
             
             if(action=="none" && this.allow.sell){
-                const tradeInPrice = this.tradeHistory.getLastTradeInPrice(`${baseAsset}${this.homingAsset}`)
-
+                const info = {
+                    earliestBuyTime: 0
+                }
+                const tradeInPrice = this.tradeHistory.getLastTradeInPrice(`${baseAsset}${this.homingAsset}`, info)
                 if( trendWatcher.data[index].price>tradeInPrice*1.3){ // don't be too greedy
                     action = "sell"
-                }else if( trendWatcher.data[index].price<tradeInPrice*0.9){ // drop cutoff
-                    action = "sell"
+                }else{
+                    let shouldHold = false
+                    let candleCnt = 0
+                    // sell long holding asset
+                    for( let i=candle.index-1; i>=0; i--){
+                        const c = trendWatcher.candles[i]
+                        if( c.timeEnd<info.earliestBuyTime )
+                            break
+                        if(c.height>tradeInPrice) shouldHold = true
+                        candleCnt++
+                    }
+                    if( candleCnt>12 &&  // holding longer than 12 candle
+                        !shouldHold ){
+                        action = "sell"
+                    }
                 }
             }
             return [action, trend]
@@ -417,7 +432,7 @@ namespace bot {
             if( buyDecisions.length>maxOrder ){
                 for( let i=maxOrder; i<buyDecisions.length; i++ ){
                     const decision = buyDecisions[i]
-                    this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, 0, now )
+                    // this.tradeHistory.wannaBuy(decision.symbol.baseAsset, this.homingAsset, decision.price, 0, now )
                 }
                 buyDecisions.length = maxOrder
             }

@@ -23,7 +23,9 @@ namespace bot { export namespace trader {
             this.load()
         }
 
-        getLastTradeInPrice( symbol: string ): number | undefined{
+        getLastTradeInPrice( symbol: string, outInfo?: {
+            earliestBuyTime: number
+        } ): number | undefined{
             const hs = this._history[symbol]
             if( hs ){
                 let price = 0
@@ -33,6 +35,7 @@ namespace bot { export namespace trader {
                     if( h.side=="buy"){
                         price += h.actualPrice*h.actualQuantity
                         qty += h.actualQuantity
+                        outInfo && (outInfo.earliestBuyTime = h.time)
                     }else if(h.side=="sell"){
                         break
                     }
