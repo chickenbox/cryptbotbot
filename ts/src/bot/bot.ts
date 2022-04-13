@@ -254,17 +254,19 @@ namespace bot {
                     let shouldHold = false
                     let candleCnt = 0
                     // sell long holding asset
-                    for( let i=candle.index-1; i>=0; i--){
+                    for( let i=candle.index; i>=0; i--){
                         const c = trendWatcher.candles[i]
                         if( c.timeEnd<info.earliestBuyTime )
                             break
-                        if(c.height>tradeInPrice) shouldHold = true
+                        if(c.trend!="down" && c.high>tradeInPrice) shouldHold = true
                         candleCnt++
+                        if( candleCnt>=12 ) 
+                            break
                     }
-                    if( candleCnt>12 &&  // holding longer than 12 candle
-                        !shouldHold ){
+                    if( candleCnt>=6 && trendWatcher.data[index].price>tradeInPrice*1.05 ) // early release if longer than 6 candle
                         action = "sell"
-                    }
+                    else if( !shouldHold && candleCnt>=12 ) // holding longer than 12 candle
+                        action = "sell"
                 }
             }
             return [action, trend]
