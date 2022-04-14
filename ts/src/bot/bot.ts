@@ -226,6 +226,13 @@ namespace bot {
             const trend = getTrend(trendWatcher,index)
             const candle = trendWatcher.dataCandles[index].candle
 
+            let localLow = trendWatcher.data[index].price
+            for( let i=index-1, end=Math.max(0,index-60); i>=end; i-- ){
+                localLow = Math.min(trendWatcher.data[i].price)
+            }
+
+            localLow /= 5
+
             if(
                 index>=100 // long enough history
                 &&
@@ -233,11 +240,8 @@ namespace bot {
                 &&
                 this.allow.buy
             ){
-                const buyPrice = candle.low+candle.height*0.5
-                if( candle.trend=="down" && candle.height>candle.open*0.5 &&
-                    trendWatcher.data[index].price<trendWatcher.ma84[index]*0.5 && 
-                    trendWatcher.data[index].price<buyPrice &&
-                    trendWatcher.data[index].price>candle.low
+                if( 
+                    (trendWatcher.data[index].price-localLow)<(trendWatcher.ma84[index]-localLow)/4
                 ){
                     action = "buy"
                 }
@@ -248,7 +252,7 @@ namespace bot {
                     earliestBuyTime: 0
                 }
                 const tradeInPrice = this.tradeHistory.getLastTradeInPrice(`${baseAsset}${this.homingAsset}`, info)
-                if( trendWatcher.data[index].price>tradeInPrice*1.3){ // don't be too greedy
+                if( (trendWatcher.data[index].price-localLow)>(tradeInPrice-localLow)*1.3){ // don't be too greedy
                     action = "sell"
                 }else{
                     let shouldHold = false
