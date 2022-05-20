@@ -36,11 +36,11 @@ namespace bot { export namespace trader {
                         price += h.actualPrice*h.actualQuantity
                         qty += h.actualQuantity
                         outInfo && (outInfo.earliestBuyTime = h.time)
-                    }else if(h.side=="sell"){
+                    }else if(h.side=="sell" && qty>0){
                         break
                     }
                 }
-                return price/qty
+                return qty!=0?price/qty:0
             }
         }
 
